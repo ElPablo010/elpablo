@@ -23,7 +23,7 @@
             <div @unless ($isStacked) class="{{ $textOrder }}" @endunless>
                 <div class="flex items-center gap-3">
                     @if (! empty($content['number']))
-                        <span class="font-display text-sm text-primary-500/70">{{ $content['number'] }}</span>
+                        <span class="font-display text-xl text-primary-500/80">{{ $content['number'] }}</span>
                     @endif
                     @if (! empty($content['eyebrow']))
                         <span class="eyebrow">{{ $content['eyebrow'] }}</span>

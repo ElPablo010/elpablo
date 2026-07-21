@@ -14,7 +14,7 @@
     <div class="{{ $isCenter ? 'mx-auto max-w-2xl text-center' : 'max-w-2xl' }}">
         <div class="flex items-center gap-3 {{ $isCenter ? 'justify-center' : '' }}">
             @if ($number)
-                <span class="font-display text-sm text-primary-500/70">{{ $number }}</span>
+                <span class="font-display text-xl text-primary-500/80">{{ $number }}</span>
             @endif
             @if ($eyebrow)
                 <span class="eyebrow">{{ $eyebrow }}</span>

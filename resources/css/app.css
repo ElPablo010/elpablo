@@ -49,6 +49,15 @@
         display: none !important;
     }
 
+    /* Smooth scroll naar anker-secties (bv. CTA → #mixes). De scroll-mt op de
+       anker-targets (zie pages/show.blade.php) compenseert de zwevende header.
+       Respecteert prefers-reduced-motion. */
+    @media (prefers-reduced-motion: no-preference) {
+        html {
+            scroll-behavior: smooth;
+        }
+    }
+
     /* Donkere nachtleven-basis over de hele publieke site. */
     body {
         background-color: var(--color-ink-950);
@@ -85,9 +94,9 @@
         @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-wide transition-all duration-200 text-white/80 hover:text-white;
     }
 
-    /* Eyebrow — kleine merk-gekleurde boventitel boven een sectiekop. */
+    /* Eyebrow — merk-gekleurde boventitel boven een sectiekop. */
     .eyebrow {
-        @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary-500;
+        @apply inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.2em] text-primary-500;
     }
     .eyebrow::before {
         content: '';
