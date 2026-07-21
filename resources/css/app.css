@@ -1,0 +1,35 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Merk — primair: El Pablo magenta-rood (#E01B4B = 600) */
+    --color-primary-50: #fff1f4;
+    --color-primary-100: #ffe1e7;
+    --color-primary-200: #ffc7d3;
+    --color-primary-300: #ff9db1;
+    --color-primary-400: #ff6489;
+    --color-primary-500: #f83164;
+    --color-primary-600: #e01b4b;
+    --color-primary-700: #bd1140;
+    --color-primary-800: #9e133c;
+    --color-primary-900: #871439;
+    --color-primary-950: #4b061a;
+
+    /* Merk — secundair: donker warmgrijs (#443f3f = 700) */
+    --color-secondary-50: #f6f5f5;
+    --color-secondary-100: #e7e5e5;
+    --color-secondary-200: #cfcbcb;
+    --color-secondary-300: #aca6a6;
+    --color-secondary-400: #837c7c;
+    --color-secondary-500: #696262;
+    --color-secondary-600: #595353;
+    --color-secondary-700: #443f3f;
+    --color-secondary-800: #3b3737;
+    --color-secondary-900: #343131;
+    --color-secondary-950: #1e1c1c;
+}
