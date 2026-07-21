@@ -11,35 +11,39 @@
         default => null,
     };
 
-    // 'below' = gestapeld (tekst boven, formulier onder). 'left'/'right' = twee
-    // kolommen op md+, met de tekst respectievelijk rechts/links van het formulier.
     $isStacked = $layout === 'below';
-    $textOrder = $layout === 'left' ? 'md:order-2' : 'md:order-1';
-    $formOrder = $layout === 'left' ? 'md:order-1' : 'md:order-2';
+    $textOrder = $layout === 'left' ? 'lg:order-2' : 'lg:order-1';
+    $formOrder = $layout === 'left' ? 'lg:order-1' : 'lg:order-2';
 @endphp
 
-{{-- Neutrale placeholder. Per project vrij te herontwerpen. --}}
 <x-site.sections.wrapper :content="$content" class="{{ $bg }}">
-    <div class="mx-auto max-w-7xl px-4 py-20">
-        <div class="grid gap-10 @unless ($isStacked) md:grid-cols-2 md:items-start @endunless">
+    <div class="mx-auto max-w-7xl px-4 py-24 lg:px-6">
+        <div class="grid gap-12 @unless ($isStacked) lg:grid-cols-2 lg:items-start @endunless">
             <div @unless ($isStacked) class="{{ $textOrder }}" @endunless>
-                @if (! empty($content['eyebrow']))
-                    <p class="mb-2 text-sm font-medium uppercase tracking-wide opacity-70">{{ $content['eyebrow'] }}</p>
-                @endif
+                <div class="flex items-center gap-3">
+                    @if (! empty($content['number']))
+                        <span class="font-display text-sm text-primary-500/70">{{ $content['number'] }}</span>
+                    @endif
+                    @if (! empty($content['eyebrow']))
+                        <span class="eyebrow">{{ $content['eyebrow'] }}</span>
+                    @endif
+                </div>
                 @if (! empty($content['heading']))
-                    <h2 class="text-3xl font-bold">{{ $content['heading'] }}</h2>
+                    <h2 class="mt-4 font-display text-[2rem] leading-[0.95] text-white break-words sm:text-5xl">{{ $content['heading'] }}</h2>
                 @endif
                 @if (! empty($content['intro']))
-                    <div class="prose mt-4 max-w-none">{!! $content['intro'] !!}</div>
+                    <div class="prose-invert-brand mt-5 text-lg leading-relaxed">{!! $content['intro'] !!}</div>
                 @endif
             </div>
 
             <div @unless ($isStacked) class="{{ $formOrder }}" @endunless>
-                @if ($formComponent)
-                    @livewire($formComponent)
-                @else
-                    <p class="text-sm text-red-600">Onbekend formuliertype: {{ $formType }}</p>
-                @endif
+                <div class="rounded-2xl border border-white/10 bg-ink-900 p-6 sm:p-8">
+                    @if ($formComponent)
+                        @livewire($formComponent)
+                    @else
+                        <p class="text-sm text-red-400">Onbekend formuliertype: {{ $formType }}</p>
+                    @endif
+                </div>
             </div>
         </div>
     </div>

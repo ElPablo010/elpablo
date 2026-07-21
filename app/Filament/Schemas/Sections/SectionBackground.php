@@ -23,11 +23,14 @@ class SectionBackground
      */
     public static function options(): array
     {
+        // Dark nightlife-palet: elke keuze is een donkere tint. Volgorde logisch
+        // (neutrale basis eerst), niet alfabetisch — de bg-keuze heeft een
+        // semantische ordening van licht-donker.
         return [
-            'white' => 'Wit',
-            'light' => 'Licht (grijs)',
-            'primary' => 'Primair (merkkleur)',
-            'dark' => 'Donker',
+            'white' => 'Standaard (zwart)',
+            'light' => 'Donkergrijs',
+            'primary' => 'Magenta (merkkleur)',
+            'dark' => 'Diep zwart',
             'transparent' => 'Transparant',
         ];
     }
@@ -35,16 +38,20 @@ class SectionBackground
     public static function classes(?string $key): string
     {
         return match ($key) {
-            'light' => 'bg-gray-50 text-gray-900',
+            'light' => 'bg-ink-900 text-white',
             'primary' => 'bg-primary-600 text-white',
-            'dark' => 'bg-gray-900 text-white',
-            'transparent' => 'text-gray-900',
-            default => 'bg-white text-gray-900',
+            'dark' => 'bg-black text-white',
+            'transparent' => 'text-white',
+            default => 'bg-ink-950 text-white',
         };
     }
 
+    /**
+     * De hele publieke site is donker — elke sectie-achtergrond is dark.
+     * (Behouden zodat toekomstige lichte varianten hier hun uitzondering krijgen.)
+     */
     public static function isDark(?string $key): bool
     {
-        return in_array($key, ['primary', 'dark'], true);
+        return true;
     }
 }

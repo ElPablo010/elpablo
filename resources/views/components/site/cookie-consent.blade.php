@@ -107,16 +107,16 @@
     aria-modal="true"
     aria-label="Cookievoorkeuren"
 >
-    <div class="w-full max-w-2xl rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl">
+    <div class="w-full max-w-2xl rounded-2xl border border-white/10 bg-ink-900 p-6 shadow-2xl shadow-black/50">
         <div class="mb-3 flex items-start gap-3">
-            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-600/10 text-primary-600">
+            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-600/15 text-primary-500">
                 <x-lucide-cookie class="h-4.5 w-4.5" />
             </span>
             <div>
-                <div class="font-semibold text-gray-900">Wij respecteren jouw privacy</div>
-                <p class="mt-1 text-sm text-gray-500">
+                <div class="font-semibold text-white">Wij respecteren jouw privacy</div>
+                <p class="mt-1 text-sm text-gray-400">
                     We gebruiken cookies om onze site goed te laten werken en, met jouw toestemming, om bezoekersstatistieken
-                    te verzamelen. Lees ons <a href="/cookiebeleid" class="text-primary-600 hover:underline">cookiebeleid</a> voor meer info.
+                    te verzamelen. Lees ons <a href="/cookiebeleid" class="text-primary-400 hover:underline">cookiebeleid</a> voor meer info.
                 </p>
             </div>
         </div>
@@ -126,19 +126,19 @@
                  banner als geheel, niet als een tweede animatie erbovenop. --}}
             x-show="detailed"
             x-cloak
-            class="mt-4 space-y-3 rounded-xl border border-gray-200 bg-gray-50 p-4"
+            class="mt-4 space-y-3 rounded-xl border border-white/10 bg-ink-950 p-4"
         >
             <div class="flex items-center justify-between gap-4">
                 <div>
-                    <div class="text-sm font-medium text-gray-800">Functionele cookies</div>
+                    <div class="text-sm font-medium text-gray-200">Functionele cookies</div>
                     <div class="text-xs text-gray-500">Noodzakelijk voor de werking van de website</div>
                 </div>
-                <span class="text-xs font-medium text-gray-400">Altijd actief</span>
+                <span class="text-xs font-medium text-gray-500">Altijd actief</span>
             </div>
             @foreach ([['analytics', 'Analytische cookies', 'Helpen ons begrijpen hoe bezoekers de site gebruiken'], ['marketing', 'Marketing cookies', 'Worden gebruikt om gepersonaliseerde advertenties te tonen']] as [$key, $label, $description])
                 <div class="flex items-center justify-between gap-4">
                     <div>
-                        <div class="text-sm font-medium text-gray-800">{{ $label }}</div>
+                        <div class="text-sm font-medium text-gray-200">{{ $label }}</div>
                         <div class="text-xs text-gray-500">{{ $description }}</div>
                     </div>
                     <button
@@ -147,7 +147,7 @@
                         :aria-checked="prefs.{{ $key }}"
                         @click="prefs.{{ $key }} = ! prefs.{{ $key }}"
                         class="relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors"
-                        :class="prefs.{{ $key }} ? 'bg-primary-600' : 'bg-gray-200'"
+                        :class="prefs.{{ $key }} ? 'bg-primary-600' : 'bg-white/15'"
                     >
                         <span class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform" :class="prefs.{{ $key }} ? 'translate-x-5' : 'translate-x-0'"></span>
                     </button>
@@ -159,7 +159,7 @@
             <button
                 type="button"
                 @click="detailed = ! detailed"
-                class="flex cursor-pointer items-center gap-1 text-sm font-medium text-gray-500 transition-colors hover:text-gray-900"
+                class="flex cursor-pointer items-center gap-1 text-sm font-medium text-gray-400 transition-colors hover:text-white"
             >
                 <x-lucide-chevron-up x-show="detailed" class="h-4 w-4" />
                 <x-lucide-chevron-down x-show="! detailed" class="h-4 w-4" />
@@ -167,13 +167,13 @@
             </button>
 
             <div class="flex flex-wrap gap-2">
-                <button x-show="detailed" type="button" @click="savePreferences()" class="cursor-pointer rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50">
+                <button x-show="detailed" type="button" @click="savePreferences()" class="cursor-pointer rounded-lg border border-white/15 px-4 py-2 text-sm font-medium text-gray-200 transition-colors hover:bg-white/5">
                     Voorkeuren opslaan
                 </button>
-                <button type="button" @click="rejectAll()" class="cursor-pointer rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50">
+                <button type="button" @click="rejectAll()" class="cursor-pointer rounded-lg border border-white/15 px-4 py-2 text-sm font-medium text-gray-200 transition-colors hover:bg-white/5">
                     Weigeren
                 </button>
-                <button type="button" @click="acceptAll()" class="cursor-pointer rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:opacity-90">
+                <button type="button" @click="acceptAll()" class="cursor-pointer rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-500">
                     Accepteren
                 </button>
             </div>

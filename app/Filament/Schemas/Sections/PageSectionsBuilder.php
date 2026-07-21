@@ -67,6 +67,18 @@ class PageSectionsBuilder
                     ...SectionCommonFields::make(),
                     ...GalleryFields::make(),
                 ]),
+            Block::make('mixes')
+                ->label(self::numberedLabel('Mixes / muziek'))
+                ->schema([
+                    ...SectionCommonFields::make(),
+                    ...MixesFields::make(),
+                ]),
+            Block::make('reviews')
+                ->label(self::numberedLabel('Reviews'))
+                ->schema([
+                    ...SectionCommonFields::make(),
+                    ...ReviewsFields::make(),
+                ]),
             Block::make('form')
                 ->label(self::numberedLabel('Formulier'))
                 ->schema([
