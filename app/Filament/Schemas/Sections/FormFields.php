@@ -30,6 +30,7 @@ class FormFields
                         ->label('Formulier')
                         // Alfabetisch op label.
                         ->options([
+                            'booking' => 'Boekingsformulier',
                             'contact' => 'Contactformulier',
                         ])
                         ->default('contact')

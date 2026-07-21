@@ -11,9 +11,13 @@ use Illuminate\Database\Seeder;
 
 /**
  * Demo-content voor El Pablo: een volledige, conversie-gerichte homepage +
- * kaderpagina's (Over/Muziek/Boeken), hoofdmenu, footermenu's en header/footer-
- * instellingen. Placeholder-beelden komen van Unsplash — de klant vervangt ze
- * via de media-library. Pas aan of verwijder zodra de echte content er staat.
+ * kaderpagina's (Over/Muziek), een uitgewerkte Boeken- en Contact-pagina,
+ * hoofdmenu, footermenu's en header/footer-instellingen.
+ *
+ * Funnel-logica: de homepage eindigt met één afsluit-CTA naar de boekingspagina
+ * (het echte boekingsformulier). Algemene vragen lopen via het contactformulier
+ * op de contactpagina. Placeholder-beelden komen van Unsplash — de klant vervangt
+ * ze via de media-library.
  */
 class HomepageSeeder extends Seeder
 {
@@ -28,9 +32,10 @@ class HomepageSeeder extends Seeder
         $home = $this->seedHomepage();
         $over = $this->seedSimplePage('over', 'Over El Pablo', 'Wie is El Pablo', 'De DJ achter de decks', $this->img('1516450360452-9312f5e86fc7', 2000));
         $muziek = $this->seedSimplePage('muziek', 'Muziek', 'Sets & mixes', 'Beluister m\'n muziek', $this->img('1470225620780-dba8ba36b745', 2000));
-        $boeken = $this->seedSimplePage('boeken', 'Boeken', 'Boek El Pablo', 'Vraag je datum aan', $this->img('1533174072545-7a4b6ad7a6c3', 2000));
+        $boeken = $this->seedBookingPage();
+        $contact = $this->seedContactPage();
 
-        $this->seedMenus($home, $over, $muziek, $boeken);
+        $this->seedMenus($home, $over, $muziek, $boeken, $contact);
         $this->seedSettings($boeken);
     }
 
@@ -153,20 +158,8 @@ class HomepageSeeder extends Seeder
                         ['question' => 'In welke regio ben je beschikbaar?', 'answer' => '<p>Ik draai in heel Vlaanderen, met Antwerpen als thuisbasis. Voor feesten verder weg of in het buitenland: vraag gerust naar de mogelijkheden.</p>'],
                         ['question' => 'Voorzie je zelf geluid en licht?', 'answer' => '<p>Ik kan een volledige set-up voorzien of samenwerken met de installatie ter plaatse. We stemmen dit af bij de boeking.</p>'],
                         ['question' => 'Kan ik nummers doorgeven?', 'answer' => '<p>Zeker. Je kan vooraf een wenslijst doorsturen. Ik lees ook live de dansvloer en pas de set daarop aan.</p>'],
-                        ['question' => 'Hoe boek ik een datum?', 'answer' => '<p>Vul het aanvraagformulier in met je datum en gegevens. Ik antwoord meestal binnen 24 uur met een voorstel op maat.</p>'],
+                        ['question' => 'Hoe boek ik een datum?', 'answer' => '<p>Vul het aanvraagformulier op de <a href="/boeken">boekingspagina</a> in. Ik antwoord meestal binnen 24 uur met een voorstel op maat.</p>'],
                     ],
-                ],
-            ],
-            [
-                'section_type' => 'form',
-                'content' => [
-                    'section_id' => 'contact',
-                    'background' => 'white',
-                    'eyebrow' => 'Boeken',
-                    'heading' => 'Vraag je datum aan',
-                    'intro' => '<p>Vertel me over je feest — datum, locatie en type gelegenheid — en ik stuur je snel een voorstel op maat.</p>',
-                    'form_type' => 'contact',
-                    'form_layout' => 'right',
                 ],
             ],
             [
@@ -194,8 +187,152 @@ class HomepageSeeder extends Seeder
     }
 
     /**
-     * Een eenvoudige kaderpagina (hero + afsluitende CTA) zodat de navigatie werkt
-     * en niet op een 404 uitkomt. De echte inhoud werken we per pagina later uit.
+     * Boekingspagina — de primaire conversie. Eindigt op het boekingsformulier.
+     */
+    private function seedBookingPage(): Page
+    {
+        $page = Page::updateOrCreate(
+            ['locale' => 'nl', 'slug' => 'boeken'],
+            [
+                'title' => 'Boeken',
+                'is_homepage' => false,
+                'published' => true,
+                'meta_title' => 'Boek El Pablo — Urban Latin DJ',
+                'meta_description' => 'Boek El Pablo voor je clubavond, privéfeest, bruiloft of festival. Vraag vrijblijvend je datum aan en ontvang snel een voorstel op maat.',
+            ],
+        );
+
+        $page->sections()->delete();
+
+        $sections = [
+            [
+                'section_type' => 'hero',
+                'content' => [
+                    'eyebrow' => 'Boeken',
+                    'heading' => 'Boek El Pablo voor jouw feest',
+                    'subtitle' => '<p>Vertel me over je gelegenheid en ontvang snel een voorstel op maat. Vrijblijvend en zonder verplichting.</p>',
+                    'image' => ['src' => $this->img('1533174072545-7a4b6ad7a6c3', 2000), 'alt' => 'Feestende crowd', 'position' => 'center 50%'],
+                    'ctas' => [['label' => 'Naar het aanvraagformulier', 'variant' => 'primary', 'link_type' => 'url', 'href' => '#aanvraag']],
+                ],
+            ],
+            [
+                'section_type' => 'cards',
+                'content' => [
+                    'background' => 'white',
+                    'eyebrow' => 'Zo werkt het',
+                    'heading' => 'In drie stappen geboekt',
+                    'columns' => '3',
+                    'cards' => [
+                        ['title' => '1. Vraag aan', 'media_type' => 'icon', 'icon' => 'clipboard-list', 'description' => 'Vul het formulier in met je datum, locatie en type gelegenheid.'],
+                        ['title' => '2. Voorstel op maat', 'media_type' => 'icon', 'icon' => 'calendar-check', 'description' => 'Je ontvangt meestal binnen 24 uur een concreet voorstel met prijs.'],
+                        ['title' => '3. Feesten', 'media_type' => 'icon', 'icon' => 'party-popper', 'description' => 'We stemmen de details af en ik zorg voor een onvergetelijke nacht.'],
+                    ],
+                ],
+            ],
+            [
+                'section_type' => 'faq',
+                'content' => [
+                    'background' => 'light',
+                    'eyebrow' => 'Goed om te weten',
+                    'heading' => 'Praktische vragen',
+                    'items' => [
+                        ['question' => 'Hoe snel krijg ik antwoord?', 'answer' => '<p>Meestal binnen 24 uur. Voor last-minute aanvragen kan je me ook bellen.</p>'],
+                        ['question' => 'Wat kost een boeking?', 'answer' => '<p>Dat hangt af van de datum, duur en locatie. Vul het formulier in voor een voorstel op maat.</p>'],
+                        ['question' => 'Voorzie je geluid en licht?', 'answer' => '<p>Ik kan een volledige set-up voorzien of samenwerken met de installatie ter plaatse.</p>'],
+                    ],
+                ],
+            ],
+            [
+                'section_type' => 'form',
+                'content' => [
+                    'section_id' => 'aanvraag',
+                    'background' => 'white',
+                    'eyebrow' => 'Aanvraag',
+                    'heading' => 'Vraag je datum aan',
+                    'intro' => '<p>Hoe meer je invult, hoe gerichter mijn voorstel. Alle velden met een datum of type helpen me meteen op weg.</p>',
+                    'form_type' => 'booking',
+                    'form_layout' => 'right',
+                ],
+            ],
+        ];
+
+        foreach ($sections as $position => $section) {
+            $page->sections()->create([
+                'section_type' => $section['section_type'],
+                'position' => $position,
+                'content' => $section['content'],
+            ]);
+        }
+
+        return $page;
+    }
+
+    /**
+     * Contactpagina — algemene vragen via het contactformulier, met een
+     * kruisverwijzing naar boeken voor wie meteen een datum wil vastleggen.
+     */
+    private function seedContactPage(): Page
+    {
+        $page = Page::updateOrCreate(
+            ['locale' => 'nl', 'slug' => 'contact'],
+            [
+                'title' => 'Contact',
+                'is_homepage' => false,
+                'published' => true,
+                'meta_title' => 'Contact — El Pablo',
+                'meta_description' => 'Vragen voor El Pablo, urban latin DJ uit Antwerpen? Stuur een bericht of bel rechtstreeks.',
+            ],
+        );
+
+        $page->sections()->delete();
+
+        $sections = [
+            [
+                'section_type' => 'hero',
+                'content' => [
+                    'eyebrow' => 'Contact',
+                    'heading' => 'Neem contact op',
+                    'subtitle' => '<p>Een vraag of gewoon zin om te overleggen? Stuur een bericht of bel rechtstreeks — ik hoor het graag.</p>',
+                    'image' => ['src' => $this->img('1518972559570-7cc1309f3229', 2000), 'alt' => 'Clubsfeer', 'position' => 'center 50%'],
+                ],
+            ],
+            [
+                'section_type' => 'form',
+                'content' => [
+                    'section_id' => 'contact',
+                    'background' => 'white',
+                    'eyebrow' => 'Bericht',
+                    'heading' => 'Stuur een bericht',
+                    'intro' => '<p>Vul het formulier in en ik antwoord zo snel mogelijk. Wil je meteen een datum vastleggen? Gebruik dan het <a href="/boeken">boekingsformulier</a>.</p>',
+                    'form_type' => 'contact',
+                    'form_layout' => 'right',
+                ],
+            ],
+            [
+                'section_type' => 'cta',
+                'content' => [
+                    'background' => 'primary',
+                    'heading' => 'Liever meteen een datum vastleggen?',
+                    'intro' => '<p>Vraag vrijblijvend je boeking aan met alle details in één keer.</p>',
+                    'ctas' => [['label' => 'Naar het boekingsformulier', 'variant' => 'primary', 'link_type' => 'url', 'href' => '/boeken']],
+                ],
+            ],
+        ];
+
+        foreach ($sections as $position => $section) {
+            $page->sections()->create([
+                'section_type' => $section['section_type'],
+                'position' => $position,
+                'content' => $section['content'],
+            ]);
+        }
+
+        return $page;
+    }
+
+    /**
+     * Een eenvoudige kaderpagina (hero + afsluitende CTA) zodat de navigatie werkt.
+     * De echte inhoud werken we per pagina later uit.
      */
     private function seedSimplePage(string $slug, string $title, string $eyebrow, string $heading, string $heroImage): Page
     {
@@ -240,21 +377,22 @@ class HomepageSeeder extends Seeder
         return $page;
     }
 
-    private function seedMenus(Page $home, Page $over, Page $muziek, Page $boeken): void
+    private function seedMenus(Page $home, Page $over, Page $muziek, Page $boeken, Page $contact): void
     {
-        // Hoofdmenu
+        // Hoofdmenu — "Boek El Pablo" zit al als CTA-knop in de header, dus die
+        // staat bewust NIET in de nav; Contact wél.
         $main = Menu::updateOrCreate(['location' => 'main'], ['name' => 'Hoofdmenu']);
         $main->allItems()->delete();
         foreach ([
             ['label' => 'Home', 'page_id' => $home->id],
             ['label' => 'Over', 'page_id' => $over->id],
             ['label' => 'Muziek', 'page_id' => $muziek->id],
-            ['label' => 'Boeken', 'page_id' => $boeken->id],
+            ['label' => 'Contact', 'page_id' => $contact->id],
         ] as $i => $item) {
             $main->allItems()->create([...$item, 'position' => $i]);
         }
 
-        // Footer 1 — Navigatie
+        // Footer 1 — Navigatie (hier mag Boeken wél expliciet staan)
         $f1 = Menu::updateOrCreate(['location' => 'footer_1'], ['name' => 'Footer navigatie', 'title' => 'Navigatie']);
         $f1->allItems()->delete();
         foreach ([
@@ -262,11 +400,12 @@ class HomepageSeeder extends Seeder
             ['label' => 'Over El Pablo', 'page_id' => $over->id],
             ['label' => 'Muziek', 'page_id' => $muziek->id],
             ['label' => 'Boeken', 'page_id' => $boeken->id],
+            ['label' => 'Contact', 'page_id' => $contact->id],
         ] as $i => $item) {
             $f1->allItems()->create([...$item, 'position' => $i]);
         }
 
-        // Footer 2 — Aanbod (ankers naar de homepage-secties / boeken)
+        // Footer 2 — Aanbod (naar de boekingspagina)
         $f2 = Menu::updateOrCreate(['location' => 'footer_2'], ['name' => 'Footer aanbod', 'title' => 'Aanbod']);
         $f2->allItems()->delete();
         foreach ([

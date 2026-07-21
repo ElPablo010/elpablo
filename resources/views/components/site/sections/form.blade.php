@@ -7,6 +7,7 @@
 
     // form_type → Livewire-component. Voeg hier nieuwe types toe (zie FormFields).
     $formComponent = match ($formType) {
+        'booking' => 'forms.booking-form',
         'contact' => 'forms.contact-form',
         default => null,
     };

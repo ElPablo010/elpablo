@@ -24,8 +24,8 @@ class FormSubmission extends Model
      * Voeg hier per project nieuwe types toe — alfabetisch.
      */
     public const TYPE_LABELS = [
+        'booking' => 'Boekingsaanvraag',
         'contact' => 'Contactformulier',
-        // 'quote' => 'Offerteaanvraag',
     ];
 
     public function typeLabel(): string
