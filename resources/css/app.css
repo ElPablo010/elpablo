@@ -99,6 +99,20 @@
 .prose-invert-brand {
     @apply text-gray-300;
 }
+/* Verticale ritmering tussen blokken (alinea's, lijsten) — de preflight zet
+   margins op 0, dus hier weer expliciet spatie tussen opeenvolgende blokken. */
+.prose-invert-brand > * + * {
+    margin-top: 1em;
+}
+.prose-invert-brand ul {
+    @apply list-disc pl-5;
+}
+.prose-invert-brand ol {
+    @apply list-decimal pl-5;
+}
+.prose-invert-brand li + li {
+    margin-top: 0.25em;
+}
 .prose-invert-brand a {
     @apply text-primary-400 underline decoration-primary-400/40 underline-offset-2 hover:decoration-primary-400;
 }

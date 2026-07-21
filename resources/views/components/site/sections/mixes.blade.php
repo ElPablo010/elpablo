@@ -10,6 +10,13 @@
         'spotify' => 'Spotify',
         'youtube' => 'YouTube',
     ];
+
+    $ctas = $content['ctas'] ?? [];
+    $btnClass = fn (?string $v) => match ($v) {
+        'primary' => 'btn-primary',
+        'ghost' => 'btn-ghost',
+        default => 'btn-secondary',
+    };
 @endphp
 
 <x-site.sections.wrapper :content="$content" class="{{ $bg }}">
@@ -62,5 +69,16 @@
                 </a>
             @endforeach
         </div>
+
+        @if (! empty($ctas))
+            <div class="mt-12 flex flex-wrap justify-center gap-4">
+                @foreach ($ctas as $cta)
+                    <a href="{{ $cta['href'] ?? '/' }}" class="{{ $btnClass($cta['variant'] ?? 'secondary') }}">
+                        {{ $cta['label'] ?? '' }}
+                        <x-lucide-arrow-right class="h-4 w-4" />
+                    </a>
+                @endforeach
+            </div>
+        @endif
     </div>
 </x-site.sections.wrapper>

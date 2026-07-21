@@ -60,6 +60,9 @@ class MixesFields
                 ->columns(1)
                 ->defaultItems(0)
                 ->reorderable(),
+
+            // Optionele knop(pen) onder de grid, bv. "Bekijk alle sets" → Muziek-pagina.
+            CtaLinkSchema::repeater(),
         ];
     }
 }

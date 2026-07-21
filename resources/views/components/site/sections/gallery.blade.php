@@ -16,10 +16,11 @@
             :number="$content['number'] ?? null"
         />
 
+        {{-- Vaste, gelijkmatige grid: alle beelden vierkant → geen open gaten. --}}
         <div class="mt-14 grid grid-cols-2 gap-3 {{ $colClass }}">
             @foreach ($items as $item)
                 @if (! empty($item['image']))
-                    <div class="group relative overflow-hidden rounded-xl {{ $loop->index % 5 === 0 ? 'row-span-2 aspect-[3/4]' : 'aspect-square' }}">
+                    <div class="group relative aspect-square overflow-hidden rounded-xl">
                         <picture>
                             <source srcset="{{ $item['image'] }}" type="image/webp">
                             <img src="{{ $item['image'] }}" alt="{{ $item['alt'] ?? '' }}" loading="lazy"

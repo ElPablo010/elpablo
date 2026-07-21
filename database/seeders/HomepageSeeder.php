@@ -116,6 +116,9 @@ class HomepageSeeder extends Seeder
                         ['title' => 'Beach Club Sunset', 'platform' => 'mixcloud', 'subtitle' => 'Latin house · 58 min', 'url' => 'https://mixcloud.com', 'cover' => $this->img('1524368535928-5b5e00ddc76b', 800)],
                         ['title' => 'Urban Night Vol. 3', 'platform' => 'spotify', 'subtitle' => 'Urban & afrobeats · 45 min', 'url' => 'https://spotify.com', 'cover' => $this->img('1518972559570-7cc1309f3229', 800)],
                     ],
+                    'ctas' => [
+                        ['label' => 'Bekijk alle sets', 'variant' => 'secondary', 'link_type' => 'url', 'href' => '/muziek'],
+                    ],
                 ],
             ],
             [
@@ -379,12 +382,11 @@ class HomepageSeeder extends Seeder
 
     private function seedMenus(Page $home, Page $over, Page $muziek, Page $boeken, Page $contact): void
     {
-        // Hoofdmenu — "Boek El Pablo" zit al als CTA-knop in de header, dus die
-        // staat bewust NIET in de nav; Contact wél.
+        // Hoofdmenu — "Home" staat bewust NIET in de nav (het logo linkt naar
+        // home), en "Boek El Pablo" zit al als CTA-knop in de header.
         $main = Menu::updateOrCreate(['location' => 'main'], ['name' => 'Hoofdmenu']);
         $main->allItems()->delete();
         foreach ([
-            ['label' => 'Home', 'page_id' => $home->id],
             ['label' => 'Over', 'page_id' => $over->id],
             ['label' => 'Muziek', 'page_id' => $muziek->id],
             ['label' => 'Contact', 'page_id' => $contact->id],
