@@ -52,11 +52,13 @@ Inter). Pagina's: Home, Over, Muziek (inline audiospelers + download), Boeken
   `privacyBody()` per taal.
 - **UI-chrome** (nav-labels, footer, cookiebanner, knoppen) via Laravel
   `lang/en.json` + `lang/es.json` met `__()`.
+- **Formulieren** (contact + boeking): labels, placeholders, keuzelijsten én
+  Livewire-validatieberichten vertaald. De trait `App\Livewire\Concerns\PersistsLocale`
+  bewaart de locale in de component en herstelt ze bij élke Livewire-render, zodat
+  de taal klopt ook na een re-render (Livewire post naar /livewire/update zonder
+  locale-prefix).
 
 ### Nog te doen
-- [ ] **Contact- en boekingsformulier vertalen** — de veldlabels + Livewire-
-      validatieberichten staan nog in NL. Vereist Livewire-locale-persistentie
-      (locale bewaren + `setLocale()` bij re-render), daarom bewust apart gehouden.
 - [ ] **Echte content**: placeholder-foto's (Unsplash) en de demo-mp3's (2 sets
       herhaald) vervangen via de media-library / het `mixes`-blok.
 - [ ] **Footer-settings per taal** — adres/tagline komen uit `settings` (één
@@ -67,7 +69,7 @@ Inter). Pagina's: Home, Over, Muziek (inline audiospelers + download), Boeken
 - [x] Lettertype gekozen (Anton + Inter).
 - [x] Juridische pagina's geseed (cookiebeleid + privacybeleid).
 - [x] `MAIL_FROM_ADDRESS` = info@el-pablo.com.
-- [x] EN/ES-content vertaald (pagina's + chrome + cookiebanner).
+- [x] EN/ES-content vertaald (pagina's + chrome + cookiebanner + formulieren).
 
 ## Lokaal draaien
 

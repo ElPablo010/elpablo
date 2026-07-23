@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Forms;
 
+use App\Livewire\Concerns\PersistsLocale;
 use App\Mail\FormSubmissionMail;
 use App\Models\FormSubmission;
 use Illuminate\Support\Facades\Log;
@@ -21,6 +22,8 @@ use Livewire\Component;
  */
 class ContactForm extends Component
 {
+    use PersistsLocale;
+
     /** Het formuliertype dat in form_submissions.type belandt. */
     protected string $type = 'contact';
 
@@ -41,14 +44,14 @@ class ContactForm extends Component
 
     public bool $sent = false;
 
-    /** @return array<string, string> Nederlandse validatieberichten. */
+    /** @return array<string, string> Validatieberichten (locale-bewust via __()). */
     protected function messages(): array
     {
         return [
-            'name.required' => 'Vul je naam in.',
-            'email.required' => 'Vul je e-mailadres in.',
-            'email.email' => 'Vul een geldig e-mailadres in.',
-            'message.required' => 'Schrijf even je bericht.',
+            'name.required' => __('Vul je naam in.'),
+            'email.required' => __('Vul je e-mailadres in.'),
+            'email.email' => __('Vul een geldig e-mailadres in.'),
+            'message.required' => __('Schrijf even je bericht.'),
         ];
     }
 

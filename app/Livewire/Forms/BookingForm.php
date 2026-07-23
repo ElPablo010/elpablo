@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Forms;
 
+use App\Livewire\Concerns\PersistsLocale;
 use App\Mail\FormSubmissionMail;
 use App\Models\FormSubmission;
 use Illuminate\Support\Facades\Log;
@@ -20,6 +21,8 @@ use Livewire\Component;
  */
 class BookingForm extends Component
 {
+    use PersistsLocale;
+
     protected string $type = 'booking';
 
     #[Validate('required|string|max:120')]
@@ -60,11 +63,11 @@ class BookingForm extends Component
     public function eventTypes(): array
     {
         return [
-            'bruiloft' => 'Bruiloft',
-            'clubavond' => 'Clubavond',
-            'festival' => 'Festival / strandfeest',
-            'privefeest' => 'Privéfeest',
-            'anders' => 'Anders',
+            'bruiloft' => __('Bruiloft'),
+            'clubavond' => __('Clubavond'),
+            'festival' => __('Festival / strandfeest'),
+            'privefeest' => __('Privéfeest'),
+            'anders' => __('Anders'),
         ];
     }
 
@@ -72,12 +75,12 @@ class BookingForm extends Component
     protected function messages(): array
     {
         return [
-            'name.required' => 'Vul je naam in.',
-            'email.required' => 'Vul je e-mailadres in.',
-            'email.email' => 'Vul een geldig e-mailadres in.',
-            'phone.required' => 'Vul een telefoonnummer in zodat we snel kunnen schakelen.',
-            'event_type.required' => 'Kies het type gelegenheid.',
-            'event_date.date' => 'Vul een geldige datum in.',
+            'name.required' => __('Vul je naam in.'),
+            'email.required' => __('Vul je e-mailadres in.'),
+            'email.email' => __('Vul een geldig e-mailadres in.'),
+            'phone.required' => __('Vul een telefoonnummer in zodat we snel kunnen schakelen.'),
+            'event_type.required' => __('Kies het type gelegenheid.'),
+            'event_date.date' => __('Vul een geldige datum in.'),
         ];
     }
 
