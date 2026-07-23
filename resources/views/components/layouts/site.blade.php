@@ -43,6 +43,13 @@
     />
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    {{-- Livewire (en de gebundelde Alpine) expliciet laden zodat Alpine op ÉLKE
+         pagina beschikbaar is — ook op pagina's zonder Livewire-component. Zonder
+         dit injecteert Livewire z'n scripts enkel wanneer er een component op de
+         pagina staat, waardoor de cookiebanner, het mobiele menu, de FAQ-accordeon
+         en de audiospeler stilvallen op formulier-loze pagina's. --}}
+    @livewireStyles
 </head>
 <body class="min-h-screen bg-ink-950 font-sans text-gray-200 antialiased">
     <x-site.header />
@@ -54,5 +61,7 @@
     <x-site.footer />
 
     <x-site.cookie-consent />
+
+    @livewireScripts
 </body>
 </html>

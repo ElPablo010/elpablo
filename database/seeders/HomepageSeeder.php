@@ -110,11 +110,10 @@ class HomepageSeeder extends Seeder
                     'background' => 'white',
                     'eyebrow' => 'Muziek',
                     'heading' => "Beluister m'n sets",
-                    'intro' => '<p>Een DJ leeft van z\'n sets. Proef de sfeer voor je boekt.</p>',
+                    'intro' => '<p>Een DJ leeft van z\'n sets. Speel ze hier af — of download ze — en proef de sfeer voor je boekt.</p>',
                     'items' => [
-                        ['title' => 'Reggaeton Heat', 'platform' => 'soundcloud', 'subtitle' => 'Reggaeton & latin house · 62 min', 'url' => 'https://soundcloud.com', 'cover' => $this->img('1544986581-efac024faf62', 800)],
-                        ['title' => 'Beach Club Sunset', 'platform' => 'mixcloud', 'subtitle' => 'Latin house · 58 min', 'url' => 'https://mixcloud.com', 'cover' => $this->img('1524368535928-5b5e00ddc76b', 800)],
-                        ['title' => 'Urban Night Vol. 3', 'platform' => 'spotify', 'subtitle' => 'Urban & afrobeats · 45 min', 'url' => 'https://spotify.com', 'cover' => $this->img('1518972559570-7cc1309f3229', 800)],
+                        ['title' => 'Latin Vibes', 'subtitle' => 'Reggaeton & latin house', 'audio' => 'https://www.el-pablo.com/wp-content/uploads/2025/05/Latin-Vibes.mp3', 'cover' => $this->img('1544986581-efac024faf62', 800), 'allow_download' => true],
+                        ['title' => 'Live set @ Mokta Mee', 'subtitle' => 'Urban & latin · live opname', 'audio' => 'https://www.el-pablo.com/wp-content/uploads/2025/05/Live-set-Mokta-Mee.mp3', 'cover' => $this->img('1524368535928-5b5e00ddc76b', 800), 'allow_download' => true],
                     ],
                     'ctas' => [
                         ['label' => 'Bekijk alle sets', 'variant' => 'secondary', 'link_type' => 'url', 'href' => '/muziek'],

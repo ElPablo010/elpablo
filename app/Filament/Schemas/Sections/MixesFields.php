@@ -3,15 +3,16 @@
 namespace App\Filament\Schemas\Sections;
 
 use App\Filament\Schemas\Components\MediaPickerField;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 
 /**
- * Mixes — muziek/sets van de DJ. Elke mix is een cover met titel, platform en een
- * link naar de set (SoundCloud/Mixcloud/Spotify/YouTube). Bewijs van kunnen: een
- * DJ leeft van z'n sets.
+ * Mixes — muziek/sets van de DJ, met een inline audiospeler (afspelen op de site)
+ * en een optionele download-knop. Zelf-gehoste mp3's, geen platform-embeds: de
+ * bezoeker speelt en downloadt zonder de site te verlaten.
  */
 class MixesFields
 {
@@ -34,28 +35,28 @@ class MixesFields
                                 ->label('Titel')
                                 ->required()
                                 ->maxLength(160),
-                            // Platforms alfabetisch (UX-conventie).
-                            Select::make('platform')
-                                ->label('Platform')
-                                ->options([
-                                    'mixcloud' => 'Mixcloud',
-                                    'soundcloud' => 'SoundCloud',
-                                    'spotify' => 'Spotify',
-                                    'youtube' => 'YouTube',
-                                ])
-                                ->default('soundcloud')
-                                ->required(),
+                            TextInput::make('subtitle')
+                                ->label('Ondertitel (optioneel)')
+                                ->placeholder('bv. Reggaeton & Latin House · 60 min')
+                                ->maxLength(160),
                         ]),
-                    TextInput::make('subtitle')
-                        ->label('Ondertitel (optioneel)')
-                        ->placeholder('bv. Reggaeton & Latin House · 60 min')
-                        ->maxLength(160),
-                    TextInput::make('url')
-                        ->label('Link naar de set')
-                        ->url()
-                        ->required()
-                        ->placeholder('https://soundcloud.com/...'),
+
+                    FileUpload::make('audio')
+                        ->label('Audiobestand (mp3)')
+                        ->helperText('Upload de set als mp3. Bezoekers spelen ze rechtstreeks op de site af.')
+                        ->disk('public')
+                        ->directory('website-audio')
+                        ->acceptedFileTypes(['audio/mpeg', 'audio/mp3'])
+                        ->maxSize(102400)
+                        ->downloadable()
+                        ->required(),
+
                     MediaPickerField::make('cover', 'Cover-afbeelding', required: false),
+
+                    Toggle::make('allow_download')
+                        ->label('Download toestaan')
+                        ->helperText('Toont een download-knop naast de speler.')
+                        ->default(true),
                 ])
                 ->columns(1)
                 ->defaultItems(0)

@@ -1,21 +1,25 @@
 @props(['section' => null, 'content' => []])
 
 @php
+    use Illuminate\Support\Facades\Storage;
+
     $bg = \App\Filament\Schemas\Sections\SectionBackground::classes($content['background'] ?? null);
     $items = $content['items'] ?? [];
-
-    $platformLabels = [
-        'mixcloud' => 'Mixcloud',
-        'soundcloud' => 'SoundCloud',
-        'spotify' => 'Spotify',
-        'youtube' => 'YouTube',
-    ];
 
     $ctas = $content['ctas'] ?? [];
     $btnClass = fn (?string $v) => match ($v) {
         'primary' => 'btn-primary',
         'ghost' => 'btn-ghost',
         default => 'btn-secondary',
+    };
+
+    // Resolve de audio-URL: absolute URL (bv. geseede demo) of pad op de public disk.
+    $audioUrl = function (?string $audio): ?string {
+        if (blank($audio)) {
+            return null;
+        }
+
+        return str_starts_with($audio, 'http') ? $audio : Storage::disk('public')->url($audio);
     };
 @endphp
 
@@ -29,14 +33,28 @@
         />
 
         <div class="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            @foreach ($items as $item)
-                <a
-                    href="{{ $item['url'] ?? '#' }}"
-                    target="_blank"
-                    rel="noopener"
-                    class="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-ink-900 transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 hover:shadow-xl hover:shadow-primary-600/10"
+            @foreach ($items as $i => $item)
+                @php $src = $audioUrl($item['audio'] ?? null); @endphp
+                <div
+                    x-data="{
+                        playing: false,
+                        progress: 0,
+                        current: '0:00',
+                        duration: '0:00',
+                        toggle() { const a = this.$refs.audio; a.paused ? a.play() : a.pause(); },
+                        fmt(s) { if (!s || isNaN(s)) return '0:00'; const m = Math.floor(s/60); const sec = Math.floor(s%60).toString().padStart(2,'0'); return m+':'+sec; },
+                        seek(e) { const a = this.$refs.audio; if (!a.duration) return; const r = e.currentTarget.getBoundingClientRect(); a.currentTime = ((e.clientX - r.left)/r.width) * a.duration; },
+                    }"
+                    @mix-play.window="if ($event.detail !== {{ $i }} && ! $refs.audio.paused) $refs.audio.pause()"
+                    class="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-ink-900"
                 >
-                    <div class="relative aspect-square overflow-hidden bg-ink-800">
+                    {{-- Cover + play/pause-overlay --}}
+                    <button
+                        type="button"
+                        @click="toggle()"
+                        class="group relative block aspect-square w-full cursor-pointer overflow-hidden bg-ink-800"
+                        :aria-label="playing ? 'Pauzeer' : 'Speel af'"
+                    >
                         @if (! empty($item['cover']))
                             <picture>
                                 <source srcset="{{ $item['cover'] }}" type="image/webp">
@@ -44,29 +62,70 @@
                                      class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
                             </picture>
                         @endif
-                        <div class="absolute inset-0 bg-gradient-to-t from-ink-950/90 via-transparent to-transparent"></div>
-
-                        {{-- Play-knop --}}
+                        <div class="absolute inset-0 bg-gradient-to-t from-ink-950/80 via-transparent to-transparent"></div>
                         <span class="absolute inset-0 flex items-center justify-center">
                             <span class="flex h-16 w-16 items-center justify-center rounded-full bg-primary-600 text-white shadow-lg shadow-primary-600/40 transition-transform duration-300 group-hover:scale-110">
-                                <x-lucide-play class="h-6 w-6 translate-x-0.5 fill-current" />
+                                <x-lucide-play x-show="! playing" class="h-6 w-6 translate-x-0.5 fill-current" />
+                                <x-lucide-pause x-show="playing" x-cloak class="h-6 w-6 fill-current" />
                             </span>
                         </span>
+                    </button>
 
-                        @if (! empty($item['platform']))
-                            <span class="absolute left-4 top-4 rounded-full bg-black/50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white backdrop-blur">
-                                {{ $platformLabels[$item['platform']] ?? $item['platform'] }}
-                            </span>
-                        @endif
-                    </div>
-
-                    <div class="p-6">
-                        <h3 class="text-lg font-bold text-white transition-colors group-hover:text-primary-400">{{ $item['title'] ?? '' }}</h3>
+                    {{-- Info + speler --}}
+                    <div class="flex flex-1 flex-col p-6">
+                        <h3 class="text-lg font-bold text-white">{{ $item['title'] ?? '' }}</h3>
                         @if (! empty($item['subtitle']))
                             <p class="mt-1 text-sm text-gray-400">{{ $item['subtitle'] }}</p>
                         @endif
+
+                        <audio
+                            x-ref="audio"
+                            src="{{ $src }}"
+                            preload="metadata"
+                            class="hidden"
+                            @play="playing = true; $dispatch('mix-play', {{ $i }})"
+                            @pause="playing = false"
+                            @ended="playing = false; progress = 0; current = '0:00'"
+                            @timeupdate="progress = $refs.audio.duration ? ($refs.audio.currentTime / $refs.audio.duration * 100) : 0; current = fmt($refs.audio.currentTime)"
+                            @loadedmetadata="duration = fmt($refs.audio.duration)"
+                        ></audio>
+
+                        {{-- Voortgangsbalk (klik om te spoelen) --}}
+                        <div class="mt-4">
+                            <div @click="seek($event)" class="group h-1.5 w-full cursor-pointer rounded-full bg-white/10">
+                                <div class="h-full rounded-full bg-primary-500" style="width: 0%" :style="`width: ${progress}%`"></div>
+                            </div>
+                            <div class="mt-2 flex items-center justify-between text-xs text-gray-500">
+                                <span x-text="current">0:00</span>
+                                <span x-text="duration">0:00</span>
+                            </div>
+                        </div>
+
+                        {{-- Bediening --}}
+                        <div class="mt-4 flex items-center gap-3">
+                            <button
+                                type="button"
+                                @click="toggle()"
+                                class="flex cursor-pointer items-center gap-2 rounded-full bg-white/5 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                            >
+                                <x-lucide-play x-show="! playing" class="h-4 w-4 fill-current" />
+                                <x-lucide-pause x-show="playing" x-cloak class="h-4 w-4 fill-current" />
+                                <span x-text="playing ? 'Pauze' : 'Afspelen'">Afspelen</span>
+                            </button>
+
+                            @if (($item['allow_download'] ?? true) && $src)
+                                <a
+                                    href="{{ $src }}"
+                                    download
+                                    class="ml-auto flex items-center gap-1.5 text-sm font-medium text-gray-400 transition-colors hover:text-primary-400"
+                                >
+                                    <x-lucide-download class="h-4 w-4" />
+                                    Download
+                                </a>
+                            @endif
+                        </div>
                     </div>
-                </a>
+                </div>
             @endforeach
         </div>
 
