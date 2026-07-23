@@ -10,6 +10,8 @@
     'type' => 'website',
     'schema' => [],
     'page' => null,
+    'locale' => null,
+    'alternates' => [],
 ])
 
 @php
@@ -40,6 +42,8 @@
         :image-height="$imageHeight"
         :type="$type"
         :graph="$graph"
+        :locale="$locale ?? app()->getLocale()"
+        :alternates="$alternates"
     />
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])

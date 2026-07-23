@@ -96,7 +96,7 @@
                     @if (! empty($contact['address']))
                         <li class="flex items-start gap-3">
                             <x-lucide-map-pin class="mt-0.5 h-4 w-4 shrink-0 text-primary-500" />
-                            <span class="text-gray-400">{{ $contact['address'] }}</span>
+                            <span class="text-gray-400">{{ __($contact['address']) }}</span>
                         </li>
                     @endif
                 </ul>

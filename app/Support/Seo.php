@@ -25,6 +25,22 @@ class Seo
 
     public const TIMEZONE = 'Europe/Brussels';
 
+    /** Open Graph-locale per taal. */
+    public const OG_LOCALES = ['nl' => 'nl_BE', 'en' => 'en_US', 'es' => 'es_ES'];
+
+    /** BCP-47 taalcode per taal (voor <html lang> en JSON-LD inLanguage). */
+    public const HTML_LANGS = ['nl' => 'nl-BE', 'en' => 'en', 'es' => 'es'];
+
+    public static function ogLocale(?string $locale): string
+    {
+        return self::OG_LOCALES[$locale] ?? self::LOCALE;
+    }
+
+    public static function htmlLang(?string $locale): string
+    {
+        return self::HTML_LANGS[$locale] ?? 'nl-BE';
+    }
+
     /** Standaard deel-afbeelding wanneer een pagina er zelf geen heeft. */
     public const DEFAULT_IMAGE = null;
 
@@ -68,9 +84,11 @@ class Seo
      */
     public static function fromPage(Page $page): array
     {
+        $locale = $page->locale ?? Locale::DEFAULT;
+
         $canonical = filled($page->canonical_url)
             ? $page->canonical_url
-            : self::absoluteUrl($page->is_homepage ? '/' : '/'.$page->slug);
+            : self::absoluteUrl(self::localizedPath($page, $locale));
 
         $title = filled($page->meta_title) ? $page->meta_title : $page->title;
         $description = filled($page->meta_description) ? $page->meta_description : self::defaultDescription();
@@ -86,7 +104,7 @@ class Seo
             'name' => $title,
             'description' => $description,
             'isPartOf' => ['@id' => self::baseUrl().'/#website'],
-            'inLanguage' => 'nl-BE',
+            'inLanguage' => self::htmlLang($locale),
             'primaryImageOfPage' => $image
                 ? ['@type' => 'ImageObject', 'url' => self::absoluteUrl($image)]
                 : null,
@@ -102,8 +120,45 @@ class Seo
             'imageWidth' => $width,
             'imageHeight' => $height,
             'type' => 'website',
+            'locale' => $locale,
+            'alternates' => self::alternates($page),
             'schema' => array_values(array_filter([$node, $faqNode])),
         ];
+    }
+
+    /**
+     * Root-relatief pad van een pagina in een bepaalde taal (met locale-prefix
+     * voor EN/ES). Homepage = '/'.
+     */
+    public static function localizedPath(Page $page, ?string $locale = null): string
+    {
+        $locale ??= $page->locale ?? Locale::DEFAULT;
+        $path = $page->is_homepage ? '/' : '/'.$page->slug;
+
+        return Locale::href($path, $locale);
+    }
+
+    /**
+     * hreflang-alternates voor een pagina: absolute URL per taal waarin een
+     * publieke variant met dezelfde slug bestaat. Voedt zowel de <head>-hreflang
+     * als de sitemap.
+     *
+     * @return array<string, string> locale => absolute URL
+     */
+    public static function alternates(Page $page): array
+    {
+        $locales = Page::query()
+            ->where('slug', $page->slug)
+            ->where(fn ($q) => $q->where('published', true)->orWhere('is_homepage', true))
+            ->pluck('locale')
+            ->all();
+
+        $result = [];
+        foreach ($locales as $locale) {
+            $result[$locale] = self::absoluteUrl(self::localizedPath($page, $locale));
+        }
+
+        return $result;
     }
 
     /**

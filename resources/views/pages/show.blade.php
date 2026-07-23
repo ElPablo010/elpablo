@@ -9,6 +9,8 @@
     :image-height="$seo['imageHeight']"
     :type="$seo['type']"
     :schema="$seo['schema']"
+    :locale="$seo['locale']"
+    :alternates="$seo['alternates']"
     :page="$page"
 >
     @php

@@ -61,15 +61,16 @@ Inter). Pagina's: Home, Over, Muziek (inline audiospelers + download), Boeken
 ### Nog te doen
 - [ ] **Echte content**: placeholder-foto's (Unsplash) en de demo-mp3's (2 sets
       herhaald) vervangen via de media-library / het `mixes`-blok.
-- [ ] **Footer-settings per taal** — adres/tagline komen uit `settings` (één
-      waarde); tagline is via `__()` vertaald, adres ("Antwerpen, België") niet.
 - [ ] Content migreren van de bestaande el-pablo.com.
-- [ ] (SEO-refinement) `hreflang`-alternates + per-locale `og:locale` in de
-      `<head>`; sitemap uitbreiden met de EN/ES-URL's.
 - [x] Lettertype gekozen (Anton + Inter).
 - [x] Juridische pagina's geseed (cookiebeleid + privacybeleid).
 - [x] `MAIL_FROM_ADDRESS` = info@el-pablo.com.
 - [x] EN/ES-content vertaald (pagina's + chrome + cookiebanner + formulieren).
+- [x] Footer-adres per taal (`__()`); tagline al eerder vertaald.
+- [x] SEO-finish: locale-bewuste canonical, `hreflang`-alternates (+ x-default)
+      en `og:locale` (+ alternates) in de `<head>` (`Seo::alternates()` /
+      `meta.blade`); sitemap met alle NL/EN/ES-URL's + `xhtml:link`-hreflang,
+      noindex-pagina's uitgesloten.
 
 ## Lokaal draaien
 

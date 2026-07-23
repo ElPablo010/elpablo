@@ -19,20 +19,29 @@ class SeoController extends Controller
 {
     public function sitemap(): Response
     {
-        $urls = [];
-
-        // Pagina's: homepage altijd mee (ongeacht published-vlag, net als de
-        // publieke router), plus alle gepubliceerde NL-pagina's.
+        // Alle publieke pagina's over álle talen (homepage altijd mee). Per pagina
+        // voegen we de hreflang-alternates toe zodat zoekmachines de taalversies
+        // koppelen i.p.v. ze als duplicaten te zien.
         $pages = Page::query()
-            ->where('locale', 'nl')
             ->where(fn ($q) => $q->where('published', true)->orWhere('is_homepage', true))
+            ->where(fn ($q) => $q->whereNull('meta_robots')->orWhere('meta_robots', 'not like', '%noindex%'))
             ->get();
 
+        $urls = [];
+
         foreach ($pages as $page) {
+            $alternates = Seo::alternates($page);
+
+            // x-default wijst naar de hoofdtaal (NL).
+            if (isset($alternates['nl'])) {
+                $alternates['x-default'] = $alternates['nl'];
+            }
+
             $urls[] = [
-                'loc' => Seo::absoluteUrl($page->is_homepage ? '/' : '/'.$page->slug),
+                'loc' => Seo::absoluteUrl(Seo::localizedPath($page)),
                 'lastmod' => $page->updated_at,
                 'priority' => $page->is_homepage ? '1.0' : ($page->is_cornerstone ? '0.8' : '0.6'),
+                'alternates' => $alternates,
             ];
         }
 
@@ -81,6 +90,7 @@ class SeoController extends Controller
         $pages = Page::query()
             ->where('locale', 'nl')
             ->where(fn ($q) => $q->where('published', true)->orWhere('is_homepage', true))
+            ->where(fn ($q) => $q->whereNull('meta_robots')->orWhere('meta_robots', 'not like', '%noindex%'))
             ->orderByDesc('is_homepage')
             ->orderByDesc('is_cornerstone')
             ->get();

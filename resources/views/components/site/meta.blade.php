@@ -9,6 +9,8 @@
     'imageHeight' => null,
     'type' => 'website',
     'graph' => [],
+    'locale' => null,
+    'alternates' => [],
 ])
 
 @php
@@ -24,10 +26,23 @@
     <link rel="canonical" href="{{ $canonical }}">
 @endif
 
+{{-- hreflang-alternates: vertelt zoekmachines welke taalversies bestaan. --}}
+@foreach ($alternates as $altLocale => $altUrl)
+    <link rel="alternate" hreflang="{{ $altLocale }}" href="{{ $altUrl }}">
+@endforeach
+@if (! empty($alternates['nl']))
+    <link rel="alternate" hreflang="x-default" href="{{ $alternates['nl'] }}">
+@endif
+
 {{-- Open Graph (Facebook, LinkedIn, WhatsApp, …) --}}
 <meta property="og:type" content="{{ $type }}">
 <meta property="og:site_name" content="{{ \App\Support\Seo::siteName() }}">
-<meta property="og:locale" content="{{ \App\Support\Seo::LOCALE }}">
+<meta property="og:locale" content="{{ \App\Support\Seo::ogLocale($locale) }}">
+@foreach ($alternates as $altLocale => $altUrl)
+    @if ($altLocale !== $locale)
+        <meta property="og:locale:alternate" content="{{ \App\Support\Seo::ogLocale($altLocale) }}">
+    @endif
+@endforeach
 <meta property="og:title" content="{{ $title }}">
 <meta property="og:description" content="{{ $description }}">
 @if ($canonical)
