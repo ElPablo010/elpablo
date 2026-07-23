@@ -113,10 +113,10 @@
                 <x-lucide-cookie class="h-4.5 w-4.5" />
             </span>
             <div>
-                <div class="font-semibold text-white">Wij respecteren jouw privacy</div>
+                <div class="font-semibold text-white">{{ __('Wij respecteren jouw privacy') }}</div>
                 <p class="mt-1 text-sm text-gray-400">
-                    We gebruiken cookies om onze site goed te laten werken en, met jouw toestemming, om bezoekersstatistieken
-                    te verzamelen. Lees ons <a href="/cookiebeleid" class="text-primary-400 hover:underline">cookiebeleid</a> voor meer info.
+                    {{ __('We gebruiken cookies om onze site goed te laten werken en, met jouw toestemming, om bezoekersstatistieken te verzamelen. Lees ons') }}
+                    <a href="{{ \App\Support\Locale::href('/cookiebeleid') }}" class="text-primary-400 hover:underline">{{ __('cookiebeleid') }}</a> {{ __('voor meer info.') }}
                 </p>
             </div>
         </div>
@@ -130,16 +130,16 @@
         >
             <div class="flex items-center justify-between gap-4">
                 <div>
-                    <div class="text-sm font-medium text-gray-200">Functionele cookies</div>
-                    <div class="text-xs text-gray-500">Noodzakelijk voor de werking van de website</div>
+                    <div class="text-sm font-medium text-gray-200">{{ __('Functionele cookies') }}</div>
+                    <div class="text-xs text-gray-500">{{ __('Noodzakelijk voor de werking van de website') }}</div>
                 </div>
-                <span class="text-xs font-medium text-gray-500">Altijd actief</span>
+                <span class="text-xs font-medium text-gray-500">{{ __('Altijd actief') }}</span>
             </div>
             @foreach ([['analytics', 'Analytische cookies', 'Helpen ons begrijpen hoe bezoekers de site gebruiken'], ['marketing', 'Marketing cookies', 'Worden gebruikt om gepersonaliseerde advertenties te tonen']] as [$key, $label, $description])
                 <div class="flex items-center justify-between gap-4">
                     <div>
-                        <div class="text-sm font-medium text-gray-200">{{ $label }}</div>
-                        <div class="text-xs text-gray-500">{{ $description }}</div>
+                        <div class="text-sm font-medium text-gray-200">{{ __($label) }}</div>
+                        <div class="text-xs text-gray-500">{{ __($description) }}</div>
                     </div>
                     <button
                         type="button"
@@ -163,18 +163,18 @@
             >
                 <x-lucide-chevron-up x-show="detailed" class="h-4 w-4" />
                 <x-lucide-chevron-down x-show="! detailed" class="h-4 w-4" />
-                <span x-text="detailed ? 'Minder' : 'Voorkeuren aanpassen'"></span>
+                <span x-text="detailed ? @js(__('Minder')) : @js(__('Voorkeuren aanpassen'))"></span>
             </button>
 
             <div class="flex flex-wrap gap-2">
                 <button x-show="detailed" type="button" @click="savePreferences()" class="cursor-pointer rounded-lg border border-white/15 px-4 py-2 text-sm font-medium text-gray-200 transition-colors hover:bg-white/5">
-                    Voorkeuren opslaan
+                    {{ __('Voorkeuren opslaan') }}
                 </button>
                 <button type="button" @click="rejectAll()" class="cursor-pointer rounded-lg border border-white/15 px-4 py-2 text-sm font-medium text-gray-200 transition-colors hover:bg-white/5">
-                    Weigeren
+                    {{ __('Weigeren') }}
                 </button>
                 <button type="button" @click="acceptAll()" class="cursor-pointer rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-500">
-                    Accepteren
+                    {{ __('Accepteren') }}
                 </button>
             </div>
         </div>

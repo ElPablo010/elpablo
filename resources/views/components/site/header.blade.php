@@ -52,7 +52,7 @@
                                 @if ($item->target_blank) target="_blank" rel="noopener" @endif
                                 class="group relative text-sm font-medium uppercase tracking-wide text-gray-200 transition-colors hover:text-white"
                             >
-                                {{ $item->label }}
+                                {{ __($item->label) }}
                                 <span class="absolute -bottom-1.5 left-0 h-0.5 w-0 bg-primary-500 transition-all duration-300 group-hover:w-full"></span>
                             </a>
                         @endforeach
@@ -88,7 +88,7 @@
                     </div>
 
                     @if (! empty($cta['label']))
-                        <a href="{{ Locale::href($cta['href'] ?? '/') }}" class="btn-primary hidden py-2.5 sm:inline-flex">{{ $cta['label'] }}</a>
+                        <a href="{{ Locale::href($cta['href'] ?? '/') }}" class="btn-primary hidden py-2.5 sm:inline-flex">{{ __($cta['label']) }}</a>
                     @endif
 
                     <button
@@ -119,7 +119,7 @@
                                 href="{{ Locale::href($item->resolvedHref()) }}"
                                 @if ($item->target_blank) target="_blank" rel="noopener" @endif
                                 class="rounded-lg px-3 py-3 text-base font-medium uppercase tracking-wide text-gray-200 transition-colors hover:bg-white/5 hover:text-white"
-                            >{{ $item->label }}</a>
+                            >{{ __($item->label) }}</a>
                         @endforeach
                     </nav>
                 @endif
@@ -134,7 +134,7 @@
                         @endforeach
                     </div>
                     @if (! empty($cta['label']))
-                        <a href="{{ Locale::href($cta['href'] ?? '/') }}" class="btn-primary py-2.5">{{ $cta['label'] }}</a>
+                        <a href="{{ Locale::href($cta['href'] ?? '/') }}" class="btn-primary py-2.5">{{ __($cta['label']) }}</a>
                     @endif
                 </div>
             </div>

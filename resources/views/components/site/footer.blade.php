@@ -34,7 +34,7 @@
                     @endif
                 </a>
                 @if (! empty($brand['tagline']))
-                    <p class="mt-4 max-w-xs text-sm leading-relaxed text-gray-400">{{ $brand['tagline'] }}</p>
+                    <p class="mt-4 max-w-xs text-sm leading-relaxed text-gray-400">{{ __($brand['tagline']) }}</p>
                 @endif
 
                 @if (! empty($social))
@@ -60,7 +60,7 @@
                 @if ($fm && $fm->items->isNotEmpty())
                     <div>
                         @if (! empty($fm->title))
-                            <div class="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-white">{{ $fm->title }}</div>
+                            <div class="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-white">{{ __($fm->title) }}</div>
                         @endif
                         <ul class="space-y-3 text-sm">
                             @foreach ($fm->items as $item)
@@ -69,7 +69,7 @@
                                         href="{{ Locale::href($item->resolvedHref()) }}"
                                         @if ($item->target_blank) target="_blank" rel="noopener" @endif
                                         class="text-gray-400 transition-colors hover:text-primary-400"
-                                    >{{ $item->label }}</a>
+                                    >{{ __($item->label) }}</a>
                                 </li>
                             @endforeach
                         </ul>
@@ -79,7 +79,7 @@
 
             {{-- Contactblok --}}
             <div>
-                <div class="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-white">Contact</div>
+                <div class="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-white">{{ __('Contact') }}</div>
                 <ul class="space-y-3 text-sm">
                     @if (! empty($contact['phone']))
                         <li class="flex items-center gap-3">
@@ -106,12 +106,12 @@
 
     <div class="relative border-t border-white/10">
         <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-6 text-xs text-gray-500 sm:flex-row lg:px-6">
-            <span>© {{ now()->year }} {{ $brand['name'] ?? config('app.name') }}. Alle rechten voorbehouden.</span>
+            <span>© {{ now()->year }} {{ $brand['name'] ?? config('app.name') }}. {{ __('Alle rechten voorbehouden.') }}</span>
             <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
                 @php $legal = $footerMenus->get('footer_3'); @endphp
                 @if ($legal && $legal->items->isNotEmpty())
                     @foreach ($legal->items as $item)
-                        <a href="{{ Locale::href($item->resolvedHref()) }}" class="transition-colors hover:text-gray-300">{{ $item->label }}</a>
+                        <a href="{{ Locale::href($item->resolvedHref()) }}" class="transition-colors hover:text-gray-300">{{ __($item->label) }}</a>
                     @endforeach
                 @endif
                 {{-- Heropent de cookiebanner; verplicht zodat een bezoeker z'n keuze kan herzien. --}}
@@ -119,7 +119,7 @@
                     type="button"
                     onclick="window.dispatchEvent(new CustomEvent('open-cookie-preferences'))"
                     class="cursor-pointer transition-colors hover:text-gray-300"
-                >Cookie-instellingen</button>
+                >{{ __('Cookie-instellingen') }}</button>
             </div>
         </div>
     </div>

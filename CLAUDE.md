@@ -41,25 +41,33 @@ Design volledig uitgewerkt met `design-website` (dark urban nightlife, Anton +
 Inter). Pagina's: Home, Over, Muziek (inline audiospelers + download), Boeken
 (apart boekingsformulier), Contact, + juridisch (Cookiebeleid, Privacybeleid).
 
-**Meertalig (NL/EN/ES)** is opgezet:
+**Meertalig (NL/EN/ES)** is volledig opgezet én vertaald:
 - NL draait op de root; EN/ES onder `/en` en `/es` (zie `routes/web.php` +
   `PublicPageController` + `App\Support\Locale`).
 - Pagina's delen dezelfde slug per taal (`unique(['locale','slug'])`); interne
   links worden gelokaliseerd via `Locale::href()`.
-- De seeder dupliceert elke NL-pagina naar EN/ES met **placeholder-inhoud (NL)**
-  en `translation_of` gezet.
+- **Pagina-content** (koppen, teksten, FAQ, reviews, legal) is vertaald via een
+  vertaalmap in `HomepageSeeder` (`contentTranslations()`): NL blijft de bron, de
+  EN/ES-secties krijgen de vertaalde waarden. Legal-bodies via `cookieBody()`/
+  `privacyBody()` per taal.
+- **UI-chrome** (nav-labels, footer, cookiebanner, knoppen) via Laravel
+  `lang/en.json` + `lang/es.json` met `__()`.
 
 ### Nog te doen
-- [ ] **EN/ES-content effectief vertalen via AI** — de shells staan klaar met
-      NL-placeholder; enkel de teksten per sectie moeten nog vertaald worden.
+- [ ] **Contact- en boekingsformulier vertalen** — de veldlabels + Livewire-
+      validatieberichten staan nog in NL. Vereist Livewire-locale-persistentie
+      (locale bewaren + `setLocale()` bij re-render), daarom bewust apart gehouden.
 - [ ] **Echte content**: placeholder-foto's (Unsplash) en de demo-mp3's (2 sets
       herhaald) vervangen via de media-library / het `mixes`-blok.
+- [ ] **Footer-settings per taal** — adres/tagline komen uit `settings` (één
+      waarde); tagline is via `__()` vertaald, adres ("Antwerpen, België") niet.
 - [ ] Content migreren van de bestaande el-pablo.com.
 - [ ] (SEO-refinement) `hreflang`-alternates + per-locale `og:locale` in de
       `<head>`; sitemap uitbreiden met de EN/ES-URL's.
 - [x] Lettertype gekozen (Anton + Inter).
 - [x] Juridische pagina's geseed (cookiebeleid + privacybeleid).
 - [x] `MAIL_FROM_ADDRESS` = info@el-pablo.com.
+- [x] EN/ES-content vertaald (pagina's + chrome + cookiebanner).
 
 ## Lokaal draaien
 
