@@ -30,8 +30,8 @@ class HomepageSeeder extends Seeder
     public function run(): void
     {
         $home = $this->seedHomepage();
-        $over = $this->seedSimplePage('over', 'Over El Pablo', 'Wie is El Pablo', 'De DJ achter de decks', $this->img('1516450360452-9312f5e86fc7', 2000));
-        $muziek = $this->seedSimplePage('muziek', 'Muziek', 'Sets & mixes', 'Beluister m\'n muziek', $this->img('1470225620780-dba8ba36b745', 2000));
+        $over = $this->seedOverPage();
+        $muziek = $this->seedMuziekPage();
         $boeken = $this->seedBookingPage();
         $contact = $this->seedContactPage();
 
@@ -333,48 +333,169 @@ class HomepageSeeder extends Seeder
     }
 
     /**
-     * Een eenvoudige kaderpagina (hero + afsluitende CTA) zodat de navigatie werkt.
-     * De echte inhoud werken we per pagina later uit.
+     * Over-pagina — bio, stijl en sfeer. Bouwt vertrouwen op vóór de boeking.
      */
-    private function seedSimplePage(string $slug, string $title, string $eyebrow, string $heading, string $heroImage): Page
+    private function seedOverPage(): Page
     {
         $page = Page::updateOrCreate(
-            ['locale' => 'nl', 'slug' => $slug],
+            ['locale' => 'nl', 'slug' => 'over'],
             [
-                'title' => $title,
+                'title' => 'Over El Pablo',
                 'is_homepage' => false,
                 'published' => true,
-                'meta_title' => $title.' — El Pablo',
-                'meta_description' => $heading.'. El Pablo, urban latin DJ uit Antwerpen.',
+                'meta_title' => 'Over El Pablo — Urban Latin DJ uit Antwerpen',
+                'meta_description' => 'Maak kennis met El Pablo, urban latin DJ uit Antwerpen. Meer dan tien jaar dansvloeren vullen met reggaeton, latin house en urban beats.',
             ],
         );
 
         $page->sections()->delete();
 
-        $page->sections()->create([
-            'section_type' => 'hero',
-            'position' => 0,
-            'content' => [
-                'eyebrow' => $eyebrow,
-                'heading' => $heading,
-                'subtitle' => '<p>Deze pagina wordt later verder uitgewerkt. Alle inhoud is bewerkbaar via de website-builder in /admin.</p>',
-                'image' => ['src' => $heroImage, 'alt' => $heading, 'position' => 'center 50%'],
-                'ctas' => [
-                    ['label' => 'Boek El Pablo', 'variant' => 'primary', 'link_type' => 'url', 'href' => '/boeken'],
+        $sections = [
+            [
+                'section_type' => 'hero',
+                'content' => [
+                    'eyebrow' => 'Over El Pablo',
+                    'heading' => 'De DJ achter de decks',
+                    'subtitle' => '<p>Antwerpse roots, latin ritmes in het bloed. Dit is het verhaal achter de sets.</p>',
+                    'image' => ['src' => $this->img('1516450360452-9312f5e86fc7', 2000), 'alt' => 'El Pablo aan de mengtafel', 'position' => 'center 50%'],
+                    'ctas' => [['label' => 'Boek El Pablo', 'variant' => 'primary', 'link_type' => 'url', 'href' => '/boeken']],
                 ],
             ],
-        ]);
-
-        $page->sections()->create([
-            'section_type' => 'cta',
-            'position' => 1,
-            'content' => [
-                'background' => 'primary',
-                'heading' => 'Zin in een onvergetelijke nacht?',
-                'intro' => '<p>Vraag vrijblijvend je datum aan.</p>',
-                'ctas' => [['label' => 'Boek El Pablo', 'variant' => 'primary', 'link_type' => 'url', 'href' => '/boeken']],
+            [
+                'section_type' => 'text_media',
+                'content' => [
+                    'background' => 'white',
+                    'eyebrow' => 'Het verhaal',
+                    'heading' => 'Geboren om de dansvloer te vullen',
+                    'intro' => '<p>El Pablo groeide op in Antwerpen, waar latin en urban muziek al vroeg een tweede taal werden. Wat begon als draaien voor vrienden, groeide uit tot een vaste waarde in clubs en op feesten door heel Vlaanderen.</p><p>Meer dan tien jaar later is de missie nog altijd dezelfde: iederéén op de dansvloer krijgen — en daar houden tot de lichten aangaan.</p>',
+                    'media_type' => 'image',
+                    'media_side' => 'right',
+                    'media' => ['src' => $this->img('1429962714451-bb934ecdc4ec', 1400), 'alt' => 'El Pablo in de DJ-booth'],
+                ],
             ],
-        ]);
+            [
+                'section_type' => 'cards',
+                'content' => [
+                    'background' => 'light',
+                    'eyebrow' => 'Mijn stijl',
+                    'heading' => 'Waar ik voor sta',
+                    'intro' => '<p>Geen vaste playlist, wel een duidelijke signatuur.</p>',
+                    'columns' => '4',
+                    'cards' => [
+                        ['title' => 'Latin & reggaeton', 'media_type' => 'icon', 'icon' => 'music', 'description' => 'Van klassieke salsa-vibes tot de nieuwste reggaeton-hits.'],
+                        ['title' => 'Urban & afrobeats', 'media_type' => 'icon', 'icon' => 'headphones', 'description' => 'Strakke urban beats en afrobeats die de energie hoog houden.'],
+                        ['title' => 'Ik lees de dansvloer', 'media_type' => 'icon', 'icon' => 'radio', 'description' => 'Het juiste nummer op het juiste moment — live aangevoeld.'],
+                        ['title' => 'Voor iedereen', 'media_type' => 'icon', 'icon' => 'users', 'description' => 'Inclusief en vrouwvriendelijk: iedereen voelt zich welkom.'],
+                    ],
+                ],
+            ],
+            [
+                'section_type' => 'gallery',
+                'content' => [
+                    'background' => 'white',
+                    'eyebrow' => 'Sfeer',
+                    'heading' => 'Momenten van de dansvloer',
+                    'columns' => '3',
+                    'items' => [
+                        ['image' => $this->img('1470229722913-7c0e2dbbafd3', 900), 'alt' => 'Volle dansvloer'],
+                        ['image' => $this->img('1493225457124-a3eb161ffa5f', 900), 'alt' => 'Handen in de lucht'],
+                        ['image' => $this->img('1459749411175-04bf5292ceea', 900), 'alt' => 'Podiumlichten'],
+                        ['image' => $this->img('1574391884720-bbc3740c59d1', 900), 'alt' => 'Draaitafel'],
+                        ['image' => $this->img('1506157786151-b8491531f063', 900), 'alt' => 'Koptelefoon op de mengtafel'],
+                        ['image' => $this->img('1524368535928-5b5e00ddc76b', 900), 'alt' => 'Clubsfeer'],
+                    ],
+                ],
+            ],
+            [
+                'section_type' => 'cta',
+                'content' => [
+                    'background' => 'primary',
+                    'heading' => 'Laat El Pablo jouw feest maken',
+                    'intro' => '<p>Vraag vrijblijvend je datum aan en check de beschikbaarheid.</p>',
+                    'ctas' => [['label' => 'Boek El Pablo', 'variant' => 'primary', 'link_type' => 'url', 'href' => '/boeken']],
+                ],
+            ],
+        ];
+
+        foreach ($sections as $position => $section) {
+            $page->sections()->create([
+                'section_type' => $section['section_type'],
+                'position' => $position,
+                'content' => $section['content'],
+            ]);
+        }
+
+        return $page;
+    }
+
+    /**
+     * Muziek-pagina — het volledige sets-overzicht, met dezelfde inline speler
+     * (afspelen + downloaden). De audiobestanden zijn placeholders (twee bestaande
+     * sets) — vervang ze per set via de admin.
+     */
+    private function seedMuziekPage(): Page
+    {
+        $page = Page::updateOrCreate(
+            ['locale' => 'nl', 'slug' => 'muziek'],
+            [
+                'title' => 'Muziek',
+                'is_homepage' => false,
+                'published' => true,
+                'meta_title' => 'Muziek & sets — El Pablo',
+                'meta_description' => 'Beluister en download de sets van El Pablo: reggaeton, latin house, urban en afrobeats. Urban latin DJ uit Antwerpen.',
+            ],
+        );
+
+        $page->sections()->delete();
+
+        $latin = 'https://www.el-pablo.com/wp-content/uploads/2025/05/Latin-Vibes.mp3';
+        $live = 'https://www.el-pablo.com/wp-content/uploads/2025/05/Live-set-Mokta-Mee.mp3';
+
+        $sections = [
+            [
+                'section_type' => 'hero',
+                'content' => [
+                    'eyebrow' => 'Muziek',
+                    'heading' => 'Sets & mixes',
+                    'subtitle' => '<p>Speel de sets hier af of download ze. Proef de sfeer van een El Pablo-avond.</p>',
+                    'image' => ['src' => $this->img('1470225620780-dba8ba36b745', 2000), 'alt' => 'El Pablo live', 'position' => 'center 50%'],
+                    'ctas' => [['label' => 'Boek El Pablo', 'variant' => 'primary', 'link_type' => 'url', 'href' => '/boeken']],
+                ],
+            ],
+            [
+                'section_type' => 'mixes',
+                'content' => [
+                    'background' => 'white',
+                    'eyebrow' => 'Alle sets',
+                    'heading' => 'Beluister m\'n muziek',
+                    'items' => [
+                        ['title' => 'Latin Vibes', 'subtitle' => 'Reggaeton & latin house', 'audio' => $latin, 'cover' => $this->img('1544986581-efac024faf62', 800), 'allow_download' => true],
+                        ['title' => 'Live set @ Mokta Mee', 'subtitle' => 'Urban & latin · live opname', 'audio' => $live, 'cover' => $this->img('1524368535928-5b5e00ddc76b', 800), 'allow_download' => true],
+                        ['title' => 'Reggaeton Heat', 'subtitle' => 'Reggaeton · 60 min', 'audio' => $latin, 'cover' => $this->img('1518972559570-7cc1309f3229', 800), 'allow_download' => true],
+                        ['title' => 'Beach Club Sunset', 'subtitle' => 'Latin house · zomerset', 'audio' => $live, 'cover' => $this->img('1533174072545-7a4b6ad7a6c3', 800), 'allow_download' => false],
+                        ['title' => 'Urban Night Vol. 3', 'subtitle' => 'Urban & afrobeats', 'audio' => $latin, 'cover' => $this->img('1470229722913-7c0e2dbbafd3', 800), 'allow_download' => true],
+                        ['title' => 'Carnaval Special', 'subtitle' => 'Feestset · latin', 'audio' => $live, 'cover' => $this->img('1492684223066-81342ee5ff30', 800), 'allow_download' => true],
+                    ],
+                ],
+            ],
+            [
+                'section_type' => 'cta',
+                'content' => [
+                    'background' => 'primary',
+                    'heading' => 'Deze vibe op jouw feest?',
+                    'intro' => '<p>Boek El Pablo en breng de dansvloer tot leven.</p>',
+                    'ctas' => [['label' => 'Boek El Pablo', 'variant' => 'primary', 'link_type' => 'url', 'href' => '/boeken']],
+                ],
+            ],
+        ];
+
+        foreach ($sections as $position => $section) {
+            $page->sections()->create([
+                'section_type' => $section['section_type'],
+                'position' => $position,
+                'content' => $section['content'],
+            ]);
+        }
 
         return $page;
     }
