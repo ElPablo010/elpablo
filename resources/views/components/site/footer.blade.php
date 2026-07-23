@@ -13,7 +13,7 @@
     $socialIcons = ['instagram' => 'lucide-instagram', 'facebook' => 'lucide-facebook', 'youtube' => 'lucide-youtube'];
 @endphp
 
-<footer class="relative mt-24 overflow-hidden border-t border-white/10 bg-ink-950 text-gray-400">
+<footer class="relative overflow-hidden border-t border-white/10 bg-ink-950 text-gray-400">
     {{-- Subtiele magenta gloed bovenaan --}}
     <div class="pointer-events-none absolute -top-32 left-1/2 h-64 w-[40rem] -translate-x-1/2 rounded-full bg-primary-600/10 blur-3xl"></div>
 
