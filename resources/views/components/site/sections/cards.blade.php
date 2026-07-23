@@ -55,7 +55,7 @@
                         @endif
 
                         @if (! empty($card['cta_label']))
-                            <a href="{{ $card['href'] ?? '/' }}" class="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-primary-500 transition-colors hover:text-primary-400">
+                            <a href="{{ \App\Support\Locale::href($card['href'] ?? '/') }}" class="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-primary-500 transition-colors hover:text-primary-400">
                                 {{ $card['cta_label'] }}
                                 <x-lucide-arrow-right class="h-4 w-4 transition-transform group-hover:translate-x-1" />
                             </a>

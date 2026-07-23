@@ -40,7 +40,7 @@
         @if (! empty($ctas))
             <div class="mt-9 flex flex-wrap justify-center gap-4">
                 @foreach ($ctas as $cta)
-                    <a href="{{ $cta['href'] ?? '/' }}" class="{{ $btnClass($cta['variant'] ?? 'primary') }}">
+                    <a href="{{ \App\Support\Locale::href($cta['href'] ?? '/') }}" class="{{ $btnClass($cta['variant'] ?? 'primary') }}">
                         {{ $cta['label'] ?? '' }}
                         <x-lucide-arrow-right class="h-4 w-4" />
                     </a>

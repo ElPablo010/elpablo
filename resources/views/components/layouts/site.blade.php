@@ -19,7 +19,7 @@
 @endphp
 
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -52,7 +52,7 @@
     @livewireStyles
 </head>
 <body class="min-h-screen bg-ink-950 font-sans text-gray-200 antialiased">
-    <x-site.header />
+    <x-site.header :page="$page" />
 
     <main>
         {{ $slot }}

@@ -35,17 +35,31 @@ De site is meertalig (NL/EN/ES). Pagina's dragen een `locale` en koppelen via
 `translation_of`. Bij het bouwen van de publieke frontend en menu's: houd rekening
 met een taalwissel en per-locale content. De hoofdtaal is NL.
 
-## Nog te doen (na scaffold)
+## Frontend & meertaligheid — stand van zaken
 
-- [ ] Publieke look & feel bouwen met de `design-website`-skill (homepage-voorbeeld
-      eerst voor akkoord). Vertrekpunt: DJ-merk — muziek/mixes, agenda/boekingen,
-      gallery, bookingsformulier.
-- [ ] Lettertype kiezen (past bij een Urban Latin DJ-merk).
-- [ ] Pagina met slug `cookiebeleid` aanmaken (banner + footer linken ernaar) —
-      bewust niet geseed (juridische tekst per klant). Idem `privacybeleid`.
-- [ ] `MAIL_FROM_ADDRESS` op de inbox van El Pablo zetten (contactformulier-mails).
+Design volledig uitgewerkt met `design-website` (dark urban nightlife, Anton +
+Inter). Pagina's: Home, Over, Muziek (inline audiospelers + download), Boeken
+(apart boekingsformulier), Contact, + juridisch (Cookiebeleid, Privacybeleid).
+
+**Meertalig (NL/EN/ES)** is opgezet:
+- NL draait op de root; EN/ES onder `/en` en `/es` (zie `routes/web.php` +
+  `PublicPageController` + `App\Support\Locale`).
+- Pagina's delen dezelfde slug per taal (`unique(['locale','slug'])`); interne
+  links worden gelokaliseerd via `Locale::href()`.
+- De seeder dupliceert elke NL-pagina naar EN/ES met **placeholder-inhoud (NL)**
+  en `translation_of` gezet.
+
+### Nog te doen
+- [ ] **EN/ES-content effectief vertalen via AI** — de shells staan klaar met
+      NL-placeholder; enkel de teksten per sectie moeten nog vertaald worden.
+- [ ] **Echte content**: placeholder-foto's (Unsplash) en de demo-mp3's (2 sets
+      herhaald) vervangen via de media-library / het `mixes`-blok.
 - [ ] Content migreren van de bestaande el-pablo.com.
-- [ ] Talen-schakelaar + per-locale menu's uitwerken.
+- [ ] (SEO-refinement) `hreflang`-alternates + per-locale `og:locale` in de
+      `<head>`; sitemap uitbreiden met de EN/ES-URL's.
+- [x] Lettertype gekozen (Anton + Inter).
+- [x] Juridische pagina's geseed (cookiebeleid + privacybeleid).
+- [x] `MAIL_FROM_ADDRESS` = info@el-pablo.com.
 
 ## Lokaal draaien
 

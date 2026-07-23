@@ -49,6 +49,12 @@ class PageSectionsBuilder
                     ...SectionCommonFields::make(),
                     ...TextMediaFields::make(),
                 ]),
+            Block::make('text')
+                ->label(self::numberedLabel('Tekst'))
+                ->schema([
+                    ...SectionCommonFields::make(),
+                    ...TextFields::make(),
+                ]),
             Block::make('cards')
                 ->label(self::numberedLabel('Cards'))
                 ->schema([

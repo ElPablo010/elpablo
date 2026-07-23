@@ -34,9 +34,14 @@ class HomepageSeeder extends Seeder
         $muziek = $this->seedMuziekPage();
         $boeken = $this->seedBookingPage();
         $contact = $this->seedContactPage();
+        $this->seedLegalPages();
 
         $this->seedMenus($home, $over, $muziek, $boeken, $contact);
         $this->seedSettings($boeken);
+
+        // Meertalig: dupliceer alle NL-pagina's naar EN/ES (placeholder-inhoud,
+        // later te vertalen via AI).
+        $this->seedTranslations();
     }
 
     private function seedHomepage(): Page
@@ -498,6 +503,134 @@ class HomepageSeeder extends Seeder
         }
 
         return $page;
+    }
+
+    /**
+     * Juridische pagina's — cookiebeleid + privacybeleid. Bruikbaar GDPR-sjabloon
+     * (geen lorem): veilig als vangnet, bedoeld om per klant na te lezen en aan te
+     * scherpen. De footer en cookiebanner linken al naar deze slugs.
+     */
+    private function seedLegalPages(): void
+    {
+        $this->ensureLegalPage('cookiebeleid', 'Cookiebeleid', $this->cookieBody());
+        $this->ensureLegalPage('privacybeleid', 'Privacybeleid', $this->privacyBody());
+    }
+
+    private function ensureLegalPage(string $slug, string $title, string $body): Page
+    {
+        $page = Page::updateOrCreate(
+            ['locale' => 'nl', 'slug' => $slug],
+            [
+                'title' => $title,
+                'is_homepage' => false,
+                'published' => true,
+                'meta_title' => $title.' — El Pablo',
+                'meta_robots' => 'noindex, follow',
+            ],
+        );
+
+        // Alleen seeden als de pagina nog leeg is — nooit klant-edits overschrijven.
+        if ($page->sections()->doesntExist()) {
+            $page->sections()->create([
+                'section_type' => 'text',
+                'position' => 0,
+                'content' => ['heading' => $title, 'body' => $body],
+            ]);
+        }
+
+        return $page;
+    }
+
+    private function cookieBody(): string
+    {
+        $name = config('app.name');
+        $email = config('mail.from.address');
+
+        return <<<HTML
+            <p>Deze website ({$name}) maakt gebruik van cookies. Hieronder lees je welke cookies we plaatsen, waarvoor ze dienen en hoe je je keuze op elk moment kunt aanpassen.</p>
+            <h2>1. Wat zijn cookies?</h2>
+            <p>Cookies zijn kleine tekstbestanden die bij een bezoek aan onze website op je toestel worden bewaard. Ze zorgen ervoor dat de site goed werkt en helpen ons, mits jouw toestemming, om te begrijpen hoe de site gebruikt wordt.</p>
+            <h2>2. Welke cookies gebruiken we?</h2>
+            <p><strong>Functionele cookies</strong> &mdash; noodzakelijk voor de werking van de website. Deze plaatsen we altijd; je toestemming is hiervoor niet vereist. Voorbeeld: een cookie die jouw cookievoorkeur bewaart (180 dagen), zodat we het toestemmingsvenster niet bij elk bezoek opnieuw tonen.</p>
+            <p><strong>Analytische cookies</strong> &mdash; enkel met jouw toestemming. Hiermee meten we anoniem hoe bezoekers de site gebruiken (bijvoorbeeld via Google Analytics), zodat we ze kunnen verbeteren.</p>
+            <p><strong>Marketing cookies</strong> &mdash; enkel met jouw toestemming. Deze kunnen door derde partijen geplaatst worden om advertenties relevanter te maken en het bereik ervan te meten.</p>
+            <h2>3. Jouw toestemming</h2>
+            <p>Bij je eerste bezoek vragen we via een banner welke cookies je toelaat. Analytische en marketing cookies worden pas geplaatst nadat je ze aanvaardt. Zolang je geen keuze maakt, blijven ze uitgeschakeld.</p>
+            <h2>4. Je keuze wijzigen of intrekken</h2>
+            <p>Je kunt je cookievoorkeuren op elk moment aanpassen via de link <em>&laquo;&nbsp;Cookie-instellingen&nbsp;&raquo;</em> onderaan elke pagina.</p>
+            <h2>5. Cookies verwijderen via je browser</h2>
+            <p>Je kunt reeds geplaatste cookies ook verwijderen of blokkeren via de instellingen van je browser. Let op: bepaalde onderdelen van de website werken dan mogelijk niet meer optimaal.</p>
+            <h2>6. Meer informatie</h2>
+            <p>Hoe we persoonsgegevens verwerken, lees je in ons <a href="/privacybeleid">privacybeleid</a>. Vragen over dit cookiebeleid? Neem gerust contact op via <a href="mailto:{$email}">{$email}</a>.</p>
+            HTML;
+    }
+
+    private function privacyBody(): string
+    {
+        $name = config('app.name');
+        $email = config('mail.from.address');
+
+        return <<<HTML
+            <p>{$name} hecht veel belang aan de bescherming van jouw persoonsgegevens en respecteert je privacy. In deze verklaring lees je hoe we gegevens verzamelen en gebruiken, in overeenstemming met de Algemene Verordening Gegevensbescherming (GDPR).</p>
+            <h2>1. Welke gegevens verzamelen we?</h2>
+            <p>We verzamelen enkel de gegevens die nodig zijn voor onze dienstverlening, zoals:</p>
+            <ul>
+                <li>Naam en contactgegevens bij een boeking of contactaanvraag;</li>
+                <li>E-mailadres voor communicatie;</li>
+                <li>Technische gegevens (zoals IP-adres) bij een bezoek aan de website.</li>
+            </ul>
+            <h2>2. Waarvoor gebruiken we je gegevens?</h2>
+            <p>Je gegevens worden enkel gebruikt voor het verwerken van boekingen en contactaanvragen, en om onze website en dienstverlening te verbeteren.</p>
+            <h2>3. Delen we je gegevens?</h2>
+            <p>We geven je gegevens nooit door aan derden, tenzij dit noodzakelijk is voor onze dienstverlening of wettelijk verplicht is.</p>
+            <h2>4. Hoe lang bewaren we je gegevens?</h2>
+            <p>We bewaren je gegevens niet langer dan nodig voor het doel waarvoor ze verzameld werden.</p>
+            <h2>5. Cookies</h2>
+            <p>Onze website gebruikt cookies. Meer daarover lees je in ons <a href="/cookiebeleid">cookiebeleid</a>.</p>
+            <h2>6. Jouw rechten</h2>
+            <p>Je hebt het recht op inzage, correctie, verwijdering of overdracht van je persoonsgegevens, en je kunt een gegeven toestemming intrekken. Neem hiervoor contact op via <a href="mailto:{$email}">{$email}</a>.</p>
+            <h2>7. Beveiliging</h2>
+            <p>We nemen passende technische en organisatorische maatregelen om je gegevens te beschermen tegen verlies of ongeoorloofde toegang.</p>
+            HTML;
+    }
+
+    /**
+     * Dupliceer elke NL-pagina (met secties) naar EN en ES. De inhoud is
+     * voorlopig een kopie van het Nederlands (placeholder) — de effectieve
+     * vertaling gebeurt later via AI. Zelfde slug per taal (unique op [locale, slug]).
+     */
+    private function seedTranslations(): void
+    {
+        $sourcePages = Page::query()->where('locale', 'nl')->with('sections')->get();
+
+        foreach ($sourcePages as $source) {
+            foreach (['en', 'es'] as $locale) {
+                $copy = Page::updateOrCreate(
+                    ['locale' => $locale, 'slug' => $source->slug],
+                    [
+                        'title' => $source->title,
+                        'is_homepage' => $source->is_homepage,
+                        'published' => $source->published,
+                        'translation_of' => $source->id,
+                        'meta_title' => $source->meta_title,
+                        'meta_description' => $source->meta_description,
+                        'meta_robots' => $source->meta_robots,
+                    ],
+                );
+
+                $copy->sections()->delete();
+
+                foreach ($source->sections as $section) {
+                    $copy->sections()->create([
+                        'section_type' => $section->section_type,
+                        'position' => $section->position,
+                        'content' => $section->content,
+                        'locale' => $locale,
+                        'translation_of' => $section->id,
+                    ]);
+                }
+            }
+        }
     }
 
     private function seedMenus(Page $home, Page $over, Page $muziek, Page $boeken, Page $contact): void

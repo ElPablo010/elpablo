@@ -26,7 +26,19 @@ Route::middleware('auth')
     ->where('slug', '[a-z0-9-]+')
     ->name('design.preview');
 
-// Catch-all paginarouter (homepage + alle slugs). Sluit admin/livewire/storage uit.
+// Meertalig: EN/ES draaien onder een locale-prefix. Vóór de NL catch-all
+// geregistreerd; de whereIn beperkt {locale} tot exact 'en'/'es' zodat gewone
+// NL-slugs (bv. /events) hier niet per ongeluk in vallen.
+Route::prefix('{locale}')
+    ->whereIn('locale', ['en', 'es'])
+    ->group(function (): void {
+        Route::get('/', [PublicPageController::class, 'show'])->name('page.home.localized');
+        Route::get('/{slug}', [PublicPageController::class, 'show'])
+            ->where('slug', '[a-z0-9-]+')
+            ->name('page.show.localized');
+    });
+
+// Catch-all paginarouter (NL homepage + alle slugs). Sluit admin/livewire/storage uit.
 Route::get('/{slug?}', [PublicPageController::class, 'show'])
     ->where('slug', '^(?!admin|login|livewire|storage|_debugbar|design).*$')
     ->name('page.show');

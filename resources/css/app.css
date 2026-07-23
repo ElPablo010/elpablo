@@ -122,6 +122,15 @@
 .prose-invert-brand li + li {
     margin-top: 0.25em;
 }
+.prose-invert-brand h2 {
+    @apply mt-10 font-display text-2xl text-white;
+}
+.prose-invert-brand h3 {
+    @apply mt-8 text-lg font-bold text-white;
+}
+.prose-invert-brand blockquote {
+    @apply border-l-2 border-primary-500 pl-4 italic text-gray-400;
+}
 .prose-invert-brand a {
     @apply text-primary-400 underline decoration-primary-400/40 underline-offset-2 hover:decoration-primary-400;
 }

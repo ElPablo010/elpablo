@@ -1,4 +1,6 @@
 @php
+    use App\Support\Locale;
+
     // Dark nightlife-footer. Leest instellingen uit de admin (Footer-pagina) +
     // de footermenu's uit de DB.
     $footer = \App\Support\SiteFooter::current();
@@ -21,7 +23,7 @@
         <div class="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
             {{-- Brand + social --}}
             <div>
-                <a href="/" class="inline-flex flex-col leading-none text-white">
+                <a href="{{ Locale::href('/') }}" class="inline-flex flex-col leading-none text-white">
                     @if (! empty($brand['logo']))
                         <img src="{{ $brand['logo'] }}" alt="{{ $brand['name'] ?? config('app.name') }}" class="h-10 w-auto">
                     @else
@@ -64,7 +66,7 @@
                             @foreach ($fm->items as $item)
                                 <li>
                                     <a
-                                        href="{{ $item->resolvedHref() }}"
+                                        href="{{ Locale::href($item->resolvedHref()) }}"
                                         @if ($item->target_blank) target="_blank" rel="noopener" @endif
                                         class="text-gray-400 transition-colors hover:text-primary-400"
                                     >{{ $item->label }}</a>
@@ -109,7 +111,7 @@
                 @php $legal = $footerMenus->get('footer_3'); @endphp
                 @if ($legal && $legal->items->isNotEmpty())
                     @foreach ($legal->items as $item)
-                        <a href="{{ $item->resolvedHref() }}" class="transition-colors hover:text-gray-300">{{ $item->label }}</a>
+                        <a href="{{ Locale::href($item->resolvedHref()) }}" class="transition-colors hover:text-gray-300">{{ $item->label }}</a>
                     @endforeach
                 @endif
                 {{-- Heropent de cookiebanner; verplicht zodat een bezoeker z'n keuze kan herzien. --}}

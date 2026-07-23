@@ -1,4 +1,8 @@
+@props(['page' => null])
+
 @php
+    use App\Support\Locale;
+
     // Zwevende "pill"-header: een afgeronde balk met een eigen halftransparante
     // achtergrond + rand, die over de content zweeft. Zo blijft de nav-tekst
     // altijd leesbaar (ook boven een lichte hero of over content bij het scrollen).
@@ -7,9 +11,11 @@
     $menu = \App\Models\Menu::where('location', 'main')->with('items.children')->first();
     $cta = $header['cta'] ?? [];
 
-    // Taalschakelaar — meertalig (NL/EN/ES). NL is de hoofdtaal en nu actief.
-    $locales = ['nl' => 'NL', 'en' => 'EN', 'es' => 'ES'];
-    $currentLocale = 'nl';
+    // Taalschakelaar — meertalig (NL/EN/ES). De schakelaar linkt naar dezelfde
+    // pagina in de doeltaal (zelfde slug per taal).
+    $locales = Locale::LABELS;
+    $currentLocale = Locale::current();
+    $switchBase = $page ? ($page->is_homepage ? '/' : '/'.$page->slug) : '/';
 @endphp
 
 <header
@@ -24,7 +30,7 @@
         >
             <div class="flex items-center justify-between gap-6 px-4 py-3 sm:px-6">
                 {{-- Logo / merknaam --}}
-                <a href="/" class="flex items-center gap-3 text-white">
+                <a href="{{ Locale::href('/') }}" class="flex items-center gap-3 text-white">
                     @if (! empty($header['logo']))
                         <img src="{{ $header['logo'] }}" alt="{{ $header['name'] }}" class="h-9 w-auto">
                     @else
@@ -42,7 +48,7 @@
                     <nav class="hidden items-center gap-8 lg:flex">
                         @foreach ($menu->items as $item)
                             <a
-                                href="{{ $item->resolvedHref() }}"
+                                href="{{ Locale::href($item->resolvedHref()) }}"
                                 @if ($item->target_blank) target="_blank" rel="noopener" @endif
                                 class="group relative text-sm font-medium uppercase tracking-wide text-gray-200 transition-colors hover:text-white"
                             >
@@ -74,7 +80,7 @@
                         >
                             @foreach ($locales as $code => $label)
                                 <a
-                                    href="{{ $code === 'nl' ? '/' : '/'.$code }}"
+                                    href="{{ Locale::href($switchBase, $code) }}"
                                     class="block px-4 py-2 text-xs font-semibold uppercase tracking-wide transition-colors {{ $code === $currentLocale ? 'text-primary-500' : 'text-gray-300 hover:bg-white/5 hover:text-white' }}"
                                 >{{ $label }}</a>
                             @endforeach
@@ -82,7 +88,7 @@
                     </div>
 
                     @if (! empty($cta['label']))
-                        <a href="{{ $cta['href'] ?? '/' }}" class="btn-primary hidden py-2.5 sm:inline-flex">{{ $cta['label'] }}</a>
+                        <a href="{{ Locale::href($cta['href'] ?? '/') }}" class="btn-primary hidden py-2.5 sm:inline-flex">{{ $cta['label'] }}</a>
                     @endif
 
                     <button
@@ -110,7 +116,7 @@
                     <nav class="flex flex-col gap-1">
                         @foreach ($menu->items as $item)
                             <a
-                                href="{{ $item->resolvedHref() }}"
+                                href="{{ Locale::href($item->resolvedHref()) }}"
                                 @if ($item->target_blank) target="_blank" rel="noopener" @endif
                                 class="rounded-lg px-3 py-3 text-base font-medium uppercase tracking-wide text-gray-200 transition-colors hover:bg-white/5 hover:text-white"
                             >{{ $item->label }}</a>
@@ -122,13 +128,13 @@
                     <div class="flex gap-1">
                         @foreach ($locales as $code => $label)
                             <a
-                                href="{{ $code === 'nl' ? '/' : '/'.$code }}"
+                                href="{{ Locale::href($switchBase, $code) }}"
                                 class="rounded-lg px-3 py-1.5 text-xs font-semibold uppercase tracking-wide {{ $code === $currentLocale ? 'bg-white/10 text-primary-500' : 'text-gray-300' }}"
                             >{{ $label }}</a>
                         @endforeach
                     </div>
                     @if (! empty($cta['label']))
-                        <a href="{{ $cta['href'] ?? '/' }}" class="btn-primary py-2.5">{{ $cta['label'] }}</a>
+                        <a href="{{ Locale::href($cta['href'] ?? '/') }}" class="btn-primary py-2.5">{{ $cta['label'] }}</a>
                     @endif
                 </div>
             </div>
