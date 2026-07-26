@@ -58,6 +58,44 @@ Inter). Pagina's: Home, Over, Muziek (inline audiospelers + download), Boeken
   de taal klopt ook na een re-render (Livewire post naar /livewire/update zonder
   locale-prefix).
 
+## SEO-monitoring (seo-analytics)
+
+De `seo-analytics`-skill draait: DataForSEO-tracking, een wekelijkse AI-briefing
+en een goedkeuringsdashboard dat adviezen omzet in publiceerbare content.
+
+Admin: sidebar-groep **SEO** → *Overzicht, Keywords, Acties, Instellingen*.
+De weekcron staat in `routes/console.php` (maandag 7:00, `seo:weekly-report`) en
+vereist een draaiende **queue-worker** voor "Ververs cijfers" op het dashboard.
+
+**Project-specifieke afwijkingen van de skill** (belangrijk bij het porten van
+bugfixes):
+- De skill verwacht een `GeneralSettings`-pagina uit een nieuwere `new-website`;
+  die ontbrak hier en is toegevoegd als `App\Filament\Pages\GeneralSettings`
+  (*Instellingen → Algemeen*): merknaam, omschrijving, Anthropic-key en "feiten
+  voor AI". De SEO-laag leest die sleutels alleen. Bewust **regel voor regel
+  gelijk** aan de versie in `webgoeroe` (enkel de twee helperText-voorbeelden
+  verschillen), zodat de latere extractie naar een gedeelde plugin schoon blijft.
+- Het sectietype `rich_text` bestaat hier niet — de actie-applier schrijft
+  `hero → text → faq → cta`. Wijzigt het sectiecontract, pas dan
+  `SeoActionApplier` én `SeoAdvisorService::buildLandingSections()` samen aan.
+- **Meertaligheid**: de SEO-acties werken uitsluitend op NL (`Locale::DEFAULT`).
+  Pagina-resolutie, slug-uniekheid, de homepage-CTA en de grounding zijn expliciet
+  op die locale gescoped — zonder dat zou een actie op een EN/ES-vertaling kunnen
+  landen (alle talen delen dezelfde slugs).
+- `text.blade.php` kiest zijn kopniveau nu op basis van `position`: bovenaan een
+  pagina H1 (juridische pagina's), eronder H2. Zo krijgt een gegenereerde
+  landingspagina met hero geen tweede H1.
+
+Bewaakt door `tests/Feature/SeoActionsTest.php`.
+
+### Nog in te vullen (admin)
+- [ ] **Instellingen → Algemeen**: merknaam, omschrijving, Anthropic API-key en
+      "feiten voor AI".
+- [ ] **SEO → Instellingen**: DataForSEO login/wachtwoord, doeldomein
+      el-pablo.com, locatiecode 2056 (België), taalcode `nl`, rapport-ontvanger
+      en de GEO-prompts.
+- [ ] **SEO → Keywords**: de eerste kernzinnen toevoegen, daarna "Ververs cijfers".
+
 ### Nog te doen
 - [ ] **Echte content**: placeholder-foto's (Unsplash) en de demo-mp3's (2 sets
       herhaald) vervangen via de media-library / het `mixes`-blok.
@@ -78,5 +116,5 @@ MySQL draait via Herd. Start indien nodig:
 `~/Library/Application\ Support/Herd/bin/herd services:start <mysql-id>`.
 App serveren: `php artisan serve` of via Herd (`.test`-domein).
 
-Admin: `/admin` — user `pieter@dewebgoeroe.be`, tijdelijk wachtwoord
-`elpablo-admin` (wijzig dit).
+Admin: `/admin` — user `pieter@dewebgoeroe.be`. Het wachtwoord is gewijzigd en
+staat bewust niet meer in de repo (zie je wachtwoordmanager).

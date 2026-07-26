@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Seo;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -46,10 +47,16 @@ class Page extends Model
         return $this->morphMany(PageSection::class, 'sectionable')->orderBy('position');
     }
 
+    /**
+     * Absolute URL van deze pagina op de publieke site — mét locale-prefix. Een
+     * kale route('page.show') zou hier fout zijn: die kent de NL-routes en zou
+     * een EN-pagina naar /over sturen in plaats van /en/over.
+     */
     public function publicUrl(): string
     {
-        return route('page.show', $this->is_homepage ? [] : ['slug' => $this->slug]);
+        return Seo::absoluteUrl(Seo::localizedPath($this));
     }
+
 
     public function sourceTranslation(): BelongsTo
     {

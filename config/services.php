@@ -14,6 +14,12 @@ return [
     |
     */
 
+    // De Anthropic-key komt primair uit Instellingen → Algemeen (database), zodat
+    // de klant hem zelf kan beheren. Deze env-fallback is er voor CI/lokaal.
+    'anthropic' => [
+        'api_key' => env('ANTHROPIC_API_KEY'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

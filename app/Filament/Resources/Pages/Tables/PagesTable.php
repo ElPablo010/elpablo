@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Pages\Tables;
 
 use App\Models\Page;
+use App\Support\Locale;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -10,8 +11,11 @@ use Filament\Actions\EditAction;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ViewColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class PagesTable
 {
@@ -19,11 +23,23 @@ class PagesTable
     {
         return $table
             ->defaultSort('title')
+            // Vertaalkolom leest translations/sourceTranslation per rij — eager
+            // laden, anders is het één query per pagina in de lijst.
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['translations', 'sourceTranslation']))
             ->columns([
                 TextColumn::make('title')
                     ->label('Titel')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('locale')
+                    ->label('Taal')
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state): string => strtoupper($state ?? Locale::DEFAULT))
+                    ->color(fn (?string $state): string => ($state ?? Locale::DEFAULT) === Locale::DEFAULT ? 'primary' : 'gray')
+                    ->sortable(),
+                ViewColumn::make('translations')
+                    ->label('Vertalingen')
+                    ->view('filament.tables.columns.page-translations'),
                 TextColumn::make('slug')
                     ->label('Slug')
                     ->searchable()
@@ -47,6 +63,20 @@ class PagesTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                // Standaard tonen we alleen de bronpagina's (NL). De vertalingen
+                // hangen als badges aan die rij, wat de lijst kort houdt: bij drie
+                // talen zou je anders door driemaal zoveel rijen scrollen.
+                SelectFilter::make('translation_scope')
+                    ->label('Talen')
+                    ->options([
+                        'source' => 'Alleen hoofdtaal ('.strtoupper(Locale::DEFAULT).')',
+                        'all' => 'Alle talen',
+                    ])
+                    ->default('source')
+                    ->selectablePlaceholder(false)
+                    ->query(fn (Builder $query, array $data): Builder => ($data['value'] ?? 'source') === 'source'
+                        ? $query->whereNull('translation_of')
+                        : $query),
                 TernaryFilter::make('published')
                     ->label('Gepubliceerd'),
                 TernaryFilter::make('is_homepage')

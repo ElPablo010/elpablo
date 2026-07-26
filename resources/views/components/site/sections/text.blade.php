@@ -2,6 +2,12 @@
 
 @php
     $bg = \App\Filament\Schemas\Sections\SectionBackground::classes($content['background'] ?? null);
+
+    // Kopniveau volgt de plaats op de pagina: staat deze sectie bovenaan (juridische
+    // pagina's, die geen hero hebben), dan is dit de H1. Komt er een sectie vóór —
+    // bv. een hero op een SEO-landingspagina — dan is de H1 al vergeven en zakt deze
+    // kop naar H2, zodat een pagina nooit twee H1's krijgt.
+    $headingTag = ($section?->position ?? 0) === 0 ? 'h1' : 'h2';
 @endphp
 
 {{--
@@ -15,7 +21,7 @@
             <p class="eyebrow mb-4">{{ $content['eyebrow'] }}</p>
         @endif
         @if (! empty($content['heading']))
-            <h1 class="font-display text-4xl text-white break-words sm:text-5xl">{{ $content['heading'] }}</h1>
+            <{{ $headingTag }} class="font-display text-4xl text-white break-words sm:text-5xl">{{ $content['heading'] }}</{{ $headingTag }}>
         @endif
         @if (! empty($content['body']))
             <div class="prose-invert-brand mt-8 leading-relaxed">{!! $content['body'] !!}</div>

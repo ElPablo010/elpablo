@@ -44,7 +44,10 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+/**
+ * Een ingelogde beheerder — Filament laat enkel de Admin-rol op het paneel.
+ */
+function admin(): App\Models\User
 {
-    // ..
+    return App\Models\User::factory()->create(['role' => App\Enums\UserRole::Admin]);
 }
