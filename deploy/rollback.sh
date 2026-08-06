@@ -8,7 +8,7 @@
 set -euo pipefail
 
 PROJECT="elpablo"
-DOMAIN="https://el-pablo.com"
+DOMAIN="https://www.el-pablo.com"   # www is canoniek; non-www 301t hierheen
 
 WWW_DIR="$HOME/www"
 BACKUP_DIR="$HOME/www-wordpress-backup"
@@ -43,13 +43,13 @@ OC_FILE="_ocreset_$(date +%s)$RANDOM$$.php"
 printf "%s\n" "<?php echo function_exists('opcache_reset') && opcache_reset() ? 'OK' : 'SKIP';" > "$WWW_DIR/$OC_FILE"
 trap 'rm -f "$WWW_DIR/$OC_FILE"' EXIT
 sleep 1
-OC_RESULT="$(curl -fsS --max-time 20 "$DOMAIN/$OC_FILE" || echo 'FAILED')"
+OC_RESULT="$(curl -fsSL --max-time 20 "$DOMAIN/$OC_FILE" || echo 'FAILED')"
 rm -f "$WWW_DIR/$OC_FILE"
 trap - EXIT
 echo "    OPcache: $OC_RESULT"
 
 sleep 2
-STATUS="$(curl -fsS -o /dev/null -w '%{http_code}' --max-time 25 "$DOMAIN/" || echo '000')"
+STATUS="$(curl -fsSL -o /dev/null -w "%{http_code}" --max-time 25 "$DOMAIN/" || echo '000')"
 echo ""
 echo "$DOMAIN/  ->  HTTP $STATUS"
 echo "WordPress staat terug. De Laravel-app wacht in ~/$PROJECT."

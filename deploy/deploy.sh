@@ -12,7 +12,7 @@ set -euo pipefail
 
 # ---- Config ----
 PROJECT="elpablo"            # naam van de projectmap in je home
-DOMAIN="https://el-pablo.com"    # gebruikt voor de OPcache-reset-request
+DOMAIN="https://www.el-pablo.com"   # www is canoniek; non-www 301t hierheen
 # De kale `php` op deze server is 7.4 (voor de oude WordPress). Laravel 12
 # vereist 8.2+, dus altijd expliciet aanroepen.
 PHP="/usr/local/bin/php8.3"
@@ -65,7 +65,7 @@ OC_FILE="_ocreset_$(date +%s)$RANDOM$$.php"
 printf "%s\n" "<?php echo function_exists('opcache_reset') && opcache_reset() ? 'OK' : 'SKIP';" > "$WWW_DIR/$OC_FILE"
 trap 'rm -f "$WWW_DIR/$OC_FILE"' EXIT
 sleep 1
-OC_RESULT="$(curl -fsS --max-time 20 "$DOMAIN/$OC_FILE" || echo 'FAILED')"
+OC_RESULT="$(curl -fsSL --max-time 20 "$DOMAIN/$OC_FILE" || echo 'FAILED')"
 rm -f "$WWW_DIR/$OC_FILE"
 trap - EXIT
 echo "    OPcache: $OC_RESULT"

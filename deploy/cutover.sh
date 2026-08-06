@@ -20,7 +20,7 @@ set -euo pipefail
 
 PROJECT="elpablo"
 PHP="/usr/local/bin/php8.3"   # kale `php` is hier 7.4 (oude WordPress)
-DOMAIN="https://el-pablo.com"
+DOMAIN="https://www.el-pablo.com"   # www is canoniek; non-www 301t hierheen
 
 APP_DIR="$HOME/$PROJECT"
 WWW_DIR="$HOME/www"
@@ -94,17 +94,17 @@ OC_FILE="_ocreset_$(date +%s)$RANDOM$$.php"
 printf "%s\n" "<?php echo function_exists('opcache_reset') && opcache_reset() ? 'OK' : 'SKIP';" > "$WWW_DIR/$OC_FILE"
 trap 'rm -f "$WWW_DIR/$OC_FILE"' EXIT
 sleep 1
-OC_RESULT="$(curl -fsS --max-time 20 "$DOMAIN/$OC_FILE" || echo 'FAILED')"
+OC_RESULT="$(curl -fsSL --max-time 20 "$DOMAIN/$OC_FILE" || echo 'FAILED')"
 rm -f "$WWW_DIR/$OC_FILE"
 trap - EXIT
 echo "    OPcache: $OC_RESULT"
 
 echo "=== 4/4  Verifiëren ==="
 sleep 2
-STATUS="$(curl -fsS -o /dev/null -w '%{http_code}' --max-time 25 "$DOMAIN/" || echo '000')"
+STATUS="$(curl -fsSL -o /dev/null -w "%{http_code}" --max-time 25 "$DOMAIN/" || echo '000')"
 echo "    $DOMAIN/  ->  HTTP $STATUS"
 
-if curl -fsS --max-time 25 "$DOMAIN/" 2>/dev/null | grep -qi 'wp-content\|wp-includes'; then
+if curl -fsSL --max-time 25 "$DOMAIN/" 2>/dev/null | grep -qi 'wp-content\|wp-includes'; then
   echo ""
   echo "    WAARSCHUWING: er zit nog WordPress-markup in de respons."
   echo "    Meestal OPcache. Draai deploy.sh nog eens, of rollback.sh om terug te gaan."
