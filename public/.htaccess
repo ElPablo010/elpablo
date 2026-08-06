@@ -5,6 +5,18 @@
 
     RewriteEngine On
 
+    # Force www op het live domein. De oude WordPress deed dit ook; met de
+    # cutover verdween die regel, waardoor el-pablo.com en www.el-pablo.com
+    # dezelfde pagina's serveerden (duplicate content). www is de canonieke
+    # kant omdat de Google-index en alle backlinks daarop staan.
+    #
+    # Bewust vastgepind op het apex-domein en niet "!^www\." — die algemene
+    # vorm zou staging.el-pablo.com naar het niet-bestaande
+    # www.staging.el-pablo.com sturen. Staat vóór de trailing-slash-regel zodat
+    # een oude URL niet eerst binnen de verkeerde host wordt herschreven.
+    RewriteCond %{HTTP_HOST} ^el-pablo\.com$ [NC]
+    RewriteRule ^ https://www.el-pablo.com%{REQUEST_URI} [L,R=301]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

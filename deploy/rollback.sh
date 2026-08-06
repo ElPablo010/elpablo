@@ -7,7 +7,7 @@
 # ~/elpablo-new, dus je kunt daarna rustig repareren en cutover.sh opnieuw draaien.
 set -euo pipefail
 
-PROJECT="elpablo-new"
+PROJECT="elpablo"
 DOMAIN="https://el-pablo.com"
 
 WWW_DIR="$HOME/www"

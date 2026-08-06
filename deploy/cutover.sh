@@ -18,7 +18,7 @@
 # Terug naar WordPress? bash rollback.sh
 set -euo pipefail
 
-PROJECT="elpablo-new"
+PROJECT="elpablo"
 PHP="/usr/local/bin/php8.3"   # kale `php` is hier 7.4 (oude WordPress)
 DOMAIN="https://el-pablo.com"
 

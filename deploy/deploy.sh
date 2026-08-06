@@ -11,7 +11,7 @@
 set -euo pipefail
 
 # ---- Config ----
-PROJECT="elpablo-new"            # naam van de projectmap in je home
+PROJECT="elpablo"            # naam van de projectmap in je home
 DOMAIN="https://el-pablo.com"    # gebruikt voor de OPcache-reset-request
 # De kale `php` op deze server is 7.4 (voor de oude WordPress). Laravel 12
 # vereist 8.2+, dus altijd expliciet aanroepen.

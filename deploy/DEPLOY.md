@@ -46,8 +46,8 @@ WordPress blijft de hele fase gewoon draaien op `/www`.
 1. **Repo pushen** (lokaal): remote toevoegen, werk squashen naar `main`, pushen.
 2. **SSH → clonen** in de home-map:
    ```bash
-   git clone https://github.com/ElPablo010/elpablo.git elpablo-new
-   cd elpablo-new
+   git clone https://github.com/ElPablo010/elpablo.git elpablo
+   cd elpablo
    php -v && composer --version     # PHP ≥8.3
    ```
 3. **`.env`**: `deploy/env.production.example` → `.env`, invullen, dan
@@ -62,7 +62,7 @@ WordPress blijft de hele fase gewoon draaien op `/www`.
    De dump bevat al relatieve media-URL's, dus geen zoek-vervang nodig.
 5. **Media oversturen** (staat niet in git):
    ```bash
-   rsync -avz storage/app/public/ <user>@<host>:~/elpablo-new/storage/app/public/
+   rsync -avz storage/app/public/ <user>@<host>:~/elpablo/storage/app/public/
    ```
 6. **Node + assets**: als `node -v` < 20 → NVM installeren (zie skill stap 8), dan
    ```bash
@@ -111,7 +111,7 @@ gebouwd, app start), vraagt om bevestiging, en doet dan:
 bash rollback.sh
 ```
 
-WordPress staat binnen seconden terug. De Laravel-app blijft in `~/elpablo-new`
+WordPress staat binnen seconden terug. De Laravel-app blijft in `~/elpablo`
 staan, dus je kunt rustig repareren en `cutover.sh` opnieuw draaien.
 
 ---
@@ -125,7 +125,7 @@ staan, dus je kunt rustig repareren en `cutover.sh` opnieuw draaien.
 - [ ] Afbeeldingen laden (dan klopte de rsync + de relatieve URL's)
 - [ ] Geen stack trace op een niet-bestaande pagina → `APP_DEBUG=false` staat goed
 - [ ] **Scheduler-cron** in het paneel: elke minuut
-      `cd ~/elpablo-new && /usr/local/bin/php artisan schedule:run >> /dev/null 2>&1`
+      `cd ~/elpablo && /usr/local/bin/php artisan schedule:run >> /dev/null 2>&1`
       (nodig voor de queue: formulier-mails en de SEO-collectie)
 - [ ] SSL: bestond al voor WordPress, dus normaal niets te doen. Geeft HTTPS een
       403, dan is het cert niet mee verhuisd → Let's Encrypt opnieuw uitgeven.
