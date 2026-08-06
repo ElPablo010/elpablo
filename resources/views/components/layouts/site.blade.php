@@ -58,6 +58,9 @@
 <body class="min-h-screen bg-ink-950 font-sans text-gray-200 antialiased">
     <x-site.header :page="$page" />
 
+    {{-- Snelkoppeling naar de admin, enkel zichtbaar voor ingelogde beheerders. --}}
+    <x-site.admin-edit :page="$page" />
+
     <main>
         {{ $slot }}
     </main>

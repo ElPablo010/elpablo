@@ -53,7 +53,7 @@ class HomepageSeeder extends Seeder
                 'is_homepage' => true,
                 'published' => true,
                 'meta_title' => 'El Pablo — Urban Latin DJ uit Antwerpen',
-                'meta_description' => 'Boek El Pablo, urban latin DJ uit Antwerpen, voor clubavonden, privéfeesten, bruiloften en festivals. Latin, reggaeton & urban vibes voor onvergetelijke nachten.',
+                'meta_description' => 'Boek El Pablo, urban latin DJ uit Antwerpen, voor clubs, privéfeesten, bruiloften en festivals. Latin, reggaeton & urban vibes voor onvergetelijke nachten.',
             ],
         );
 
@@ -776,7 +776,7 @@ class HomepageSeeder extends Seeder
             'Contact — El Pablo' => ['en' => 'Contact — El Pablo', 'es' => 'Contacto — El Pablo'],
             'Cookiebeleid — El Pablo' => ['en' => 'Cookie policy — El Pablo', 'es' => 'Política de cookies — El Pablo'],
             'Privacybeleid — El Pablo' => ['en' => 'Privacy policy — El Pablo', 'es' => 'Política de privacidad — El Pablo'],
-            'Boek El Pablo, urban latin DJ uit Antwerpen, voor clubavonden, privéfeesten, bruiloften en festivals. Latin, reggaeton & urban vibes voor onvergetelijke nachten.' => ['en' => 'Book El Pablo, urban latin DJ from Antwerp, for club nights, private parties, weddings and festivals. Latin, reggaeton & urban vibes for unforgettable nights.', 'es' => 'Reserva a El Pablo, DJ urban latino de Amberes, para noches de club, fiestas privadas, bodas y festivales. Vibras latinas, reggaetón y urbanas para noches inolvidables.'],
+            'Boek El Pablo, urban latin DJ uit Antwerpen, voor clubs, privéfeesten, bruiloften en festivals. Latin, reggaeton & urban vibes voor onvergetelijke nachten.' => ['en' => 'Book El Pablo, urban latin DJ from Antwerp, for club nights, private parties, weddings and festivals. Latin, reggaeton & urban vibes for unforgettable nights.', 'es' => 'Reserva a El Pablo, DJ urban latino de Amberes, para clubes, fiestas privadas, bodas y festivales. Reggaetón, latin y urban para noches inolvidables.'],
             'Maak kennis met El Pablo, urban latin DJ uit Antwerpen. Meer dan tien jaar dansvloeren vullen met reggaeton, latin house en urban beats.' => ['en' => 'Meet El Pablo, urban latin DJ from Antwerp. Over ten years of filling dance floors with reggaeton, latin house and urban beats.', 'es' => 'Conoce a El Pablo, DJ urban latino de Amberes. Más de diez años llenando pistas con reggaetón, latin house y ritmos urbanos.'],
             'Beluister en download de sets van El Pablo: reggaeton, latin house, urban en afrobeats. Urban latin DJ uit Antwerpen.' => ['en' => 'Listen to and download El Pablo\'s sets: reggaeton, latin house, urban and afrobeats. Urban latin DJ from Antwerp.', 'es' => 'Escucha y descarga las sesiones de El Pablo: reggaetón, latin house, urban y afrobeats. DJ urban latino de Amberes.'],
             'Boek El Pablo voor je clubavond, privéfeest, bruiloft of festival. Vraag vrijblijvend je datum aan en ontvang snel een voorstel op maat.' => ['en' => 'Book El Pablo for your club night, private party, wedding or festival. Request your date with no obligation and get a tailored proposal quickly.', 'es' => 'Reserva a El Pablo para tu noche de club, fiesta privada, boda o festival. Solicita tu fecha sin compromiso y recibe pronto una propuesta a medida.'],

@@ -41,7 +41,13 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            // BEWUST RELATIEF. Media-URL's worden als string in de content-bag en
+            // in website_media opgeslagen. Met een absolute URL (op APP_URL) zit
+            // het dev-domein in de database gebakken en breekt élke afbeelding
+            // zodra de site naar het echte domein verhuist. '/storage' werkt op
+            // elke omgeving zonder DB-aanpassing. Voor og:image/canonical maakt
+            // App\Support\Seo::absolute() er alsnog een volledige URL van.
+            'url' => '/storage',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,

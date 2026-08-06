@@ -2,8 +2,8 @@
 
 namespace App\Filament\Schemas\Sections;
 
+use App\Filament\Schemas\Components\AudioPickerField;
 use App\Filament\Schemas\Components\MediaPickerField;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -41,15 +41,11 @@ class MixesFields
                                 ->maxLength(160),
                         ]),
 
-                    FileUpload::make('audio')
-                        ->label('Audiobestand (mp3)')
-                        ->helperText('Upload de set als mp3. Bezoekers spelen ze rechtstreeks op de site af.')
-                        ->disk('public')
-                        ->directory('website-audio')
-                        ->acceptedFileTypes(['audio/mpeg', 'audio/mp3'])
-                        ->maxSize(102400)
-                        ->downloadable()
-                        ->required(),
+                    AudioPickerField::make(
+                        'audio',
+                        'Audiobestand (mp3)',
+                        helperText: 'Upload de set als mp3. Bezoekers spelen ze rechtstreeks op de site af.',
+                    ),
 
                     MediaPickerField::make('cover', 'Cover-afbeelding', required: false),
 

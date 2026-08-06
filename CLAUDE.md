@@ -96,10 +96,101 @@ Bewaakt door `tests/Feature/SeoActionsTest.php`.
       en de GEO-prompts.
 - [ ] **SEO → Keywords**: de eerste kernzinnen toevoegen, daarna "Ververs cijfers".
 
+## Taal van de admin — APP_LOCALE=nl
+
+De admin-UI is volledig Nederlands. Dat hangt aan één instelling:
+
+```
+APP_LOCALE=nl
+APP_FALLBACK_LOCALE=nl
+```
+
+Stond eerder op `en`, waardoor Filament "Save changes", "Cancel", "Collapse all"
+en Engelse validatiefouten toonde. Met `nl` pikken drie lagen tegelijk de
+Nederlandse teksten op:
+
+1. **Filament** — levert NL mee onder `vendor/filament` (per pakket in
+   `resources/lang/nl`). Niets te publiceren.
+2. **FilePond** (de upload-dropzone) — Filament kiest de JS-locale op
+   `app.locale`; `nl-nl` zit al in de bundel.
+3. **Laravel-validatie** — `lang/nl/` (validation, auth, passwords, pagination)
+   staat in de repo. Onder `attributes` staan veldnamen voor de gevallen waarin
+   Filament geen label kan doorgeven.
+
+De **publieke** site zet zijn eigen locale per request (`PublicPageController` →
+`app()->setLocale()`), dus NL/EN/ES blijven werken. De fallback staat bewust ook
+op `nl`: ontbreekt een sleutel in `lang/en.json` of `lang/es.json`, dan verschijnt
+de Nederlandse brontekst in plaats van een rauwe sleutel.
+
+Bewaakt door `tests/Feature/DutchAdminTest.php`.
+
+## Mediavelden: nooit een kale FileUpload
+
+Media horen als **URL-string** in de content-bag (zie de architectuur-conventie).
+Een kale `FileUpload` breekt dat: die kan alleen een pad op zijn eigen disk tonen.
+Staat er een absolute URL in — een geseede demo, of content van de oude site —
+dan vindt hij het bestand niet, toont een leeg veld, en schrijft bij opslaan
+`null` terug. Met `->required()` erbij blokkeert dat het bewaren van de héle
+pagina, met de foutmelding op een tab waar je niet werkt.
+
+Gebruik daarom altijd een picker-veld:
+- Afbeeldingen → `MediaPickerField::make()`
+- Audio → `AudioPickerField::make()`
+
+Beide zijn een readonly `TextInput` met de URL + upload-actie eronder. Helptekst
+via de **parameter**, niet `->helperText()` (die overschrijft dezelfde
+`belowContent`-slot als de acties, waardoor de knoppen verdwijnen).
+
+`tests/Feature/SeededContentIsEditableTest.php` opent elke geseede pagina in de
+admin en slaat haar op — dat vangt dit soort blokkades vóór de klant ze vindt.
+
+## Grote mp3-uploads (DJ-sets)
+
+Een DJ-set van een uur is al snel 80-150MB. Drie limieten moeten meebewegen —
+loopt er één achter, dan faalt de upload met "Error during upload":
+
+| Laag | Waar | Staat op |
+|---|---|---|
+| Filament-veld | `MixesFields::make()` → `->maxSize(102400)` | 100 MB |
+| Livewire tijdelijke upload | `config/livewire.php` → `temporary_file_upload.rules` | 128 MB |
+| PHP | `upload_max_filesize` + `post_max_size` | 100 MB (lokaal, Herd) |
+
+Livewire's **default is 12MB** — die was hier de blokkade. PHP's default is 2M.
+
+- **Lokaal (Herd)**: `~/Library/Application Support/Herd/config/php/83/php.ini`.
+  Na wijzigen Herd herstarten.
+- **Productie (Combell)**: zet `upload_max_filesize` en `post_max_size` daar via
+  het klantenpaneel of een `.user.ini` in de docroot. Vergeet dit niet — anders
+  werkt uploaden lokaal wel en live niet.
+
+`post_max_size` moet altijd ≥ `upload_max_filesize` zijn (de POST bevat naast het
+bestand ook de andere formuliervelden). Wil je sets >95MB kunnen uploaden, zet
+beide dan op 256M.
+
+## Redirects van de oude site (bij go-live)
+
+De huidige el-pablo.com is een WordPress met **72 geïndexeerde URL's** (bron: de
+Yoast-sitemaps, gecrawld 2026-08-06). `database/seeders/RedirectSeeder.php` mapt
+er 57 naar de nieuwe pagina's; de rest (oude blogposts + `/ajax`) mag bewust
+404'en.
+
+**Bij de deploy draaien:** `php artisan db:seed --class=RedirectSeeder`
+(idempotent — `updateOrCreate` op `from`, dus veilig te herhalen op live).
+
+Beheer daarna via Filament → *Redirects*. Komt er later een events-pagina, wijzig
+dan het doel van de `/events/*`-regels naar `/events` in plaats van ze te
+verwijderen — dan blijven de oude links hun waarde doorgeven.
+
+`resources/views/errors/404.blade.php` vangt de rest op in de huisstijl
+(`noindex`, vertaald via `__()`, links naar home/muziek/boeken).
+
+Bewaakt door `tests/Feature/RedirectsTest.php`.
+
 ### Nog te doen
 - [ ] **Echte content**: placeholder-foto's (Unsplash) en de demo-mp3's (2 sets
       herhaald) vervangen via de media-library / het `mixes`-blok.
 - [ ] Content migreren van de bestaande el-pablo.com.
+- [x] Redirects oude WP-site (57) + eigen 404-pagina.
 - [x] Lettertype gekozen (Anton + Inter).
 - [x] Juridische pagina's geseed (cookiebeleid + privacybeleid).
 - [x] `MAIL_FROM_ADDRESS` = info@el-pablo.com.
