@@ -1,9 +1,23 @@
 # Go-live el-pablo.com — runbook
 
-De hosting draait nu **WordPress**. Die blijft ongestoord online tot het allerlaatste
-moment: we bouwen de Laravel-site er volledig náást op, testen hem, en wisselen dan
-in één handeling de docroot om. WordPress gaat daarbij niet weg maar naar
-`~/www-wordpress-backup` — dat is meteen de rollback.
+> **STATUS: LIVE sinds 2026-08-06.** www.el-pablo.com draait de Laravel-site.
+> De oude WordPress staat intact in `~/www-wordpress-backup` (6,9 GB) — terugdraaien
+> kan met `bash rollback.sh`. Pas opruimen als alles dagen goed draait.
+>
+> **Serverpaden:** app in `~/elpablo`, docroot `~/www`, staging-docroot
+> `~/subsites/staging.el-pablo.com` (met `noindex`). PHP: `/usr/local/bin/php8.3`
+> — de kale `php` is 7.4. Node via NVM (v24).
+>
+> **www is canoniek**: `el-pablo.com` 301t naar `www.el-pablo.com` (regel staat in
+> `public/.htaccess`, vastgepind op het apex-domein zodat staging niet meegaat).
+> `APP_URL=https://www.el-pablo.com`.
+>
+> Volgende deploys: `git push` lokaal, dan op de server `bash deploy.sh`.
+
+Hieronder de procedure zoals uitgevoerd — bewaard als referentie voor de volgende
+site. De hosting draaide WordPress; die bleef ongestoord online terwijl de
+Laravel-site ernaast werd opgebouwd en op `staging.el-pablo.com` getest, waarna
+de docroot in één handeling omging.
 
 Zelfde aanpak als bij arkvannoe.be (juli 2026).
 
