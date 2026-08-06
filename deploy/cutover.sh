@@ -75,7 +75,17 @@ find "$PUBLIC_DIR" -maxdepth 1 -mindepth 1 ! -name index.php ! -name storage \
 ln -s "$APP_DIR/storage/app/public" "$WWW_DIR/storage"
 printf "%s\n" "<?php require '$PUBLIC_DIR/index.php';" > "$WWW_DIR/index.php"
 
-echo "=== 3/4  Caches + OPcache ==="
+echo "=== 3/4  APP_URL, caches + OPcache ==="
+# Tijdens de testfase stond APP_URL op staging. Canonical, hreflang, og:image en
+# de sitemap worden daaruit opgebouwd, dus dit moet mee — anders wijst de live
+# site zoekmachines naar staging (dat noindex is).
+if grep -q '^APP_URL=https://staging\.' "$APP_DIR/.env"; then
+  sed -i "s|^APP_URL=.*|APP_URL=$DOMAIN|" "$APP_DIR/.env"
+  echo "    APP_URL -> $DOMAIN"
+else
+  echo "    APP_URL: $(grep '^APP_URL=' "$APP_DIR/.env")"
+fi
+
 "$PHP" artisan optimize:clear
 "$PHP" artisan optimize
 "$PHP" artisan filament:optimize 2>/dev/null || true
