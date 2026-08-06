@@ -39,7 +39,7 @@ mv "$BACKUP_DIR" "$WWW_DIR"
 
 echo "=== 3/3  OPcache resetten ==="
 # Zonder reset blijft FPM de Laravel-bytecode serveren (validate_timestamps=0).
-OC_FILE="_ocreset_$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n').php"
+OC_FILE="_ocreset_$(date +%s)$RANDOM$$.php"
 printf "%s\n" "<?php echo function_exists('opcache_reset') && opcache_reset() ? 'OK' : 'SKIP';" > "$WWW_DIR/$OC_FILE"
 trap 'rm -f "$WWW_DIR/$OC_FILE"' EXIT
 sleep 1

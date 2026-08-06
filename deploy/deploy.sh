@@ -13,6 +13,9 @@ set -euo pipefail
 # ---- Config ----
 PROJECT="elpablo-new"            # naam van de projectmap in je home
 DOMAIN="https://el-pablo.com"    # gebruikt voor de OPcache-reset-request
+# De kale `php` op deze server is 7.4 (voor de oude WordPress). Laravel 12
+# vereist 8.2+, dus altijd expliciet aanroepen.
+PHP="/usr/local/bin/php8.3"
 # ----------------
 
 export NVM_DIR="$HOME/.nvm"
@@ -28,7 +31,7 @@ echo "==> 1/7  Git pull"
 git pull --ff-only
 
 echo "==> 2/7  Composer install (productie)"
-composer install --no-dev --optimize-autoloader --no-interaction
+"$PHP" /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction
 
 echo "==> 3/7  Frontend build (Vite via NVM-Node)"
 npm ci
@@ -47,10 +50,10 @@ ln -s "$APP_DIR/storage/app/public" "$WWW_DIR/storage"
 printf "%s\n" "<?php require '$PUBLIC_DIR/index.php';" > "$WWW_DIR/index.php"
 
 echo "==> 5/7  Migraties + caches"
-php artisan optimize:clear
-php artisan migrate --force
-php artisan optimize
-php artisan filament:optimize 2>/dev/null || true
+"$PHP" artisan optimize:clear
+"$PHP" artisan migrate --force
+"$PHP" artisan optimize
+"$PHP" artisan filament:optimize 2>/dev/null || true
 
 echo "==> 6/7  Schrijfrechten"
 chmod -R 775 storage bootstrap/cache
@@ -58,7 +61,7 @@ chmod -R 775 storage bootstrap/cache
 echo "==> 7/7  OPcache resetten (via FPM-request)"
 # Random bestandsnaam zodat dit endpoint niet raadbaar/misbruikbaar is, en het
 # wordt hoe dan ook direct opgeruimd (ook als de curl faalt).
-OC_FILE="_ocreset_$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n').php"
+OC_FILE="_ocreset_$(date +%s)$RANDOM$$.php"
 printf "%s\n" "<?php echo function_exists('opcache_reset') && opcache_reset() ? 'OK' : 'SKIP';" > "$WWW_DIR/$OC_FILE"
 trap 'rm -f "$WWW_DIR/$OC_FILE"' EXIT
 sleep 1

@@ -19,6 +19,7 @@
 set -euo pipefail
 
 PROJECT="elpablo-new"
+PHP="/usr/local/bin/php8.3"   # kale `php` is hier 7.4 (oude WordPress)
 DOMAIN="https://el-pablo.com"
 
 APP_DIR="$HOME/$PROJECT"
@@ -44,7 +45,7 @@ fi
 
 # Draait de app überhaupt? Zo niet, dan zetten we een kapotte site live.
 cd "$APP_DIR"
-php artisan about --only=environment >/dev/null 2>&1 || fail "php artisan werkt niet in $APP_DIR."
+"$PHP" artisan about --only=environment >/dev/null 2>&1 || fail "php artisan werkt niet in $APP_DIR."
 
 # Is /www inderdaad nog WordPress? Zo niet, dan is er iets anders aan de hand.
 if [ ! -e "$WWW_DIR/wp-config.php" ] && [ ! -d "$WWW_DIR/wp-content" ]; then
@@ -75,11 +76,11 @@ ln -s "$APP_DIR/storage/app/public" "$WWW_DIR/storage"
 printf "%s\n" "<?php require '$PUBLIC_DIR/index.php';" > "$WWW_DIR/index.php"
 
 echo "=== 3/4  Caches + OPcache ==="
-php artisan optimize:clear
-php artisan optimize
-php artisan filament:optimize 2>/dev/null || true
+"$PHP" artisan optimize:clear
+"$PHP" artisan optimize
+"$PHP" artisan filament:optimize 2>/dev/null || true
 
-OC_FILE="_ocreset_$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n').php"
+OC_FILE="_ocreset_$(date +%s)$RANDOM$$.php"
 printf "%s\n" "<?php echo function_exists('opcache_reset') && opcache_reset() ? 'OK' : 'SKIP';" > "$WWW_DIR/$OC_FILE"
 trap 'rm -f "$WWW_DIR/$OC_FILE"' EXIT
 sleep 1
