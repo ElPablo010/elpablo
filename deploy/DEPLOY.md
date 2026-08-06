@@ -130,23 +130,25 @@ staan, dus je kunt rustig repareren en `cutover.sh` opnieuw draaien.
 - [ ] SSL: bestond al voor WordPress, dus normaal niets te doen. Geeft HTTPS een
       403, dan is het cert niet mee verhuisd → Let's Encrypt opnieuw uitgeven.
 
-### Let op: de demo-mp3's breken bij de cutover
+### Mixes — opgelost, maar let op bij nieuwe uploads
 
-De mixes verwijzen 24× naar `https://www.el-pablo.com/wp-content/uploads/2025/05/...`
-— bestanden die *op de WordPress zelf* staan. Zodra die naar de backup-map gaat,
-geven ze een 404 en speelt er niets meer af.
+Alle 12 mix-items (NL/EN/ES, home + muziek) wijzen nu naar eigen uploads onder
+`/storage/website-audio/`. Er staat niets meer op de oude WordPress, dus de
+cutover breekt de spelers niet.
 
-Twee opties, vóór of vlak na de cutover:
+**Wel onthouden:** elke taal is een eigen pagina met eigen secties. Upload je in
+NL een nieuwe set, dan komt die *niet* vanzelf op `/en` en `/es`. Daarvoor is:
 
-1. **Eigen uploads** — de sets via *Muziek → Mixes → Upload mp3* opnieuw
-   toevoegen. Voorkeur: het is toch placeholder-content (2 sets, 6× herhaald).
-2. **Overzetten uit de backup** — de bestanden staan na de cutover nog in
-   `~/www-wordpress-backup/wp-content/uploads/2025/05/`. Kopiëren naar
-   `~/elpablo-new/storage/app/public/website-audio/` en de URL's in de mixes
-   aanpassen naar `/storage/website-audio/<bestand>.mp3`.
+```bash
+php artisan mixes:sync-media --dry-run    # toon wat er zou wijzigen
+php artisan mixes:sync-media              # audio + covers van NL naar EN/ES
+```
 
-De cover-afbeeldingen zijn Unsplash-URL's; die blijven werken, maar zijn nog
-placeholders.
+De Nederlandse pagina is de bron; vertaalde subtitels blijven staan, en items die
+in NL verdwijnen worden ook uit de vertalingen gehaald.
+
+De cover-afbeeldingen komen uit de media-library. Op de EN/ES-pagina's stonden nog
+Unsplash-placeholders; die zijn met dezelfde sync meegenomen.
 
 ### WordPress opruimen
 
