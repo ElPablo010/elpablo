@@ -17,6 +17,7 @@
     $title = $title ?? \App\Support\Seo::siteName();
     $description = $description ?? \App\Support\Seo::defaultDescription();
     $ogImage = \App\Support\Seo::absoluteUrl($image);
+    $favicon = \App\Support\SiteHeader::current()['favicon'] ?? null;
 @endphp
 
 <title>{{ $title }}</title>
@@ -24,6 +25,20 @@
 <meta name="robots" content="{{ $robots ?: 'index, follow' }}">
 @if ($canonical)
     <link rel="canonical" href="{{ $canonical }}">
+@endif
+
+{{-- Favicon — expliciet, want zonder deze tags vraagt de browser /favicon.ico op
+     en houdt hij het (gecachete) icoon van de vorige site op dit domein vast.
+     Staat er een favicon in de admin (Website → Header), dan wint die; anders
+     de meegeleverde merk-iconen in public/. Het ?v-nummer breekt de browsercache
+     open — verhoog het wanneer je de bestanden in public/ vervangt. --}}
+@if ($favicon)
+    <link rel="icon" href="{{ $favicon }}">
+    <link rel="apple-touch-icon" href="{{ $favicon }}">
+@else
+    <link rel="icon" href="/favicon.ico?v=2" sizes="32x32">
+    <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
 @endif
 
 {{-- hreflang-alternates: vertelt zoekmachines welke taalversies bestaan. --}}

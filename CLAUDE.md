@@ -186,6 +186,30 @@ verwijderen — dan blijven de oude links hun waarde doorgeven.
 
 Bewaakt door `tests/Feature/RedirectsTest.php`.
 
+## Merk-chrome: logo naast de naam + favicon
+
+**Logo én naam.** Header en footer toonden vroeger *óf* het logo *óf* de naam —
+zodra je een logo instelde verdween "El Pablo". Nu staat het beeldmerk links met
+de naam (en ondertitel) ernaast. Bevat een logo de merknaam zelf al, zet dan
+*Naam naast het logo tonen* uit (Website → Header, en idem in de footer onder
+*Merk & tekst*). De sleutel heet `show_name` in de `header`- en
+`footer.brand`-blob; ontbreekt hij, dan geldt `true`.
+
+**Favicon.** De `<head>` had géén `<link rel="icon">`, waardoor de browser
+`/favicon.ico` opvroeg — een leeg bestand — en het gecachete WordPress-icoon van
+de vorige site op dit domein bleef tonen. Nu:
+
+- `public/favicon.ico` (32×32), `public/favicon.svg` en
+  `public/apple-touch-icon.png` (180×180) staan in de repo: het beeldmerk in
+  `primary-600` op een `ink-950`-tegel. `deploy.sh` bouwt `/www` elke deploy vers
+  op met symlinks naar `public/*`, dus ze komen vanzelf mee.
+- Een eigen favicon uploaden kan via **Website → Header → Favicon**; die wint van
+  de bestanden in `public/`.
+- De links dragen `?v=2`. Vervang je de bestanden in `public/`, verhoog dat
+  nummer in `meta.blade.php` — anders blijven browsers het oude icoon tonen.
+
+Bewaakt door `tests/Feature/BrandingTest.php`.
+
 ### Nog te doen
 - [ ] **Echte content**: placeholder-foto's (Unsplash) en de demo-mp3's (2 sets
       herhaald) vervangen via de media-library / het `mixes`-blok.

@@ -29,11 +29,14 @@
             :class="scrolled ? 'bg-ink-950/90' : 'bg-ink-950/70'"
         >
             <div class="flex items-center justify-between gap-6 px-4 py-3 sm:px-6">
-                {{-- Logo / merknaam --}}
+                {{-- Logo + merknaam — het beeldmerk links, de naam ernaast. Zonder
+                     logo staat de naam er alleen; met een logo dat de naam zelf al
+                     bevat zet je "Naam naast het logo tonen" uit in de admin. --}}
                 <a href="{{ Locale::href('/') }}" class="flex items-center gap-3 text-white">
                     @if (! empty($header['logo']))
                         <img src="{{ $header['logo'] }}" alt="{{ $header['name'] }}" class="h-9 w-auto">
-                    @else
+                    @endif
+                    @if (empty($header['logo']) || ($header['show_name'] ?? true))
                         <span class="flex flex-col leading-none">
                             <span class="font-display text-2xl tracking-tight">{{ $header['name'] }}</span>
                             @if (! empty($header['subtitle']))

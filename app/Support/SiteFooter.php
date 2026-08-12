@@ -38,6 +38,9 @@ class SiteFooter
             'brand' => [
                 'logo' => null,
                 'name' => config('app.name'),
+                // Zie SiteHeader: naam naast het logo tonen, tenzij het logo de
+                // merknaam zelf al bevat.
+                'show_name' => true,
                 'subtitle' => '',
                 'tagline' => '',
             ],

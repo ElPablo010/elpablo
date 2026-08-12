@@ -9,6 +9,7 @@ use App\Support\SiteHeader;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Group;
@@ -57,6 +58,15 @@ class HeaderSettings extends Page
                             ->label('Ondertitel')
                             ->maxLength(120)
                             ->helperText('Kleine tekst onder de naam (bv. de locatie). Laat leeg om te verbergen.'),
+                        Toggle::make('show_name')
+                            ->label('Naam naast het logo tonen')
+                            ->helperText('Staat aan: het logo verschijnt links met de naam (en ondertitel) ernaast. Zet uit wanneer het logo de naam zelf al bevat.'),
+                    ]),
+
+                Section::make('Favicon')
+                    ->description('Het kleine icoon in het browsertabblad en bij een bladwijzer.')
+                    ->schema([
+                        MediaPickerField::make('favicon', 'Favicon', required: false, helperText: 'Bij voorkeur een vierkant beeld (min. 180×180) met het beeldmerk alleen — tekst is onleesbaar op 16 pixels. Laat leeg om het standaardicoon van de site te gebruiken.'),
                     ]),
 
                 Section::make('CTA-knop')

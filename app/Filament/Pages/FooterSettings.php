@@ -9,6 +9,7 @@ use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Group;
@@ -112,6 +113,9 @@ class FooterSettings extends Page
                                     ->label('Ondertitel')
                                     ->maxLength(120)
                                     ->helperText('Kleine tekst onder de naam (bv. een baseline). Laat leeg om te verbergen.'),
+                                Toggle::make('show_name')
+                                    ->label('Naam naast het logo tonen')
+                                    ->helperText('Zet uit wanneer het logo de naam zelf al bevat.'),
                                 Textarea::make('tagline')
                                     ->label('Tekst')
                                     ->rows(3)

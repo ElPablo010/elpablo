@@ -23,14 +23,18 @@
         <div class="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
             {{-- Brand + social --}}
             <div>
-                <a href="{{ Locale::href('/') }}" class="inline-flex flex-col leading-none text-white">
+                {{-- Beeldmerk links, naam ernaast — zelfde logica als de header. --}}
+                <a href="{{ Locale::href('/') }}" class="inline-flex items-center gap-3 text-white">
                     @if (! empty($brand['logo']))
                         <img src="{{ $brand['logo'] }}" alt="{{ $brand['name'] ?? config('app.name') }}" class="h-10 w-auto">
-                    @else
-                        <span class="font-display text-3xl tracking-tight">{{ $brand['name'] ?? config('app.name') }}</span>
-                        @if (! empty($brand['subtitle']))
-                            <span class="mt-1 text-[0.65rem] font-medium uppercase tracking-[0.25em] text-primary-500">{{ $brand['subtitle'] }}</span>
-                        @endif
+                    @endif
+                    @if (empty($brand['logo']) || ($brand['show_name'] ?? true))
+                        <span class="flex flex-col leading-none">
+                            <span class="font-display text-3xl tracking-tight">{{ $brand['name'] ?? config('app.name') }}</span>
+                            @if (! empty($brand['subtitle']))
+                                <span class="mt-1 text-[0.65rem] font-medium uppercase tracking-[0.25em] text-primary-500">{{ $brand['subtitle'] }}</span>
+                            @endif
+                        </span>
                     @endif
                 </a>
                 @if (! empty($brand['tagline']))

@@ -6,7 +6,7 @@ use App\Models\Page;
 use App\Models\Setting;
 
 /**
- * Header-instellingen: logo, naam, ondertitel en CTA-knop.
+ * Header-instellingen: logo, favicon, naam, ondertitel en CTA-knop.
  *
  * defaults() levert neutrale startwaarden zodat de header rendert vóór de klant
  * iets aanpast in de admin. current() legt de opgeslagen waarden over de
@@ -25,7 +25,11 @@ class SiteHeader
     {
         return [
             'logo' => null,
+            'favicon' => null,
             'name' => config('app.name'),
+            // Naam (+ ondertitel) naast het logo tonen. Staat een logo ingesteld
+            // dat de merknaam al bevat, dan zet je dit uit.
+            'show_name' => true,
             'subtitle' => '',
             'cta' => [
                 'label' => '',
