@@ -18,6 +18,7 @@ return [
     // de klant hem zelf kan beheren. Deze env-fallback is er voor CI/lokaal.
     'anthropic' => [
         'api_key' => env('ANTHROPIC_API_KEY'),
+        'model' => env('ANTHROPIC_MODEL', 'claude-opus-5'),
     ],
 
     // Stripe-secrets komen primair uit Instellingen → Betalingen (database);

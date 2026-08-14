@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Pages\Tables;
 
+use App\Filament\Actions\TranslateAction;
 use App\Models\Page;
 use App\Support\Locale;
 use Filament\Actions\Action;
@@ -84,6 +85,7 @@ class PagesTable
                     ->label('Gepubliceerd'),
             ])
             ->recordActions([
+                TranslateAction::record(subject: 'pagina'),
                 Action::make('view')
                     ->label('Bekijk op site')
                     ->icon(Heroicon::OutlinedEye)
@@ -100,6 +102,7 @@ class PagesTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    TranslateAction::bulk(subjectPlural: 'pagina\'s'),
                     DeleteBulkAction::make(),
                 ]),
             ]);

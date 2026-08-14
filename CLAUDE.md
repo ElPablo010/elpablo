@@ -58,6 +58,33 @@ Inter). Pagina's: Home, Over, Muziek (inline audiospelers + download), Boeken
   de taal klopt ook na een re-render (Livewire post naar /livewire/update zonder
   locale-prefix).
 
+## AI-vertaling (make-multilingual)
+
+De AI-vertaallaag uit ark-van-noe is geïnstalleerd via de `make-multilingual`-skill
+(2026-08-14), aangepast aan dit project:
+
+- **"Vertalen met AI"** (🗣-knop) op de pagina- én events-lijst, plus een bulk-actie
+  die als **queued batch** draait (`TranslateRecordJob`, database-queue; de
+  scheduler start elke minuut `queue:work --stop-when-empty` — live is daarvoor de
+  bestaande `schedule:run`-cron genoeg). Klaar-melding in het belletje.
+- **Pagina's**: `PageTranslator` vertaalt paginavelden + sectie-JSON en bewaart de
+  vertaling als gekoppelde rij met **dezelfde slug** (gedeelde slug per taal —
+  links lokaliseren bij het renderen via `Locale::href()`, dus opgeslagen
+  `href`/`page_id` blijven bewust NL-vormig; er is géén link-remapping zoals in ark).
+- **Events**: `EventTranslator` schrijft naar de bestaande `event_translations`-rijen
+  (naam, korte + lange beschrijving; HTML blijft intact).
+- **API-sleutel**: `Setting 'anthropic_api_key'` (Instellingen → Algemeen, gedeeld
+  met de SEO-adviseur); `.env ANTHROPIC_API_KEY` is de terugval. Model via
+  `ANTHROPIC_MODEL` (default `claude-opus-5`).
+- **Harde regel**: nieuw sectieveld dat géén tekst is (kleur, layout, id, URL)?
+  Voeg de sleutel toe aan `$skipKeys` in
+  `app/Services/Translation/Concerns/TranslatesContentArrays.php`, anders wordt
+  bv. een kleurwaarde mee vertaald en stort de sectie stil in.
+- Vaste UI-teksten blijven via `lang/en.json`/`lang/es.json` (`__()`) — die vertaal
+  je nog handmatig; alleen pagina- en eventcontent loopt via de AI-knoppen.
+
+Tests: `tests/Feature/AiTranslationTest.php`.
+
 ## SEO-monitoring (seo-analytics)
 
 De `seo-analytics`-skill draait: DataForSEO-tracking, een wekelijkse AI-briefing

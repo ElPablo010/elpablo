@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Events\Tables;
 
+use App\Filament\Actions\TranslateAction;
 use App\Models\Event;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -63,6 +64,7 @@ class EventsTable
                     ),
             ])
             ->recordActions([
+                TranslateAction::record(subject: 'event'),
                 Action::make('view')
                     ->label('Bekijk op site')
                     ->icon(Heroicon::OutlinedEye)
@@ -79,6 +81,7 @@ class EventsTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    TranslateAction::bulk(subjectPlural: 'events'),
                     DeleteBulkAction::make(),
                 ]),
             ]);

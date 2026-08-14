@@ -57,4 +57,29 @@ class Locale
 
         return $href === '/' ? '/'.$locale : '/'.$locale.$href;
     }
+
+    /**
+     * Alle ondersteunde talen behalve de gegeven — de doeltalen voor een
+     * vertaling vanuit die taal.
+     *
+     * @return array<int, string>
+     */
+    public static function others(string $except): array
+    {
+        return array_values(array_diff(self::supported(), [$except]));
+    }
+
+    /**
+     * Voluit geschreven taalnaam voor meldingen en keuzelijsten in de admin
+     * ("vertaald naar het Spaans"); LABELS blijft de korte badge-variant.
+     */
+    public static function name(string $locale): string
+    {
+        return match ($locale) {
+            'nl' => 'Nederlands',
+            'en' => 'Engels',
+            'es' => 'Spaans',
+            default => strtoupper($locale),
+        };
+    }
 }
