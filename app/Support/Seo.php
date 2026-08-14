@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\Event;
 use App\Models\Page;
 use App\Models\WebsiteMedia;
 use Illuminate\Support\Str;
@@ -159,6 +160,174 @@ class Seo
         }
 
         return $result;
+    }
+
+    /**
+     * Meta-bundel + JSON-LD voor een event-detailpagina, in een specifieke taal.
+     *
+     * @return array<string, mixed>
+     */
+    public static function fromEvent(Event $event, string $locale): array
+    {
+        $canonical = self::absoluteUrl($event->localizedPath($locale));
+
+        $title = filled($event->meta_title) ? $event->meta_title : $event->translated('name', $locale);
+        $description = filled($event->meta_description)
+            ? $event->meta_description
+            : Str::of((string) $event->translated('short_description', $locale))->stripTags()->squish()->value();
+
+        $dimensions = filled($event->image_url) ? WebsiteMedia::dimensionsForUrl($event->image_url) : [];
+
+        return [
+            'title' => $title,
+            'description' => $description,
+            'canonical' => $canonical,
+            'robots' => 'index, follow',
+            'image' => $event->image_url,
+            'imageAlt' => filled($event->image_alt) ? $event->image_alt : $title,
+            'imageWidth' => $dimensions['width'] ?? null,
+            'imageHeight' => $dimensions['height'] ?? null,
+            'type' => 'website',
+            'locale' => $locale,
+            'alternates' => self::eventAlternates($event),
+            'schema' => [self::eventNode($event, $locale, $canonical, $description)],
+        ];
+    }
+
+    /**
+     * Meta-bundel voor het eventoverzicht (/events) in een specifieke taal.
+     *
+     * @return array<string, mixed>
+     */
+    public static function fromEventIndex(string $locale): array
+    {
+        $canonical = self::absoluteUrl(Locale::href('/events', $locale));
+
+        $alternates = [];
+        foreach (Locale::supported() as $alt) {
+            $alternates[$alt] = self::absoluteUrl(Locale::href('/events', $alt));
+        }
+
+        $title = __('Events');
+        $description = __('Alle events van :name: data, locaties en tickets.', ['name' => self::siteName()]);
+
+        return [
+            'title' => $title,
+            'description' => $description,
+            'canonical' => $canonical,
+            'robots' => 'index, follow',
+            'image' => null,
+            'imageAlt' => null,
+            'imageWidth' => null,
+            'imageHeight' => null,
+            'type' => 'website',
+            'locale' => $locale,
+            'alternates' => $alternates,
+            'schema' => [[
+                '@type' => 'CollectionPage',
+                '@id' => $canonical.'#collection',
+                'url' => $canonical,
+                'name' => $title,
+                'isPartOf' => ['@id' => self::baseUrl().'/#website'],
+                'inLanguage' => self::htmlLang($locale),
+            ]],
+        ];
+    }
+
+    /**
+     * hreflang-alternates voor een event: NL altijd (de bron), EN/ES enkel als
+     * er een vertaling mét inhoud bestaat — een lege placeholder-rij zou anders
+     * naar een pagina wijzen die gewoon Nederlands toont.
+     *
+     * @return array<string, string> locale => absolute URL
+     */
+    public static function eventAlternates(Event $event): array
+    {
+        $result = [Locale::DEFAULT => self::absoluteUrl($event->localizedPath(Locale::DEFAULT))];
+
+        foreach (Locale::supported() as $locale) {
+            if ($locale === Locale::DEFAULT) {
+                continue;
+            }
+
+            if ($event->translationFor($locale)?->hasContent()) {
+                $result[$locale] = self::absoluteUrl($event->localizedPath($locale));
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * schema.org Event-node met een Offer per tickettype (actuele promoprijs,
+     * beschikbaarheid en verkoopdeadline). Sterk voor event-rich-results.
+     *
+     * @return array<string, mixed>
+     */
+    private static function eventNode(Event $event, string $locale, string $canonical, string $description): array
+    {
+        $startDate = $event->start_date->format('Y-m-d');
+        if ($event->start_time) {
+            $startDate = $event->start_date
+                ->copy()
+                ->setTimeFromTimeString($event->start_time)
+                ->format('Y-m-d\TH:i:sP');
+        }
+
+        $endBase = $event->end_date ?? $event->start_date;
+        $endDate = $endBase->format('Y-m-d');
+        if ($event->end_time) {
+            $end = $endBase->copy()->setTimeFromTimeString($event->end_time);
+            // Een einduur vóór het startuur op dezelfde dag = na middernacht.
+            if (! $event->end_date && $event->start_time && $event->end_time < $event->start_time) {
+                $end = $end->addDay();
+            }
+            $endDate = $end->format('Y-m-d\TH:i:sP');
+        }
+
+        $offers = [];
+        foreach ($event->eventTicketTypes as $pivot) {
+            $price = $event->currentPriceFor($pivot->ticket_type_id);
+            $offers[] = array_filter([
+                '@type' => 'Offer',
+                'name' => $pivot->ticketType?->nameFor($locale),
+                'price' => number_format($price['current'], 2, '.', ''),
+                'priceCurrency' => 'EUR',
+                'availability' => $pivot->isSoldOut() || ! $pivot->salesOpen()
+                    ? 'https://schema.org/SoldOut'
+                    : 'https://schema.org/InStock',
+                'validThrough' => $pivot->sales_end_date,
+                'url' => $canonical,
+            ], fn ($v) => filled($v));
+        }
+
+        return array_filter([
+            '@type' => 'Event',
+            '@id' => $canonical.'#event',
+            'url' => $canonical,
+            'name' => $event->translated('name', $locale),
+            'description' => $description,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'eventStatus' => $event->isCancelled()
+                ? 'https://schema.org/EventCancelled'
+                : 'https://schema.org/EventScheduled',
+            'eventAttendanceMode' => 'https://schema.org/OfflineEventAttendanceMode',
+            'location' => array_filter([
+                '@type' => 'Place',
+                'name' => $event->venue_name,
+                'address' => array_filter([
+                    '@type' => 'PostalAddress',
+                    'streetAddress' => $event->venue_address,
+                    'addressLocality' => $event->venue_city,
+                    'addressCountry' => 'BE',
+                ], fn ($v) => filled($v)),
+            ], fn ($v) => filled($v)),
+            'image' => self::absoluteUrl($event->image_url),
+            'organizer' => ['@id' => self::baseUrl().'/#business'],
+            'offers' => $offers !== [] ? $offers : null,
+            'inLanguage' => self::htmlLang($locale),
+        ], fn ($v) => filled($v));
     }
 
     /**

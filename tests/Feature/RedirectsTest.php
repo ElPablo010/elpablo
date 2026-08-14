@@ -32,7 +32,7 @@ it('redirects old WordPress URLs to their new counterpart', function (string $fr
     ['/mixtapes_categorie/reggaeton', '/muziek'],
     ['/downloads/rumba-transition-up', '/muziek'],
     // Geen equivalent (nog): naar de homepage.
-    ['/events/salsa-the-beach', '/'],
+    ['/events/salsa-the-beach', '/events'],
     ['/party_shots/ark-beach', '/'],
     ['/tag/urban', '/'],
 ]);

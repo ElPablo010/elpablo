@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Event;
 use App\Models\Page;
+use App\Support\Locale;
 use App\Support\Seo;
 use App\Support\SiteFooter;
 use Illuminate\Http\Response;
@@ -41,6 +43,34 @@ class SeoController extends Controller
                 'loc' => Seo::absoluteUrl(Seo::localizedPath($page)),
                 'lastmod' => $page->updated_at,
                 'priority' => $page->is_homepage ? '1.0' : ($page->is_cornerstone ? '0.8' : '0.6'),
+                'alternates' => $alternates,
+            ];
+        }
+
+        // Eventoverzicht (bestaat in elke taal) + alle gepubliceerde events.
+        $indexAlternates = [];
+        foreach (Locale::supported() as $locale) {
+            $indexAlternates[$locale] = Seo::absoluteUrl(Locale::href('/events', $locale));
+        }
+        $indexAlternates['x-default'] = $indexAlternates[Locale::DEFAULT];
+
+        $events = Event::query()->published()->with('translations')->get();
+
+        $urls[] = [
+            'loc' => $indexAlternates[Locale::DEFAULT],
+            'lastmod' => $events->max('updated_at'),
+            'priority' => '0.8',
+            'alternates' => $indexAlternates,
+        ];
+
+        foreach ($events as $event) {
+            $alternates = Seo::eventAlternates($event);
+            $alternates['x-default'] = $alternates[Locale::DEFAULT];
+
+            $urls[] = [
+                'loc' => $event->publicUrl(Locale::DEFAULT),
+                'lastmod' => $event->updated_at,
+                'priority' => '0.6',
                 'alternates' => $alternates,
             ];
         }
@@ -101,6 +131,22 @@ class SeoController extends Controller
                 $url = Seo::absoluteUrl($page->is_homepage ? '/' : '/'.$page->slug);
                 $desc = filled($page->meta_description) ? ': '.$page->meta_description : '';
                 $lines[] = '- ['.($page->meta_title ?: $page->title).']('.$url.')'.$desc;
+            }
+            $lines[] = '';
+        }
+
+        $events = Event::query()
+            ->published()
+            ->upcoming()
+            ->notCancelled()
+            ->orderBy('start_date')
+            ->get();
+
+        if ($events->isNotEmpty()) {
+            $lines[] = '## Events';
+            foreach ($events as $event) {
+                $desc = filled($event->short_description) ? ': '.$event->short_description : '';
+                $lines[] = '- ['.$event->name.' ('.$event->dateLabel().')]('.$event->publicUrl(Locale::DEFAULT).')'.$desc;
             }
             $lines[] = '';
         }

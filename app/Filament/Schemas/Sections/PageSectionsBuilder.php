@@ -61,6 +61,12 @@ class PageSectionsBuilder
                     ...SectionCommonFields::make(),
                     ...CardsFields::make(),
                 ]),
+            Block::make('events')
+                ->label(self::numberedLabel('Events'))
+                ->schema([
+                    ...SectionCommonFields::make(),
+                    ...EventsFields::make(),
+                ]),
             Block::make('faq')
                 ->label(self::numberedLabel('FAQ'))
                 ->schema([

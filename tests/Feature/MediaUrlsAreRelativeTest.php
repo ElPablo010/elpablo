@@ -3,6 +3,7 @@
 use App\Models\Page;
 use App\Models\WebsiteMedia;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Livewire;
 
 /**
  * Media-URL's worden als string opgeslagen (in page_sections.content en
@@ -67,4 +68,28 @@ it('still renders og:image as an absolute url', function () {
     $this->get('/')
         ->assertOk()
         ->assertSee(rtrim(config('app.url'), '/').'/storage/website-media/foo.webp', escape: false);
+});
+
+/**
+ * Keerzijde van relatieve URL's: Filament's ImageColumn behandelt een relatief
+ * pad als bestandspad op de default-disk (local), vindt daar niets en toont
+ * dan géén thumbnail. De mediabibliotheek moet de kolom dus een ABSOLUTE URL
+ * voeden — brak stilletjes toen de URL's relatief gemaakt werden.
+ */
+it('feeds the admin media thumbnail an absolute url', function () {
+    $media = WebsiteMedia::create([
+        'disk' => 'public',
+        'path' => 'website-media/foo.webp',
+        'url' => '/storage/website-media/foo.webp',
+        'mime' => 'image/webp',
+        'size_bytes' => 1024,
+        'width' => 100,
+        'height' => 100,
+        'original_filename' => 'foo.jpg',
+    ]);
+
+    $this->actingAs(admin());
+
+    Livewire::test(\App\Filament\Resources\WebsiteMedia\Pages\ListWebsiteMedia::class)
+        ->assertTableColumnStateSet('thumbnail', url('/storage/website-media/foo.webp'), $media);
 });

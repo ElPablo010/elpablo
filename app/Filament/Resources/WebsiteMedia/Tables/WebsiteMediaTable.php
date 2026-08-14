@@ -27,7 +27,11 @@ class WebsiteMediaTable
             ->columns([
                 Stack::make([
                     ImageColumn::make('thumbnail')
-                        ->getStateUsing(fn (WebsiteMedia $record): string => $record->url)
+                        // Absolute URL verplicht: een relatief pad (/storage/…)
+                        // behandelt Filament als bestandspad op de default-disk
+                        // (local), vindt daar niets en toont dan géén thumbnail.
+                        // url() maakt er een URL op de huidige host van.
+                        ->getStateUsing(fn (WebsiteMedia $record): string => url($record->url))
                         ->imageHeight('10rem')
                         ->imageWidth('100%')
                         // Inline style i.p.v. Tailwind-classes: Filament laadt de

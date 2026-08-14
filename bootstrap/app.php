@@ -15,6 +15,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\HandleRedirects::class,
         ]);
+
+        // Stripe post webhooks zonder CSRF-token; de handtekening in de
+        // Stripe-Signature-header is daar de echte verificatie.
+        $middleware->validateCsrfTokens(except: [
+            'stripe/webhook',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

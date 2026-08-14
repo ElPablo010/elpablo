@@ -30,7 +30,13 @@ class PagesTable
                 TextColumn::make('title')
                     ->label('Titel')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    // Dé homepage herken je aan het huisje vóór de titel — een
+                    // hele kolom vinkjes voor iets dat maar één keer waar is,
+                    // was vooral ruis.
+                    ->icon(fn (Page $record): ?Heroicon => $record->is_homepage ? Heroicon::Home : null)
+                    ->iconColor('primary')
+                    ->tooltip(fn (Page $record): ?string => $record->is_homepage ? 'Dit is de homepage' : null),
                 TextColumn::make('locale')
                     ->label('Taal')
                     ->badge()
@@ -45,9 +51,6 @@ class PagesTable
                     ->searchable()
                     ->sortable()
                     ->toggleable(),
-                IconColumn::make('is_homepage')
-                    ->label('Homepage')
-                    ->boolean(),
                 IconColumn::make('published')
                     ->label('Gepubliceerd')
                     ->boolean(),
@@ -79,8 +82,6 @@ class PagesTable
                         : $query),
                 TernaryFilter::make('published')
                     ->label('Gepubliceerd'),
-                TernaryFilter::make('is_homepage')
-                    ->label('Homepage'),
             ])
             ->recordActions([
                 Action::make('view')

@@ -12,3 +12,8 @@ Artisan::command('inspire', function () {
 // genereren en de stand van zaken mailen. Maandagochtend, zodat het rapport er
 // staat bij de start van de week.
 Schedule::command('seo:weekly-report')->weeklyOn(1, '7:00');
+
+// Verlopen ticketreserveringen (verlaten checkouts) geven hun capaciteit weer
+// vrij. De checkout.session.expired-webhook doet dit meestal al; dit is het
+// vangnet voor gemiste webhooks.
+Schedule::command('events:release-expired-reservations')->everyFiveMinutes();

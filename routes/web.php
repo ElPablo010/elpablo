@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\PublicPageController;
 use App\Http\Controllers\SeoController;
+use App\Http\Controllers\TicketStatusController;
 use Illuminate\Support\Facades\Route;
 
 // Filament is het enige login-systeem; de korte /login redirect ernaartoe.
@@ -26,19 +28,45 @@ Route::middleware('auth')
     ->where('slug', '[a-z0-9-]+')
     ->name('design.preview');
 
+// Stripe-webhook (CSRF-vrij via bootstrap/app.php; de handtekening verifieert).
+Route::post('/stripe/webhook', [App\Http\Controllers\StripeWebhookController::class, 'handle'])->name('stripe.webhook');
+
+// Publieke ticketstatuspagina — de QR-code op elk ticket wijst hierheen.
+Route::get('/t/{token}', [TicketStatusController::class, 'show'])->name('ticket.status');
+
 // Meertalig: EN/ES draaien onder een locale-prefix. Vóór de NL catch-all
 // geregistreerd; de whereIn beperkt {locale} tot exact 'en'/'es' zodat gewone
 // NL-slugs (bv. /events) hier niet per ongeluk in vallen.
 Route::prefix('{locale}')
     ->whereIn('locale', ['en', 'es'])
     ->group(function (): void {
+        // Events vóór de {slug}-route, anders zou /en/events als pagina-slug matchen.
+        Route::get('/events', [EventController::class, 'index'])->name('events.index.localized');
+        Route::get('/events/{slug}', [EventController::class, 'show'])
+            ->where('slug', '[a-z0-9-]+')
+            ->name('events.show.localized');
+        Route::get('/events/{slug}/bedankt', [EventController::class, 'thanks'])
+            ->where('slug', '[a-z0-9-]+')
+            ->name('events.thanks.localized');
+
         Route::get('/', [PublicPageController::class, 'show'])->name('page.home.localized');
         Route::get('/{slug}', [PublicPageController::class, 'show'])
             ->where('slug', '[a-z0-9-]+')
             ->name('page.show.localized');
     });
 
+// Events (NL, op de root) — vóór de catch-all geregistreerd.
+Route::get('/events', [EventController::class, 'index'])->name('events.index');
+Route::get('/events/{slug}', [EventController::class, 'show'])
+    ->where('slug', '[a-z0-9-]+')
+    ->name('events.show');
+Route::get('/events/{slug}/bedankt', [EventController::class, 'thanks'])
+    ->where('slug', '[a-z0-9-]+')
+    ->name('events.thanks');
+
 // Catch-all paginarouter (NL homepage + alle slugs). Sluit admin/livewire/storage uit.
+// events/t/stripe staan er expliciet bij: de route-volgorde beschermt al, maar zo
+// is de intentie leesbaar én blijft dat zo als routes ooit herschikt worden.
 Route::get('/{slug?}', [PublicPageController::class, 'show'])
-    ->where('slug', '^(?!admin|login|livewire|storage|_debugbar|design).*$')
+    ->where('slug', '^(?!admin|login|livewire|storage|_debugbar|design|events|t/|stripe).*$')
     ->name('page.show');

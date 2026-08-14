@@ -20,6 +20,13 @@ return [
         'api_key' => env('ANTHROPIC_API_KEY'),
     ],
 
+    // Stripe-secrets komen primair uit Instellingen → Betalingen (database);
+    // deze env-fallbacks zijn er voor CI/lokaal — zelfde patroon als Anthropic.
+    'stripe' => [
+        'secret' => env('STRIPE_SECRET'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

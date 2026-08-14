@@ -21,9 +21,8 @@ use Illuminate\Database\Seeder;
  *   bundelt dat op één pagina).
  * - /contact-bookings splitste de oude site niet; de nieuwe site wel. De
  *   boekingspagina is de conversiepagina, dus -> /boeken.
- * - Events en party shots -> / (nog geen equivalent). Komt er later een
- *   events-pagina, wijzig dan het doel van deze regels naar /events in plaats
- *   van ze te verwijderen — dan blijven de oude links hun waarde doorgeven.
+ * - Oude event-URL's -> /events (het nieuwe eventoverzicht); party shots -> /
+ *   (fotoreportages zonder tegenhanger).
  * - Oude blogposts (/news, /hello-world, /el-pablo-pic-*, /marco-carola-*,
  *   /music-on-world-off, /music-off-world-on) krijgen BEWUST geen redirect:
  *   dat was grotendeels WordPress-ruis zonder tegenhanger. Ze mogen 404'en.
@@ -96,18 +95,20 @@ class RedirectSeeder extends Seeder
                 '/privacy-policy',
             ],
 
-            '/' => [
-                // Events: geen equivalent op de nieuwe site. Wijzig deze naar
-                // /events zodra die pagina bestaat.
-                '/events',
+            '/events' => [
+                // De oude WP-eventpagina's wijzen naar het nieuwe eventoverzicht,
+                // zodat de oude links hun linkwaarde blijven doorgeven. (/events
+                // zelf is nu een echte route en heeft geen redirect meer nodig.)
                 '/events/dance-holiday-2020',
                 '/events/de-schrikkel-fuif',
                 '/events/latin-vibes',
                 '/events/ritmo-sabroso',
                 '/events/rb-night',
                 '/events/salsa-the-beach',
+            ],
 
-                // Party shots: idem, fotoreportages zonder tegenhanger.
+            '/' => [
+                // Party shots: fotoreportages zonder tegenhanger op de nieuwe site.
                 '/party_shots',
                 '/party_shots/el-pablo-latin-lake',
                 '/party_shots/el-pablo-dance-holiday-bodrum-2019',
@@ -121,6 +122,12 @@ class RedirectSeeder extends Seeder
                 '/author/wgmaster',
             ],
         ];
+
+        // /events was vroeger een redirect naar / (er bestond nog geen
+        // eventpagina); nu is het een echte route. De oude rij moet weg, anders
+        // kaapt de redirect-middleware het nieuwe eventoverzicht — ook op live,
+        // waar die rij al geseed staat.
+        Redirect::where('from', '/events')->delete();
 
         foreach ($map as $to => $fromPaths) {
             foreach ($fromPaths as $from) {

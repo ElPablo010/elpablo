@@ -167,6 +167,73 @@ Livewire's **default is 12MB** — die was hier de blokkade. PHP's default is 2M
 bestand ook de andere formuliervelden). Wil je sets >95MB kunnen uploaden, zet
 beide dan op 256M.
 
+## Events & ticketverkoop
+
+Volwaardig events-posttype met tickets, kortingen en Stripe-checkout — vers
+gebouwd naar het model van bailando-latino, aangepast aan dit project (gasten
+zonder account, geen danser-rollen, meertalig met gedeelde voorraad).
+
+**Model.** Eén `events`-rij per event (gedeelde voorraad over alle talen); EN/ES
+in `event_translations` (rijen zonder inhoud tellen niet — `hasContent()`).
+Tickettypes zijn een globale catalogus (`ticket_types`); prijs/btw/verkoopvenster/
+**capaciteit** per event op de pivot `event_ticket_types` (eigen model — wordt
+bij checkout ge-`lockForUpdate` voor de capaciteitscheck). Bestellingen
+(`ticket_orders` + items + `event_tickets`, 1 rij = 1 ticket met ULID-token)
+ontstaan al bij het aanmaken van de Stripe-sessie als **Pending met
+Reserved-tickets** — zo is capaciteit exact. Reserveringen verlopen lokaal na
+40 min (`events:release-expired-reservations`, elke 5 min via de scheduler); de
+Stripe-sessie zelf verloopt na 30 min, dus betalen-na-vrijgave kan niet.
+
+**Prijslogica.** `Event::lineTotalFor()` is de enige waarheid (port uit
+bailando): automatische promo's (`event_ticket_discounts`: vaste promoprijs of
+koop-X+Y-gratis) — laagste regeltotaal wint bij overlap, nooit stapelen; BOGO
+wordt over de stuksprijs uitgesmeerd. Kortingscodes (`discount_codes`, met
+event-binding, limieten totaal/per e-mail — enkel **betaalde** orders tellen)
+via `DiscountCodeValidator`. Btw per orderregel (nooit hardcoded op de header).
+De Livewire-checkout (`App\Livewire\Events\TicketCheckout`, met `PersistsLocale`)
+rekent alles server-side — er is géén JS-spiegel van de prijslogica.
+
+**Betaalflow.** `TicketCheckoutService` → Stripe Checkout (hosted; card,
+Bancontact, iDEAL, Link, PayPal; één geaggregeerd line item; `client_reference_id`
+= uuid van `pending_stripe_sessions`). Fulfilment (`TicketOrderFulfillment`) is
+idempotent en loopt via twee kanalen: de webhook (`POST /stripe/webhook`,
+CSRF-vrij, faalpad = HTTP 500 zodat Stripe retryt + alarmmail 1×/24u) én de
+bedankpagina als fallback. Alles achter `App\Contracts\PaymentGateway`
+(`StripeGateway` in productie, `Tests\Fakes\FakePaymentGateway` in tests);
+secrets uit **Instellingen → Betalingen** (DB wint, .env is fallback).
+Totalen < € 0,50 na korting worden geweigerd (Stripe-minimum); een
+gratis-order-bypass is bewust niet gebouwd.
+
+**Tickets.** Bevestigingsmail in de taal van de koper (`SendTicketOrderEmailJob`,
+queue + dedupe per order, `force` voor opnieuw verzenden) met per ticket een
+PDF-bijlage (dompdf, QR als **SVG**-data-URI — geen imagick op Combell). QR wijst
+naar `/t/{token}` (publieke statuspagina). Check-in via **Events → Scannen**
+(html5-qrcode) of handmatig/omkeerbaar in de bestelling; `TicketScanner` kent
+ok/already/wrong_event/refunded/unpaid/not_found. Refund = actie op de
+bestelling (volledig, via Stripe; tickets worden ongeldig en geven capaciteit
+vrij). Events afgelasten = toggle (blijft zichtbaar met banner, verkoop stopt;
+terugbetalen blijft handmatig per bestelling).
+
+**Publiek.** `/events` + `/events/{slug}` (+ `/en`, `/es`; gedeelde slug), routes
+vóór de catch-all én vóór de `{slug}`-route in de locale-groep. `Seo::fromEvent()`
+levert meta + schema.org `Event`/`Offer`-JSON-LD; hreflang volgt `hasContent()`.
+Sitemap en llms.txt nemen events mee. Sectieblok `events` (teaser aankomende
+events) is registreerbaar op elke pagina. Oude WP `/events/*`-URL's redirecten
+nu naar `/events` (de `/events`-redirect zelf wordt door de seeder verwijderd —
+draai hem bij deploy).
+
+**Bij go-live niet vergeten:**
+- [ ] Stripe-keys invullen (Instellingen → Betalingen) en in het
+      Stripe-dashboard de webhook `https://www.el-pablo.com/stripe/webhook`
+      registreren met events `checkout.session.completed` +
+      `checkout.session.expired`; signing secret overnemen.
+- [ ] Queue-worker én scheduler-cron actief (mail + reserveringsvrijgave).
+- [ ] `php artisan db:seed --class=RedirectSeeder` (ruimt ook de oude
+      `/events`-redirect op).
+
+Bewaakt door `tests/Feature/Events/` (pricing, validator, capaciteit, checkout,
+webhook-idempotentie, mail/PDF, scan, publieke pagina's, SEO-assets, admin).
+
 ## Redirects van de oude site (bij go-live)
 
 De huidige el-pablo.com is een WordPress met **72 geïndexeerde URL's** (bron: de
