@@ -13,13 +13,21 @@
         default => 'btn-secondary',
     };
 
-    // Resolve de audio-URL: absolute URL (bv. geseede demo) of pad op de public disk.
+    // Resolve de audio-URL. AudioPickerField bewaart al een kant-en-klare URL
+    // ('/storage/website-audio/…' — relatief, zie MediaUrlsAreRelativeTest) en
+    // geseede demo's zijn absoluut ('http…'): beide ongemoeid laten. Alleen een
+    // kaal disk-pad ('website-audio/…') krijgt nog de /storage-prefix; opnieuw
+    // prefixen gaf '/storage/storage/…' en dus dode spelers en downloads.
     $audioUrl = function (?string $audio): ?string {
         if (blank($audio)) {
             return null;
         }
 
-        return str_starts_with($audio, 'http') ? $audio : Storage::disk('public')->url($audio);
+        if (str_starts_with($audio, 'http') || str_starts_with($audio, '/')) {
+            return $audio;
+        }
+
+        return Storage::disk('public')->url($audio);
     };
 @endphp
 
