@@ -1,33 +1,27 @@
 @props(['section' => null, 'content' => []])
 
 @php
-    use Illuminate\Support\Facades\Storage;
-
     $bg = \App\Filament\Schemas\Sections\SectionBackground::classes($content['background'] ?? null);
-    $items = $content['items'] ?? [];
+
+    // Mixtapes zijn een eigen posttype (Website → Mixtapes). "Toon alle
+    // mixtapes" volgt de versleepbare volgorde uit de admin; een handmatige
+    // selectie behoudt de volgorde waarin de ids in de sectie staan.
+    $showAll = (bool) ($content['show_all'] ?? true);
+    $ids = array_map('intval', $content['mixtape_ids'] ?? []);
+
+    $query = \App\Models\Mixtape::query()->published();
+
+    $mixtapes = $showAll
+        ? $query->ordered()->get()
+        : $query->whereIn('id', $ids)->get()
+            ->sortBy(fn ($mixtape) => array_search($mixtape->id, $ids))
+            ->values();
 
     $ctas = $content['ctas'] ?? [];
     $btnClass = fn (?string $v) => match ($v) {
         'primary' => 'btn-primary',
         'ghost' => 'btn-ghost',
         default => 'btn-secondary',
-    };
-
-    // Resolve de audio-URL. AudioPickerField bewaart al een kant-en-klare URL
-    // ('/storage/website-audio/…' — relatief, zie MediaUrlsAreRelativeTest) en
-    // geseede demo's zijn absoluut ('http…'): beide ongemoeid laten. Alleen een
-    // kaal disk-pad ('website-audio/…') krijgt nog de /storage-prefix; opnieuw
-    // prefixen gaf '/storage/storage/…' en dus dode spelers en downloads.
-    $audioUrl = function (?string $audio): ?string {
-        if (blank($audio)) {
-            return null;
-        }
-
-        if (str_starts_with($audio, 'http') || str_starts_with($audio, '/')) {
-            return $audio;
-        }
-
-        return Storage::disk('public')->url($audio);
     };
 @endphp
 
@@ -41,8 +35,8 @@
         />
 
         <div class="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            @foreach ($items as $i => $item)
-                @php $src = $audioUrl($item['audio'] ?? null); @endphp
+            @foreach ($mixtapes as $mixtape)
+                @php $src = $mixtape->resolvedAudioUrl(); @endphp
                 <div
                     x-data="{
                         playing: false,
@@ -53,7 +47,7 @@
                         fmt(s) { if (!s || isNaN(s)) return '0:00'; const m = Math.floor(s/60); const sec = Math.floor(s%60).toString().padStart(2,'0'); return m+':'+sec; },
                         seek(e) { const a = this.$refs.audio; if (!a.duration) return; const r = e.currentTarget.getBoundingClientRect(); a.currentTime = ((e.clientX - r.left)/r.width) * a.duration; },
                     }"
-                    @mix-play.window="if ($event.detail !== {{ $i }} && ! $refs.audio.paused) $refs.audio.pause()"
+                    @mix-play.window="if ($event.detail !== {{ $mixtape->id }} && ! $refs.audio.paused) $refs.audio.pause()"
                     class="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-ink-900"
                 >
                     {{-- Cover + play/pause-overlay --}}
@@ -63,10 +57,10 @@
                         class="group relative block aspect-square w-full cursor-pointer overflow-hidden bg-ink-800"
                         :aria-label="playing ? 'Pauzeer' : 'Speel af'"
                     >
-                        @if (! empty($item['cover']))
+                        @if (! empty($mixtape->cover_url))
                             <picture>
-                                <source srcset="{{ $item['cover'] }}" type="image/webp">
-                                <img src="{{ $item['cover'] }}" alt="{{ $item['title'] ?? '' }}" loading="lazy"
+                                <source srcset="{{ $mixtape->cover_url }}" type="image/webp">
+                                <img src="{{ $mixtape->cover_url }}" alt="{{ $mixtape->title }}" loading="lazy"
                                      class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
                             </picture>
                         @endif
@@ -81,9 +75,9 @@
 
                     {{-- Info + speler --}}
                     <div class="flex flex-1 flex-col p-6">
-                        <h3 class="text-lg font-bold text-white">{{ $item['title'] ?? '' }}</h3>
-                        @if (! empty($item['subtitle']))
-                            <p class="mt-1 text-sm text-gray-400">{{ $item['subtitle'] }}</p>
+                        <h3 class="text-lg font-bold text-white">{{ $mixtape->title }}</h3>
+                        @if (filled($mixtape->subtitle))
+                            <p class="mt-1 text-sm text-gray-400">{{ $mixtape->subtitle }}</p>
                         @endif
 
                         <audio
@@ -91,7 +85,7 @@
                             src="{{ $src }}"
                             preload="metadata"
                             class="hidden"
-                            @play="playing = true; $dispatch('mix-play', {{ $i }})"
+                            @play="playing = true; $dispatch('mix-play', {{ $mixtape->id }})"
                             @pause="playing = false"
                             @ended="playing = false; progress = 0; current = '0:00'"
                             @timeupdate="progress = $refs.audio.duration ? ($refs.audio.currentTime / $refs.audio.duration * 100) : 0; current = fmt($refs.audio.currentTime)"
@@ -121,7 +115,7 @@
                                 <span x-text="playing ? 'Pauze' : 'Afspelen'">Afspelen</span>
                             </button>
 
-                            @if (($item['allow_download'] ?? true) && $src)
+                            @if ($mixtape->allow_download && $src)
                                 <a
                                     href="{{ $src }}"
                                     download

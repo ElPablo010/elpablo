@@ -2,17 +2,18 @@
 
 namespace App\Filament\Schemas\Sections;
 
-use App\Filament\Schemas\Components\AudioPickerField;
-use App\Filament\Schemas\Components\MediaPickerField;
-use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\TextInput;
+use App\Models\Mixtape;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
-use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Utilities\Get;
 
 /**
- * Mixes — muziek/sets van de DJ, met een inline audiospeler (afspelen op de site)
- * en een optionele download-knop. Zelf-gehoste mp3's, geen platform-embeds: de
- * bezoeker speelt en downloadt zonder de site te verlaten.
+ * Mixes — muziek/sets van de DJ, met een inline audiospeler (afspelen op de
+ * site) en een optionele download-knop. De mixtapes zelf leven als eigen
+ * posttype (Website → Mixtapes); deze sectie toont alles of een selectie.
+ *
+ * show_all/mixtape_ids zijn geen tekst en staan daarom in de $skipKeys van
+ * TranslatesContentArrays.
  */
 class MixesFields
 {
@@ -21,42 +22,20 @@ class MixesFields
         return [
             ...HeadingFields::make(),
 
-            Repeater::make('items')
-                ->label('Mixes / sets')
-                ->collapsible()
-                ->collapsed()
-                ->collapseAllAction(RepeaterToggleStyle::make())
-                ->expandAllAction(RepeaterToggleStyle::make())
-                ->itemLabel(fn (array $state): ?string => $state['title'] ?? null)
-                ->schema([
-                    Grid::make(['default' => 1, 'md' => 2])
-                        ->schema([
-                            TextInput::make('title')
-                                ->label('Titel')
-                                ->required()
-                                ->maxLength(160),
-                            TextInput::make('subtitle')
-                                ->label('Ondertitel (optioneel)')
-                                ->placeholder('bv. Reggaeton & Latin House · 60 min')
-                                ->maxLength(160),
-                        ]),
+            Toggle::make('show_all')
+                ->label('Toon alle mixtapes')
+                ->helperText('Alle gepubliceerde mixtapes, in de volgorde van Website → Mixtapes. Zet uit om zelf een selectie te kiezen.')
+                ->default(true)
+                ->live(),
 
-                    AudioPickerField::make(
-                        'audio',
-                        'Audiobestand (mp3)',
-                        helperText: 'Upload de set als mp3. Bezoekers spelen ze rechtstreeks op de site af.',
-                    ),
-
-                    MediaPickerField::make('cover', 'Cover-afbeelding', required: false),
-
-                    Toggle::make('allow_download')
-                        ->label('Download toestaan')
-                        ->helperText('Toont een download-knop naast de speler.')
-                        ->default(true),
-                ])
-                ->columns(1)
-                ->defaultItems(0)
-                ->reorderable(),
+            Select::make('mixtape_ids')
+                ->label('Mixtapes')
+                ->multiple()
+                // Alfabetisch (UX-conventie); op de site geldt de selectievolgorde.
+                ->options(fn (): array => Mixtape::query()->orderBy('title')->pluck('title', 'id')->all())
+                ->helperText('De sectie toont de mixtapes in de volgorde waarin je ze hier selecteert.')
+                ->visible(fn (Get $get): bool => ! ($get('show_all') ?? true))
+                ->required(fn (Get $get): bool => ! ($get('show_all') ?? true)),
 
             // Optionele knop(pen) onder de grid, bv. "Bekijk alle sets" → Muziek-pagina.
             CtaLinkSchema::repeater(),

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Menu;
+use App\Models\Mixtape;
 use App\Models\Page;
 use App\Models\Setting;
 use App\Support\SiteFooter;
@@ -29,6 +30,8 @@ class HomepageSeeder extends Seeder
 
     public function run(): void
     {
+        $this->seedMixtapes();
+
         $home = $this->seedHomepage();
         $over = $this->seedOverPage();
         $muziek = $this->seedMuziekPage();
@@ -42,6 +45,41 @@ class HomepageSeeder extends Seeder
         // Meertalig: dupliceer alle NL-pagina's naar EN/ES (placeholder-inhoud,
         // later te vertalen via AI).
         $this->seedTranslations();
+    }
+
+    /**
+     * Demo-mixtapes (eigen posttype, taal-onafhankelijk). De mixes-secties
+     * verwijzen ernaar via show_all of mixtape_ids.
+     */
+    private function seedMixtapes(): void
+    {
+        $latin = 'https://www.el-pablo.com/wp-content/uploads/2025/05/Latin-Vibes.mp3';
+        $live = 'https://www.el-pablo.com/wp-content/uploads/2025/05/Live-set-Mokta-Mee.mp3';
+
+        $mixtapes = [
+            ['title' => 'Latin Vibes', 'subtitle' => 'Reggaeton & latin house', 'audio_url' => $latin, 'cover_url' => $this->img('1544986581-efac024faf62', 800), 'allow_download' => true],
+            ['title' => 'Live set @ Mokta Mee', 'subtitle' => 'Urban & latin · live opname', 'audio_url' => $live, 'cover_url' => $this->img('1524368535928-5b5e00ddc76b', 800), 'allow_download' => true],
+            ['title' => 'Reggaeton Heat', 'subtitle' => 'Reggaeton · 60 min', 'audio_url' => $latin, 'cover_url' => $this->img('1518972559570-7cc1309f3229', 800), 'allow_download' => true],
+            ['title' => 'Beach Club Sunset', 'subtitle' => 'Latin house · zomerset', 'audio_url' => $live, 'cover_url' => $this->img('1533174072545-7a4b6ad7a6c3', 800), 'allow_download' => false],
+            ['title' => 'Urban Night Vol. 3', 'subtitle' => 'Urban & afrobeats', 'audio_url' => $latin, 'cover_url' => $this->img('1470229722913-7c0e2dbbafd3', 800), 'allow_download' => true],
+            ['title' => 'Carnaval Special', 'subtitle' => 'Feestset · latin', 'audio_url' => $live, 'cover_url' => $this->img('1492684223066-81342ee5ff30', 800), 'allow_download' => true],
+        ];
+
+        foreach ($mixtapes as $position => $mixtape) {
+            Mixtape::updateOrCreate(
+                ['title' => $mixtape['title']],
+                [...$mixtape, 'published' => true, 'position' => $position],
+            );
+        }
+    }
+
+    /** De mixtape-ids voor een handmatige sectie-selectie, op titel. */
+    private function mixtapeIds(string ...$titles): array
+    {
+        return array_values(array_filter(array_map(
+            fn (string $title) => Mixtape::query()->where('title', $title)->value('id'),
+            $titles,
+        )));
     }
 
     private function seedHomepage(): Page
@@ -116,10 +154,8 @@ class HomepageSeeder extends Seeder
                     'eyebrow' => 'Muziek',
                     'heading' => "Beluister m'n sets",
                     'intro' => '<p>Een DJ leeft van z\'n sets. Speel ze hier af — of download ze — en proef de sfeer voor je boekt.</p>',
-                    'items' => [
-                        ['title' => 'Latin Vibes', 'subtitle' => 'Reggaeton & latin house', 'audio' => 'https://www.el-pablo.com/wp-content/uploads/2025/05/Latin-Vibes.mp3', 'cover' => $this->img('1544986581-efac024faf62', 800), 'allow_download' => true],
-                        ['title' => 'Live set @ Mokta Mee', 'subtitle' => 'Urban & latin · live opname', 'audio' => 'https://www.el-pablo.com/wp-content/uploads/2025/05/Live-set-Mokta-Mee.mp3', 'cover' => $this->img('1524368535928-5b5e00ddc76b', 800), 'allow_download' => true],
-                    ],
+                    'show_all' => false,
+                    'mixtape_ids' => $this->mixtapeIds('Latin Vibes', 'Live set @ Mokta Mee'),
                     'ctas' => [
                         ['label' => 'Bekijk alle sets', 'variant' => 'secondary', 'link_type' => 'url', 'href' => '/muziek'],
                     ],
@@ -453,9 +489,6 @@ class HomepageSeeder extends Seeder
 
         $page->sections()->delete();
 
-        $latin = 'https://www.el-pablo.com/wp-content/uploads/2025/05/Latin-Vibes.mp3';
-        $live = 'https://www.el-pablo.com/wp-content/uploads/2025/05/Live-set-Mokta-Mee.mp3';
-
         $sections = [
             [
                 'section_type' => 'hero',
@@ -473,14 +506,8 @@ class HomepageSeeder extends Seeder
                     'background' => 'white',
                     'eyebrow' => 'Alle sets',
                     'heading' => 'Beluister m\'n muziek',
-                    'items' => [
-                        ['title' => 'Latin Vibes', 'subtitle' => 'Reggaeton & latin house', 'audio' => $latin, 'cover' => $this->img('1544986581-efac024faf62', 800), 'allow_download' => true],
-                        ['title' => 'Live set @ Mokta Mee', 'subtitle' => 'Urban & latin · live opname', 'audio' => $live, 'cover' => $this->img('1524368535928-5b5e00ddc76b', 800), 'allow_download' => true],
-                        ['title' => 'Reggaeton Heat', 'subtitle' => 'Reggaeton · 60 min', 'audio' => $latin, 'cover' => $this->img('1518972559570-7cc1309f3229', 800), 'allow_download' => true],
-                        ['title' => 'Beach Club Sunset', 'subtitle' => 'Latin house · zomerset', 'audio' => $live, 'cover' => $this->img('1533174072545-7a4b6ad7a6c3', 800), 'allow_download' => false],
-                        ['title' => 'Urban Night Vol. 3', 'subtitle' => 'Urban & afrobeats', 'audio' => $latin, 'cover' => $this->img('1470229722913-7c0e2dbbafd3', 800), 'allow_download' => true],
-                        ['title' => 'Carnaval Special', 'subtitle' => 'Feestset · latin', 'audio' => $live, 'cover' => $this->img('1492684223066-81342ee5ff30', 800), 'allow_download' => true],
-                    ],
+                    'show_all' => true,
+                    'mixtape_ids' => [],
                 ],
             ],
             [
@@ -817,8 +844,6 @@ class HomepageSeeder extends Seeder
             // ── Home: mixes ──
             'Beluister m\'n sets' => ['en' => 'Listen to my sets', 'es' => 'Escucha mis sesiones'],
             '<p>Een DJ leeft van z\'n sets. Speel ze hier af — of download ze — en proef de sfeer voor je boekt.</p>' => ['en' => '<p>A DJ lives off their sets. Play them here — or download them — and get a taste before you book.</p>', 'es' => '<p>Un DJ vive de sus sesiones. Escúchalas aquí — o descárgalas — y siente el ambiente antes de reservar.</p>'],
-            'Reggaeton & latin house' => ['en' => 'Reggaeton & latin house', 'es' => 'Reggaetón y latin house'],
-            'Urban & latin · live opname' => ['en' => 'Urban & latin · live recording', 'es' => 'Urban y latino · grabación en directo'],
 
             // ── Home: reviews ──
             'Wat ze zeggen' => ['en' => 'What they say', 'es' => 'Lo que dicen'],
@@ -884,9 +909,6 @@ class HomepageSeeder extends Seeder
             'El Pablo live' => ['en' => 'El Pablo live', 'es' => 'El Pablo en directo'],
             'Alle sets' => ['en' => 'All sets', 'es' => 'Todas las sesiones'],
             'Beluister m\'n muziek' => ['en' => 'Listen to my music', 'es' => 'Escucha mi música'],
-            'Reggaeton · 60 min' => ['en' => 'Reggaeton · 60 min', 'es' => 'Reggaetón · 60 min'],
-            'Latin house · zomerset' => ['en' => 'Latin house · summer set', 'es' => 'Latin house · sesión de verano'],
-            'Feestset · latin' => ['en' => 'Party set · latin', 'es' => 'Sesión de fiesta · latino'],
             'Deze vibe op jouw feest?' => ['en' => 'This vibe at your party?', 'es' => '¿Esta vibra en tu fiesta?'],
             '<p>Boek El Pablo en breng de dansvloer tot leven.</p>' => ['en' => '<p>Book El Pablo and bring the dance floor to life.</p>', 'es' => '<p>Reserva a El Pablo y da vida a la pista.</p>'],
 

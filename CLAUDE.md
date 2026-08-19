@@ -178,7 +178,7 @@ loopt er één achter, dan faalt de upload met "Error during upload":
 
 | Laag | Waar | Staat op |
 |---|---|---|
-| Filament-veld | `MixesFields::make()` → `->maxSize(102400)` | 100 MB |
+| Filament-veld | `AudioPickerField` (upload-modal) → `->maxSize(102400)` | 100 MB |
 | Livewire tijdelijke upload | `config/livewire.php` → `temporary_file_upload.rules` | 128 MB |
 | PHP | `upload_max_filesize` + `post_max_size` | 100 MB (lokaal, Herd) |
 
@@ -193,6 +193,22 @@ Livewire's **default is 12MB** — die was hier de blokkade. PHP's default is 2M
 `post_max_size` moet altijd ≥ `upload_max_filesize` zijn (de POST bevat naast het
 bestand ook de andere formuliervelden). Wil je sets >95MB kunnen uploaden, zet
 beide dan op 256M.
+
+## Mixtapes als eigen posttype
+
+Mixtapes/DJ-sets leven sinds 2026-08-19 als eigen posttype (`mixtapes`-tabel,
+**Website → Mixtapes** in de admin, versleepbare volgorde) — niet meer als
+repeater-items in de sectie-content. De mixes-sectie op een pagina heeft een
+toggle **"Toon alle mixtapes"** (volgt de admin-volgorde) of, uitgezet, een
+multiselect `mixtape_ids` (de site toont ze in selectievolgorde). Beide sleutels
+staan in de `$skipKeys` van `TranslatesContentArrays`.
+
+Mixtapes zijn bewust **taal-onafhankelijk** (één mp3, cover én ondertitel voor
+alle talen — ondertitels zijn genre/duur en dus universeel). Het vroegere
+`mixes:sync-media`-commando is daarmee overbodig en verwijderd. De migration
+`create_mixtapes_table` zette bestaande sectie-items om (NL als bron, dedupe op
+titel) — draai `php artisan migrate` bij de deploy en het live-content komt
+vanzelf mee. Bewaakt door `tests/Feature/MixtapesSectionTest.php`.
 
 ## Events & ticketverkoop
 
@@ -306,7 +322,7 @@ Bewaakt door `tests/Feature/BrandingTest.php`.
 
 ### Nog te doen
 - [ ] **Echte content**: placeholder-foto's (Unsplash) en de demo-mp3's (2 sets
-      herhaald) vervangen via de media-library / het `mixes`-blok.
+      herhaald) vervangen via de media-library / **Website → Mixtapes**.
 - [ ] Content migreren van de bestaande el-pablo.com.
 - [x] Redirects oude WP-site (57) + eigen 404-pagina.
 - [x] Lettertype gekozen (Anton + Inter).
