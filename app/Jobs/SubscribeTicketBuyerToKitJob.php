@@ -5,13 +5,12 @@ namespace App\Jobs;
 use App\Enums\OrderStatus;
 use App\Models\Setting;
 use App\Models\TicketOrder;
+use App\Services\KitApi;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Http;
 
 /**
  * Zet de koper van een betaalde ticketbestelling op de Kit-e-maillijst
@@ -34,8 +33,7 @@ class SubscribeTicketBuyerToKitJob implements ShouldQueue
 
     public function handle(): void
     {
-        $apiKey = Setting::get('kit_api_key') ?: config('services.kit.api_key');
-        if (blank($apiKey)) {
+        if (! $apiKey = KitApi::apiKey()) {
             return;
         }
 
@@ -44,7 +42,7 @@ class SubscribeTicketBuyerToKitJob implements ShouldQueue
             return;
         }
 
-        $client = $this->client($apiKey);
+        $client = KitApi::client($apiKey);
 
         $client->post('/subscribers', array_filter([
             'email_address' => $order->buyer_email,
@@ -62,13 +60,5 @@ class SubscribeTicketBuyerToKitJob implements ShouldQueue
                 'email_address' => $order->buyer_email,
             ])->throw();
         }
-    }
-
-    private function client(string $apiKey): PendingRequest
-    {
-        return Http::baseUrl('https://api.kit.com/v4')
-            ->withHeaders(['X-Kit-Api-Key' => $apiKey])
-            ->acceptJson()
-            ->timeout(15);
     }
 }

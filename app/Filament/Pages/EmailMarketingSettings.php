@@ -3,11 +3,14 @@
 namespace App\Filament\Pages;
 
 use App\Models\Setting;
+use App\Services\KitApi;
 use BackedEnum;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use UnitEnum;
@@ -15,7 +18,8 @@ use UnitEnum;
 /**
  * Kit-koppeling (e-maillijst): elke betaalde ticketbestelling zet de koper op
  * de lijst via SubscribeTicketBuyerToKitJob. Zonder API-key staat de feature
- * gewoon uit.
+ * gewoon uit. Formulier en tag kies je uit dropdowns die live uit het
+ * Kit-account geladen worden — niemand hoeft een numeriek ID op te zoeken.
  */
 class EmailMarketingSettings extends Page
 {
@@ -63,15 +67,56 @@ class EmailMarketingSettings extends Page
                             ->password()
                             ->revealable()
                             ->maxLength(255)
+                            // Na het invullen herladen de dropdowns hieronder
+                            // meteen met de formulieren en tags van dit account.
+                            ->live(onBlur: true)
                             ->helperText('Kit → Settings → Developer → API Keys. Leeg = de KIT_API_KEY uit .env (indien gezet).'),
-                        TextInput::make('kit_form_id')
-                            ->label('Formulier-ID (optioneel)')
-                            ->numeric()
+                        Select::make('kit_form_id')
+                            ->label('Formulier (optioneel)')
+                            ->options(fn (Get $get) => $this->withCurrent(
+                                KitApi::formOptions($get('kit_api_key')),
+                                $get('kit_form_id'),
+                                'Formulier',
+                            ))
+                            ->searchable()
+                            ->nullable()
+                            ->placeholder(fn (Get $get) => KitApi::apiKey($get('kit_api_key'))
+                                ? 'Kies een formulier'
+                                : 'Vul eerst de API-key in')
                             ->helperText('Koppelt de koper aan dit Kit-formulier. Leeg = alleen als subscriber toevoegen.'),
-                        TextInput::make('kit_tag_id')
-                            ->label('Tag-ID (optioneel)')
-                            ->numeric()
-                            ->helperText('Geeft de koper deze tag, bv. "ticketkopers". Handig om te segmenteren.'),
+                        Select::make('kit_tag_id')
+                            ->label('Tag (optioneel)')
+                            ->options(fn (Get $get) => $this->withCurrent(
+                                KitApi::tagOptions($get('kit_api_key')),
+                                $get('kit_tag_id'),
+                                'Tag',
+                            ))
+                            ->searchable()
+                            ->nullable()
+                            ->placeholder(fn (Get $get) => KitApi::apiKey($get('kit_api_key'))
+                                ? 'Kies een tag'
+                                : 'Vul eerst de API-key in')
+                            ->createOptionForm([
+                                TextInput::make('name')
+                                    ->label('Nieuwe tag')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->helperText('Wordt meteen aangemaakt in je Kit-account, bv. "ticketkopers".'),
+                            ])
+                            ->createOptionUsing(function (array $data, Get $get): ?int {
+                                $tagId = KitApi::createTag($data['name'], $get('kit_api_key'));
+
+                                if ($tagId === null) {
+                                    Notification::make()
+                                        ->title('Tag aanmaken mislukt')
+                                        ->body('Kit was niet bereikbaar of de API-key klopt niet.')
+                                        ->danger()
+                                        ->send();
+                                }
+
+                                return $tagId;
+                            })
+                            ->helperText('Geeft de koper deze tag — handig om te segmenteren. Staat hij er nog niet, maak hem dan hier meteen aan.'),
                     ])
                     ->columns(2),
             ])
@@ -87,5 +132,22 @@ class EmailMarketingSettings extends Page
         }
 
         Notification::make()->title('E-mailmarketing-instellingen opgeslagen')->success()->send();
+    }
+
+    /**
+     * Zorgt dat een eerder bewaarde keuze zichtbaar blijft, ook als Kit
+     * onbereikbaar is of het id intussen niet meer bestaat — anders lijkt het
+     * veld leeg terwijl er wél iets is ingesteld.
+     *
+     * @param  array<int|string, string>  $options
+     * @return array<int|string, string>
+     */
+    protected function withCurrent(array $options, int|string|null $current, string $label): array
+    {
+        if (filled($current) && ! array_key_exists($current, $options)) {
+            $options[$current] = "{$label} #{$current} (niet gevonden in Kit)";
+        }
+
+        return $options;
     }
 }
