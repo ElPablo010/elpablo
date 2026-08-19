@@ -28,7 +28,11 @@ class EventTicketPdf
             'event' => $ticket->event,
             'logoData' => $this->logoData(),
             'qrData' => $this->qrData($ticket),
-        ])->setPaper('a4');
+        ])->setPaper('a4')
+            // Zonder subsetting embedt dompdf de volledige DejaVu-fonts en
+            // weegt élk ticket ~860KB; met subsetting gaan alleen de gebruikte
+            // tekens mee.
+            ->setOption('isFontSubsettingEnabled', true);
 
         $path = 'event-tickets/'.$ticket->token.'.pdf';
         Storage::disk('local')->put($path, $pdf->output());
