@@ -13,7 +13,10 @@ class ManageTicketTypes extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()->label('Tickettype toevoegen'),
+            CreateAction::make()
+                ->label('Tickettype toevoegen')
+                ->modalSubmitActionLabel('Opslaan')
+                ->createAnother(false),
         ];
     }
 }

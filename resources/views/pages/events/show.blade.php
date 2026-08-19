@@ -34,33 +34,15 @@
                 </div>
             @endif
 
-            <div class="mt-8 grid gap-12 lg:grid-cols-[1fr_28rem]">
+            <div class="mt-8 grid gap-12 lg:grid-cols-[1fr_28rem] lg:gap-16">
                 <div class="min-w-0">
                     <p class="eyebrow mb-5">{{ $event->dateLabel() }}</p>
                     <h1 class="font-display text-[2.4rem] leading-[0.95] text-white sm:text-5xl lg:text-6xl">
                         {{ $event->translated('name') }}
                     </h1>
 
-                    <dl class="mt-8 space-y-3 text-gray-300">
-                        <div class="flex items-center gap-3">
-                            <x-lucide-calendar class="h-5 w-5 shrink-0 text-primary-500" />
-                            <span>
-                                {{ $event->dateLabel() }}
-                                @if ($event->startTimeFormatted())
-                                    · {{ $event->startTimeFormatted() }}@if ($event->endTimeFormatted()) – {{ $event->endTimeFormatted() }}@endif
-                                @endif
-                            </span>
-                        </div>
-                        @if ($event->venue_name || $event->venue_city)
-                            <div class="flex items-center gap-3">
-                                <x-lucide-map-pin class="h-5 w-5 shrink-0 text-primary-500" />
-                                <span>{{ collect([$event->venue_name, $event->venue_address, $event->venue_city])->filter()->join(', ') }}</span>
-                            </div>
-                        @endif
-                    </dl>
-
                     @if ($event->image_url)
-                        <div class="mt-10 overflow-hidden rounded-2xl border border-white/10">
+                        <div class="mt-12 overflow-hidden rounded-2xl border border-white/10">
                             <picture>
                                 <source srcset="{{ $event->image_url }}" type="image/webp">
                                 <img src="{{ $event->image_url }}" alt="{{ $event->image_alt ?? $event->translated('name') }}"
@@ -69,12 +51,31 @@
                         </div>
                     @endif
 
+                    {{-- Uur + locatie onder de banner; naast elkaar op brede schermen.
+                         De datum staat al in de eyebrow boven de titel. --}}
+                    @if ($event->startTimeFormatted() || $event->venue_name || $event->venue_city)
+                        <div class="mt-8 flex flex-col gap-4 text-gray-300 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-10 sm:gap-y-4">
+                            @if ($event->startTimeFormatted())
+                                <div class="flex items-center gap-3">
+                                    <x-lucide-clock class="h-5 w-5 shrink-0 text-primary-500" />
+                                    <span>{{ $event->startTimeFormatted() }}@if ($event->endTimeFormatted()) – {{ $event->endTimeFormatted() }}@endif</span>
+                                </div>
+                            @endif
+                            @if ($event->venue_name || $event->venue_city)
+                                <div class="flex items-center gap-3">
+                                    <x-lucide-map-pin class="h-5 w-5 shrink-0 text-primary-500" />
+                                    <span>{{ collect([$event->venue_name, $event->venue_address, trim($event->venue_postal_code.' '.$event->venue_city)])->filter()->join(', ') }}</span>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+
                     @if ($event->translated('description'))
-                        <div class="prose-invert-brand mt-10 max-w-none text-gray-300">
+                        <div class="prose-invert-brand mt-12 max-w-none text-gray-300">
                             {!! $event->translated('description') !!}
                         </div>
                     @elseif ($event->translated('short_description'))
-                        <p class="mt-10 text-lg leading-relaxed text-gray-300">{{ $event->translated('short_description') }}</p>
+                        <p class="mt-12 text-lg leading-relaxed text-gray-300">{{ $event->translated('short_description') }}</p>
                     @endif
                 </div>
 

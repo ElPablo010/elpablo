@@ -79,10 +79,12 @@
                         </button>
                     </div>
                 @else
+                    {{-- text-sm op het veld: zo blijft de knop (die meestretcht met de
+                         rij) exact even hoog als de afrekenknop onderaan. --}}
                     <div class="flex gap-3">
                         <input type="text" wire:model="discountCode" wire:keydown.enter="applyDiscountCode"
                                placeholder="{{ __('Kortingscode') }}"
-                               class="w-full rounded-lg border border-white/10 bg-ink-950 px-4 py-2.5 text-white placeholder-gray-500 transition-colors focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 sm:max-w-xs">
+                               class="w-full rounded-lg border border-white/10 bg-ink-950 px-4 py-2.5 text-sm text-white placeholder-gray-500 transition-colors focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 sm:max-w-xs">
                         <button type="button" wire:click="applyDiscountCode"
                                 class="btn-secondary shrink-0">{{ __('Toepassen') }}</button>
                     </div>
@@ -129,7 +131,8 @@
                     </label>
                 </div>
 
-                <div class="grid gap-5 sm:grid-cols-2">
+                {{-- Naam en e-mail elk op hun eigen regel. --}}
+                <div class="grid gap-5">
                     <div>
                         <label for="tc-name" class="mb-1.5 block text-sm font-medium text-gray-200">{{ __('Je naam') }}</label>
                         <input id="tc-name" type="text" wire:model="buyerName" autocomplete="name"

@@ -59,6 +59,41 @@ class Locale
     }
 
     /**
+     * Basis-pad voor de taalschakelaar: het huidige request-pad zonder
+     * locale-prefix. Omdat slugs per taal gedeeld worden (pagina's én events)
+     * volstaat het om dit pad opnieuw te prefixen met de doeltaal. Paden
+     * zonder taalvariant (ticketstatus, design-previews) wisselen naar home.
+     */
+    public static function switchBase(): string
+    {
+        $path = '/'.ltrim(request()->path(), '/');
+
+        foreach (self::supported() as $locale) {
+            if ($locale === self::DEFAULT) {
+                continue;
+            }
+
+            if ($path === '/'.$locale) {
+                $path = '/';
+                break;
+            }
+
+            if (str_starts_with($path, '/'.$locale.'/')) {
+                $path = substr($path, strlen('/'.$locale));
+                break;
+            }
+        }
+
+        foreach (['/t/', '/design/'] as $unlocalized) {
+            if (str_starts_with($path, $unlocalized)) {
+                return '/';
+            }
+        }
+
+        return $path;
+    }
+
+    /**
      * Alle ondersteunde talen behalve de gegeven — de doeltalen voor een
      * vertaling vanuit die taal.
      *

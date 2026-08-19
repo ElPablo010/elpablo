@@ -55,13 +55,15 @@
          en de audiospeler stilvallen op formulier-loze pagina's. --}}
     @livewireStyles
 </head>
-<body class="min-h-screen bg-ink-950 font-sans text-gray-200 antialiased">
+{{-- flex flex-col + flex-1 op <main>: duwt de footer naar de onderkant van het
+     scherm op pagina's met weinig content. --}}
+<body class="flex min-h-screen flex-col bg-ink-950 font-sans text-gray-200 antialiased">
     <x-site.header :page="$page" />
 
     {{-- Snelkoppeling naar de admin, enkel zichtbaar voor ingelogde beheerders. --}}
     <x-site.admin-edit :page="$page" />
 
-    <main>
+    <main class="flex-1">
         {{ $slot }}
     </main>
 

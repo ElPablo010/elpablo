@@ -21,6 +21,11 @@ return [
         'model' => env('ANTHROPIC_MODEL', 'claude-opus-5'),
     ],
 
+    // Kit (e-maillijst): key primair uit Instellingen → E-mailmarketing; .env is terugval.
+    'kit' => [
+        'api_key' => env('KIT_API_KEY'),
+    ],
+
     // Stripe-secrets komen primair uit Instellingen → Betalingen (database);
     // deze env-fallbacks zijn er voor CI/lokaal — zelfde patroon als Anthropic.
     'stripe' => [

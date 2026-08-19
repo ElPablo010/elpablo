@@ -319,6 +319,7 @@ class Seo
                 'address' => array_filter([
                     '@type' => 'PostalAddress',
                     'streetAddress' => $event->venue_address,
+                    'postalCode' => $event->venue_postal_code,
                     'addressLocality' => $event->venue_city,
                     'addressCountry' => 'BE',
                 ], fn ($v) => filled($v)),

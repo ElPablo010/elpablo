@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'end_time',
     'venue_name',
     'venue_address',
+    'venue_postal_code',
     'venue_city',
     'image_url',
     'image_alt',

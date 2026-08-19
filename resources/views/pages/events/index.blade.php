@@ -24,13 +24,22 @@
             <div class="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 @forelse ($upcoming as $event)
                     <a href="{{ $event->localizedPath() }}"
-                       class="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-ink-900 transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 hover:shadow-xl hover:shadow-primary-600/10">
+                       {{-- Geen hover:-translate-y op de kaart: het verschuiven van de
+                            overflow-clip tijdens die animatie liet de onderrand van de
+                            zoomende banner als haarlijn onder de container uitpiepen. --}}
+                       class="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-ink-900 transition-all duration-300 hover:border-primary-500/50 hover:shadow-xl hover:shadow-primary-600/10">
                         @if ($event->image_url)
-                            <div class="relative aspect-[4/3] overflow-hidden">
+                            {{-- transform-gpu + isolate op de clippende container: het beeld
+                                 zit tijdens de hover-zoom op een eigen GPU-laag, en zonder
+                                 gecomposite container loopt de overflow-clip een frame achter
+                                 (onderrand van de banner flitst dan onder de container uit). --}}
+                            <div class="relative isolate aspect-[4/3] transform-gpu overflow-hidden bg-ink-900">
                                 <picture>
                                     <source srcset="{{ $event->image_url }}" type="image/webp">
                                     <img src="{{ $event->image_url }}" alt="{{ $event->image_alt ?? $event->translated('name') }}" loading="lazy"
-                                         class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
+                                         {{-- Basis-scale 1.02: de bewegende beeldrand blijft zo
+                                              altijd búiten de clip-rand — geen flikkerlijntje. --}}
+                                         class="h-full w-full scale-[1.02] object-cover transition-transform duration-500 will-change-transform group-hover:scale-105">
                                 </picture>
                                 <div class="absolute inset-0 bg-gradient-to-t from-ink-900 via-ink-900/20 to-transparent"></div>
                             </div>

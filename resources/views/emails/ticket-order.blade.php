@@ -3,10 +3,34 @@
 <head><meta charset="utf-8"></head>
 <body style="font-family: Arial, Helvetica, sans-serif; color: #1f2937; line-height: 1.5; margin: 0; padding: 24px; background: #f9fafb;">
     <div style="max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb;">
-        <div style="background: #100d0e; padding: 24px; text-align: center;">
-            <p style="margin: 0; font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 0.05em; text-transform: uppercase;">
-                {{ config('app.name') }}
-            </p>
+        {{-- Merkbalk in primary-600 (#E01B4B). Het logo (Website → Header) wordt
+             als CID-bijlage ge-embed zodat het ook toont bij geblokkeerde remote
+             afbeeldingen; SVG slaan we over (blokkeren mailclients). $message
+             bestaat alleen bij echt verzenden — bij render() valt de embed terug
+             op een absolute URL. --}}
+        @php
+            $emailHeader = \App\Support\SiteHeader::current();
+            $logoUrl = $emailHeader['logo'] ?? null;
+            $logoPath = null;
+            if (filled($logoUrl)) {
+                $candidate = public_path(ltrim((string) parse_url($logoUrl, PHP_URL_PATH), '/'));
+                if (is_file($candidate) && strtolower(pathinfo($candidate, PATHINFO_EXTENSION)) !== 'svg') {
+                    $logoPath = $candidate;
+                }
+            }
+            $showName = ! $logoPath || ($emailHeader['show_name'] ?? true);
+        @endphp
+        <div style="background: #E01B4B; padding: 24px; text-align: center;">
+            @if ($logoPath)
+                <img src="{{ isset($message) ? $message->embed($logoPath) : url($logoUrl) }}"
+                     alt="{{ config('app.name') }}" height="40"
+                     style="height: 40px; display: block; margin: 0 auto {{ $showName ? '10px' : '0' }};">
+            @endif
+            @if ($showName)
+                <p style="margin: 0; font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 0.05em; text-transform: uppercase;">
+                    {{ config('app.name') }}
+                </p>
+            @endif
         </div>
 
         <div style="padding: 28px 24px;">
@@ -29,7 +53,7 @@
                 @if ($order->event->venue_name || $order->event->venue_city)
                     <tr>
                         <td style="padding: 4px 0; color: #6b7280;">{{ __('Locatie') }}</td>
-                        <td style="padding: 4px 0;">{{ collect([$order->event->venue_name, $order->event->venue_address, $order->event->venue_city])->filter()->join(', ') }}</td>
+                        <td style="padding: 4px 0;">{{ collect([$order->event->venue_name, $order->event->venue_address, trim($order->event->venue_postal_code.' '.$order->event->venue_city)])->filter()->join(', ') }}</td>
                     </tr>
                 @endif
             </table>

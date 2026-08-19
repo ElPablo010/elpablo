@@ -48,6 +48,7 @@ class TicketTypeResource extends Resource
     {
         return $schema->components([
             Grid::make(['default' => 1, 'md' => 3])
+                ->columnSpanFull()
                 ->schema([
                     TextInput::make('name')
                         ->label('Naam (NL)')
@@ -63,6 +64,7 @@ class TicketTypeResource extends Resource
                         ->helperText('Leeg = de NL-naam.'),
                 ]),
             Grid::make(['default' => 1, 'md' => 2])
+                ->columnSpanFull()
                 ->schema([
                     TextInput::make('default_price')
                         ->label('Standaardprijs (incl. btw)')

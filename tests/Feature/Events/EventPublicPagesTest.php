@@ -109,6 +109,35 @@ it('serves the public ticket status page and 404s for unknown tokens', function 
     $this->get('/t/00000000000000000000000000')->assertNotFound();
 });
 
+it('links the language switcher to the same event path per locale', function () {
+    publishedEvent();
+
+    // Overzicht: NL → /en/events en /es/events; EN terug naar /events.
+    $this->get('/events')->assertOk()
+        ->assertSee('href="/en/events"', false)
+        ->assertSee('href="/es/events"', false);
+    $this->get('/en/events')->assertOk()
+        ->assertSee('href="/events"', false)
+        ->assertSee('href="/es/events"', false);
+
+    // Detailpagina: gedeelde slug per taal.
+    $this->get('/es/events/latin-night')->assertOk()
+        ->assertSee('href="/events/latin-night"', false)
+        ->assertSee('href="/en/events/latin-night"', false);
+});
+
+it('sends the language switcher home on paths without a locale variant', function () {
+    $event = publishedEvent();
+    $ticket = \App\Models\EventTicket::factory()->create([
+        'event_id' => $event->id,
+        'ticket_type_id' => $event->ticketTypes->first()->id,
+    ]);
+
+    $this->get('/t/'.$ticket->token)->assertOk()
+        ->assertSee('href="/en"', false)
+        ->assertDontSee('href="/en/t/', false);
+});
+
 it('still resolves CMS pages through the catch-all', function () {
     $page = \App\Models\Page::create([
         'title' => 'Over', 'slug' => 'over', 'locale' => 'nl', 'published' => true,

@@ -13,7 +13,10 @@ class ManageDiscountCodes extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()->label('Kortingscode toevoegen'),
+            CreateAction::make()
+                ->label('Kortingscode toevoegen')
+                ->modalSubmitActionLabel('Opslaan')
+                ->createAnother(false),
         ];
     }
 }

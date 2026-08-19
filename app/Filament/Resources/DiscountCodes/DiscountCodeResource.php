@@ -51,7 +51,12 @@ class DiscountCodeResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            Grid::make(['default' => 1, 'md' => 2])
+            Toggle::make('is_active')
+                ->label('Actief')
+                ->default(true)
+                ->columnSpanFull(),
+            Grid::make(['default' => 1, 'md' => 4])
+                ->columnSpanFull()
                 ->schema([
                     TextInput::make('code')
                         ->label('Code')
@@ -63,9 +68,6 @@ class DiscountCodeResource extends Resource
                         ->label('Omschrijving')
                         ->maxLength(255)
                         ->helperText('Alleen intern zichtbaar.'),
-                ]),
-            Grid::make(['default' => 1, 'md' => 3])
-                ->schema([
                     Select::make('type')
                         ->label('Soort')
                         ->options(DiscountCodeType::class)
@@ -78,13 +80,14 @@ class DiscountCodeResource extends Resource
                         ->required()
                         ->prefix(fn (callable $get): ?string => ($get('type') === DiscountCodeType::Fixed || $get('type') === DiscountCodeType::Fixed->value) ? '€' : null)
                         ->suffix(fn (callable $get): ?string => ($get('type') === DiscountCodeType::Percentage || $get('type') === DiscountCodeType::Percentage->value) ? '%' : null),
-                    Toggle::make('per_ticket')
-                        ->label('Per ticket')
-                        ->inline(false)
-                        ->visible(fn (callable $get): bool => $get('type') === DiscountCodeType::Fixed || $get('type') === DiscountCodeType::Fixed->value)
-                        ->helperText('Het vaste bedrag wordt vermenigvuldigd met het aantal tickets.'),
                 ]),
+            Toggle::make('per_ticket')
+                ->label('Per ticket')
+                ->visible(fn (callable $get): bool => $get('type') === DiscountCodeType::Fixed || $get('type') === DiscountCodeType::Fixed->value)
+                ->helperText('Het vaste bedrag wordt vermenigvuldigd met het aantal tickets.')
+                ->columnSpanFull(),
             Grid::make(['default' => 1, 'md' => 3])
+                ->columnSpanFull()
                 ->schema([
                     DatePicker::make('valid_from')
                         ->label('Geldig van')
@@ -101,7 +104,8 @@ class DiscountCodeResource extends Resource
                         ->prefix('€')
                         ->helperText('Leeg = geen minimum.'),
                 ]),
-            Grid::make(['default' => 1, 'md' => 3])
+            Grid::make(['default' => 1, 'md' => 2])
+                ->columnSpanFull()
                 ->schema([
                     TextInput::make('max_uses')
                         ->label('Max. gebruik (totaal)')
@@ -113,17 +117,14 @@ class DiscountCodeResource extends Resource
                         ->numeric()
                         ->minValue(1)
                         ->helperText('Leeg = onbeperkt.'),
-                    Toggle::make('is_active')
-                        ->label('Actief')
-                        ->default(true)
-                        ->inline(false),
                 ]),
             Select::make('events')
                 ->label('Beperkt tot events')
                 ->relationship('events', 'name', fn ($query) => $query->orderBy('name'))
                 ->multiple()
                 ->preload()
-                ->helperText('Leeg = geldig voor elk event.'),
+                ->helperText('Leeg = geldig voor elk event.')
+                ->columnSpanFull(),
         ]);
     }
 

@@ -6,6 +6,7 @@ use App\Contracts\PaymentGateway;
 use App\Enums\OrderStatus;
 use App\Enums\TicketStatus;
 use App\Jobs\SendTicketOrderEmailJob;
+use App\Jobs\SubscribeTicketBuyerToKitJob;
 use App\Models\PendingStripeSession;
 use App\Models\TicketOrder;
 use Illuminate\Support\Facades\DB;
@@ -113,6 +114,10 @@ class TicketOrderFulfillment
             // dispatchen bij dubbele delivery is bewust: zo raakt een ooit
             // verloren mail alsnog verstuurd.
             rescue(fn () => SendTicketOrderEmailJob::dispatch($order->id));
+
+            // Koper op de Kit-lijst — upsert op e-mailadres, dus idempotent; de
+            // job doet stil niets zolang er geen API-key is ingesteld.
+            rescue(fn () => SubscribeTicketBuyerToKitJob::dispatch($order->id));
         }
 
         return $order;

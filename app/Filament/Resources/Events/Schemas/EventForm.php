@@ -83,7 +83,8 @@ class EventForm
                 ->maxLength(500)
                 ->helperText('Voor de eventkaarten in het overzicht.'),
             RichEditor::make('description')
-                ->label('Omschrijving'),
+                ->label('Omschrijving')
+                ->extraInputAttributes(['style' => 'min-height: 28rem;']),
             Grid::make(['default' => 1, 'md' => 4])
                 ->schema([
                     DatePicker::make('start_date')
@@ -103,7 +104,7 @@ class EventForm
                         ->label('Einduur')
                         ->seconds(false),
                 ]),
-            Grid::make(['default' => 1, 'md' => 3])
+            Grid::make(['default' => 1, 'md' => 4])
                 ->schema([
                     TextInput::make('venue_name')
                         ->label('Locatie')
@@ -111,8 +112,11 @@ class EventForm
                     TextInput::make('venue_address')
                         ->label('Adres')
                         ->maxLength(255),
+                    TextInput::make('venue_postal_code')
+                        ->label('Postcode')
+                        ->maxLength(20),
                     TextInput::make('venue_city')
-                        ->label('Gemeente')
+                        ->label('Stad')
                         ->maxLength(255),
                 ]),
             MediaPickerField::make('image_url', 'Afbeelding', required: false, helperText: 'Wordt getoond op de eventpagina en in het overzicht.'),
@@ -298,7 +302,8 @@ class EventForm
                         ->rows(2)
                         ->maxLength(500),
                     RichEditor::make('description')
-                        ->label('Omschrijving'),
+                        ->label('Omschrijving')
+                        ->extraInputAttributes(['style' => 'min-height: 28rem;']),
                 ]);
         }
 

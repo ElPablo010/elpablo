@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <style>
+        @page { margin: 32px 36px; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: DejaVu Sans, sans-serif; color: #1f2937; font-size: 13px; }
         .ticket { border: 2px solid #100d0e; border-radius: 14px; overflow: hidden; margin-top: 24px; }
@@ -15,7 +16,8 @@
         .qr { display: inline-block; vertical-align: top; width: 38%; text-align: right; }
         .label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #9ca3af; margin-top: 12px; }
         .value { font-size: 14px; font-weight: bold; margin-top: 2px; }
-        .tickettype { display: inline-block; background: #e01b4b; color: #ffffff; font-weight: bold; padding: 6px 14px; border-radius: 999px; font-size: 13px; margin-top: 4px; }
+        /* line-height 1: dompdf centreert de tekst anders te hoog in de pill. */
+        .tickettype { display: inline-block; background: #e01b4b; color: #ffffff; font-weight: bold; padding: 7px 14px; border-radius: 999px; font-size: 13px; line-height: 1; margin-top: 4px; }
         .token { font-size: 10px; color: #9ca3af; margin-top: 10px; letter-spacing: 1px; }
         .foot { border-top: 1px dashed #d1d5db; padding: 14px 28px; font-size: 10px; color: #6b7280; }
         img.logo { height: 34px; }
@@ -43,7 +45,7 @@
 
                     @if ($event->venue_name || $event->venue_city)
                         <div class="label">{{ __('Locatie') }}</div>
-                        <div class="value">{{ collect([$event->venue_name, $event->venue_address, $event->venue_city])->filter()->join(', ') }}</div>
+                        <div class="value">{{ collect([$event->venue_name, $event->venue_address, trim($event->venue_postal_code.' '.$event->venue_city)])->filter()->join(', ') }}</div>
                     @endif
 
                     <div class="label">{{ __('Naam') }}</div>

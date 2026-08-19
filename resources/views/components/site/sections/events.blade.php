@@ -29,13 +29,17 @@
             <div class="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 @foreach ($events as $event)
                     <a href="{{ $event->localizedPath() }}"
-                       class="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-ink-900 transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 hover:shadow-xl hover:shadow-primary-600/10">
+                       {{-- Geen hover:-translate-y: zie pages/events/index. --}}
+                       class="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-ink-900 transition-all duration-300 hover:border-primary-500/50 hover:shadow-xl hover:shadow-primary-600/10">
                         @if ($event->image_url)
-                            <div class="relative aspect-[4/3] overflow-hidden">
+                            {{-- transform-gpu + isolate: zie pages/events/index — houdt de
+                                 overflow-clip in sync met de GPU-laag van het zoomende beeld. --}}
+                            <div class="relative isolate aspect-[4/3] transform-gpu overflow-hidden bg-ink-900">
                                 <picture>
                                     <source srcset="{{ $event->image_url }}" type="image/webp">
                                     <img src="{{ $event->image_url }}" alt="{{ $event->image_alt ?? $event->translated('name') }}" loading="lazy"
-                                         class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
+                                         {{-- Basis-scale 1.02: zie pages/events/index. --}}
+                                         class="h-full w-full scale-[1.02] object-cover transition-transform duration-500 will-change-transform group-hover:scale-105">
                                 </picture>
                                 <div class="absolute inset-0 bg-gradient-to-t from-ink-900 via-ink-900/20 to-transparent"></div>
                             </div>

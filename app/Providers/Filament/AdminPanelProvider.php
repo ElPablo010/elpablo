@@ -32,6 +32,12 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::hex('#E01B4B'),
             ])
+            ->navigationGroups([
+                'Website',
+                'Events',
+                'SEO',
+                'Instellingen',
+            ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
@@ -64,6 +70,11 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::TOPBAR_END,
                 fn (): string => View::make('filament.admin.view-site-button')->render(),
+            )
+            // Uitlogknop onderaan de zijbalk.
+            ->renderHook(
+                PanelsRenderHook::SIDEBAR_FOOTER,
+                fn (): string => View::make('filament.admin.sidebar-logout')->render(),
             );
     }
 }

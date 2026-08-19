@@ -24,6 +24,7 @@ class EventFactory extends Factory
             'start_time' => '22:00:00',
             'end_time' => '04:00:00',
             'venue_name' => fake()->company(),
+            'venue_postal_code' => '2000',
             'venue_city' => 'Antwerpen',
             'published' => true,
         ];

@@ -12,10 +12,11 @@
     $cta = $header['cta'] ?? [];
 
     // Taalschakelaar — meertalig (NL/EN/ES). De schakelaar linkt naar dezelfde
-    // pagina in de doeltaal (zelfde slug per taal).
+    // pagina in de doeltaal (zelfde slug per taal). Het basis-pad komt uit het
+    // request, zodat ook niet-builder-pagina's (events) correct wisselen.
     $locales = Locale::LABELS;
     $currentLocale = Locale::current();
-    $switchBase = $page ? ($page->is_homepage ? '/' : '/'.$page->slug) : '/';
+    $switchBase = Locale::switchBase();
 @endphp
 
 <header
