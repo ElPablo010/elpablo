@@ -66,7 +66,7 @@ class AdminPanelProvider extends PanelProvider
                 fn (): string => View::make('filament.admin.customizations')->render(),
             )
             // Altijd zichtbaar oogje in de topbalk: opent de publieke site in
-            // een nieuw tabblad, vanaf élke adminpagina.
+            // het huidige tabblad, vanaf élke adminpagina.
             ->renderHook(
                 PanelsRenderHook::TOPBAR_END,
                 fn (): string => View::make('filament.admin.view-site-button')->render(),
