@@ -3,10 +3,11 @@
 <head>
     <meta charset="utf-8">
     <style>
-        @page { margin: 32px 36px; }
+        /* Paginamarge via body-padding: dompdf past een @page-margin-shorthand
+           niet betrouwbaar toe. */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: DejaVu Sans, sans-serif; color: #1f2937; font-size: 13px; }
-        .ticket { border: 2px solid #100d0e; border-radius: 14px; overflow: hidden; margin-top: 24px; }
+        body { font-family: DejaVu Sans, sans-serif; color: #1f2937; font-size: 13px; padding: 26px 30px; }
+        .ticket { border: 2px solid #100d0e; border-radius: 14px; overflow: hidden; margin-top: 12px; }
         .head { background: #100d0e; color: #ffffff; padding: 20px 28px; }
         .head .brand { font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: #e01b4b; font-weight: bold; }
         .head h1 { font-size: 26px; margin-top: 6px; text-transform: uppercase; }

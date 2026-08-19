@@ -16,7 +16,7 @@
             <h1 class="font-display text-[2.4rem] leading-[0.95] text-white sm:text-5xl lg:text-6xl">
                 {{ __('Events') }}
             </h1>
-            <p class="mt-6 max-w-xl text-lg leading-relaxed text-gray-400">
+            <p class="mt-6 text-lg leading-relaxed text-gray-400">
                 {{ __('Hier draait El Pablo binnenkort. Scoor je tickets en kom dansen.') }}
             </p>
 
