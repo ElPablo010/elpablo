@@ -96,7 +96,14 @@ class MixtapeResource extends Resource
             ->columns([
                 \Filament\Tables\Columns\ImageColumn::make('cover_url')
                     ->label('Cover')
-                    ->square(),
+                    ->square()
+                    // Absolute URL verplicht: een relatief pad (/storage/…)
+                    // behandelt Filament als bestandspad op de default-disk
+                    // (local), vindt daar niets en toont een broken-icoon.
+                    // url() maakt er een URL op de huidige host van en laat
+                    // absolute URL's ongemoeid. Zelfde patroon als de
+                    // thumbnail-kolom in WebsiteMediaTable.
+                    ->getStateUsing(fn (Mixtape $record): ?string => filled($record->cover_url) ? url($record->cover_url) : null),
                 \Filament\Tables\Columns\TextColumn::make('title')
                     ->label('Titel')
                     ->searchable()
