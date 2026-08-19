@@ -43,7 +43,21 @@
         {{-- Media --}}
         <div class="{{ $mediaSide === 'left' ? 'lg:order-1' : '' }}">
             @if ($mediaType === 'video' && ! empty($content['video_url']))
-                <video src="{{ $content['video_url'] }}" controls class="w-full rounded-2xl border border-white/10"></video>
+                @php $embedUrl = \App\Support\VideoEmbed::url($content['video_url']); @endphp
+                @if ($embedUrl)
+                    {{-- YouTube/Vimeo: een pagina-URL speelt niet in <video>, wel als iframe-embed. --}}
+                    <iframe
+                        src="{{ $embedUrl }}"
+                        title="{{ $content['heading'] ?? 'Video' }}"
+                        loading="lazy"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        class="aspect-video w-full rounded-2xl border border-white/10"
+                    ></iframe>
+                @else
+                    <video src="{{ $content['video_url'] }}" controls class="w-full rounded-2xl border border-white/10"></video>
+                @endif
             @elseif ($mediaType === 'images')
                 <div class="grid grid-cols-2 gap-4">
                     @foreach ($content['images'] ?? [] as $img)

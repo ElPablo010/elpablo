@@ -70,6 +70,7 @@ class TextMediaFields
             TextInput::make('video_url')
                 ->label('Video-URL')
                 ->placeholder('https://www.youtube.com/watch?v=… of https://…/film.mp4')
+                ->helperText('Een YouTube- of Vimeo-link verschijnt als embed-speler; een directe mp4-URL speelt via de eigen speler.')
                 ->url()
                 ->visible(fn (Get $get): bool => ($get('media_type') ?? 'image') === 'video'),
 
