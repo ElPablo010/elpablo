@@ -113,7 +113,20 @@ bugfixes):
   pagina H1 (juridische pagina's), eronder H2. Zo krijgt een gegenereerde
   landingspagina met hero geen tweede H1.
 
-Bewaakt door `tests/Feature/SeoActionsTest.php`.
+- **Inhouds-guards in `normalizeAction()`** (geport uit bl-members, aug 2026):
+  `App\Support\FaqQuestionMatcher` filtert FAQ-voorstellen die inhoudelijk
+  overlappen met bestaande vragen (subset of >2/3 gedeelde kernwoorden;
+  vraagwoorden blijven betekenisvol), `FAQ_MAX_QUESTIONS` (7) begrenst het
+  aantal vragen per blok, `create_page` wordt geweigerd als een bestaande
+  NL-pagina het keyword al dekt via titel/slug, en `optimize_meta` mag op een
+  pagina die < `RECENT_DAYS` (60) geleden aangeraakt is enkel nog lege
+  metavelden invullen. De grounding voedt het model met de bestaande
+  FAQ-vragen per pagina (+ VOL-markering) en NIEUW/RECENT-datummarkeringen.
+  Fingerprints bevatten sindsdien de inhoud (`page-{id}|{contentKey}`), zodat
+  de dedup niet meer permanent per pagina is.
+
+Bewaakt door `tests/Feature/SeoActionsTest.php`,
+`tests/Feature/SeoActionGuardsTest.php` en `tests/Unit/FaqQuestionMatcherTest.php`.
 
 ### Nog in te vullen (admin)
 - [ ] **Instellingen → Algemeen**: merknaam, omschrijving, Anthropic API-key en
