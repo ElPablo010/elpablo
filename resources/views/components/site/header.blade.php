@@ -98,7 +98,7 @@
                         title="{{ __('Inloggen') }}"
                         class="hidden h-9 w-9 items-center justify-center rounded-full text-gray-200 transition-colors hover:bg-white/10 hover:text-white sm:inline-flex"
                     >
-                        <x-lucide-user-circle-2 class="h-5 w-5" />
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a7.5 7.5 0 0115 0"/></svg>
                     </a>
 
                     @if (! empty($cta['label']))
@@ -154,7 +154,7 @@
                             title="{{ __('Inloggen') }}"
                             class="ml-1 flex h-9 w-9 items-center justify-center rounded-lg text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
                         >
-                            <x-lucide-user-circle-2 class="h-5 w-5" />
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a7.5 7.5 0 0115 0"/></svg>
                         </a>
                     </div>
                     @if (! empty($cta['label']))

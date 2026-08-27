@@ -191,21 +191,20 @@ loopt er één achter, dan faalt de upload met "Error during upload":
 
 | Laag | Waar | Staat op |
 |---|---|---|
-| Filament-veld | `AudioPickerField` (upload-modal) → `->maxSize(102400)` | 100 MB |
-| Livewire tijdelijke upload | `config/livewire.php` → `temporary_file_upload.rules` | 128 MB |
-| PHP | `upload_max_filesize` + `post_max_size` | 100 MB (lokaal, Herd) |
+| Filament-veld | `AudioPickerField` (upload-modal) → `->maxSize(262144)` | 256 MB |
+| Livewire tijdelijke upload | `config/livewire.php` → `temporary_file_upload.rules` | 256 MB |
+| PHP | `upload_max_filesize` + `post_max_size` | 256 MB (lokaal én live) |
 
 Livewire's **default is 12MB** — die was hier de blokkade. PHP's default is 2M.
 
 - **Lokaal (Herd)**: `~/Library/Application Support/Herd/config/php/83/php.ini`.
   Na wijzigen Herd herstarten.
-- **Productie (Combell)**: zet `upload_max_filesize` en `post_max_size` daar via
-  het klantenpaneel of een `.user.ini` in de docroot. Vergeet dit niet — anders
-  werkt uploaden lokaal wel en live niet.
+- **Productie (Combell)**: `public/.user.ini` in de repo — `deploy.sh` symlinkt
+  alle top-level `public/`-bestanden (ook dotfiles) naar de `/www`-docroot, waar
+  PHP-FPM de `.user.ini` per map oppikt (cache ~5 min na deploy).
 
 `post_max_size` moet altijd ≥ `upload_max_filesize` zijn (de POST bevat naast het
-bestand ook de andere formuliervelden). Wil je sets >95MB kunnen uploaden, zet
-beide dan op 256M.
+bestand ook de andere formuliervelden).
 
 ## Mixtapes als eigen posttype
 

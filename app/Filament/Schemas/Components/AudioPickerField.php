@@ -46,7 +46,7 @@ class AudioPickerField
                     FileUpload::make('upload')
                         ->label('Audiobestand (mp3)')
                         ->acceptedFileTypes(['audio/mpeg', 'audio/mp3'])
-                        ->maxSize(102400)
+                        ->maxSize(262144)
                         ->required()
                         ->disk('public')
                         ->directory('website-audio'),
