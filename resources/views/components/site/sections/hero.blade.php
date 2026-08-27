@@ -10,9 +10,17 @@
         'ghost' => 'btn-ghost',
         default => 'btn-primary',
     };
+
+    // Hoogte instelbaar per hero; 'tall' is het gedrag van vóór dit veld.
+    // 'compact' zet geen min-hoogte: de padding van de inhoud bepaalt de maat.
+    $heightClass = match ($content['height'] ?? 'tall') {
+        'compact' => '',
+        'medium' => 'min-h-[62svh]',
+        default => 'min-h-[92vh]',
+    };
 @endphp
 
-<x-site.sections.wrapper :content="$content" class="relative flex min-h-[92vh] items-end overflow-hidden bg-ink-950">
+<x-site.sections.wrapper :content="$content" class="relative flex {{ $heightClass }} items-end overflow-hidden bg-ink-950">
     @if (! empty($image['src']))
         <picture>
             <source srcset="{{ $image['src'] }}" type="image/webp">

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\MixtapeController;
 use App\Http\Controllers\PublicPageController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\TicketStatusController;
@@ -49,6 +50,11 @@ Route::prefix('{locale}')
             ->where('slug', '[a-z0-9-]+')
             ->name('events.thanks.localized');
 
+        // Mixtape-detail (deelbare link) — ook vóór de {slug}-route.
+        Route::get('/mixtapes/{slug}', [MixtapeController::class, 'show'])
+            ->where('slug', '[a-z0-9-]+')
+            ->name('mixtapes.show.localized');
+
         Route::get('/', [PublicPageController::class, 'show'])->name('page.home.localized');
         Route::get('/{slug}', [PublicPageController::class, 'show'])
             ->where('slug', '[a-z0-9-]+')
@@ -64,9 +70,17 @@ Route::get('/events/{slug}/bedankt', [EventController::class, 'thanks'])
     ->where('slug', '[a-z0-9-]+')
     ->name('events.thanks');
 
+// Mixtape-detail (NL, op de root) — vóór de catch-all geregistreerd.
+Route::get('/mixtapes/{slug}', [MixtapeController::class, 'show'])
+    ->where('slug', '[a-z0-9-]+')
+    ->name('mixtapes.show');
+
 // Catch-all paginarouter (NL homepage + alle slugs). Sluit admin/livewire/storage uit.
 // events/t/stripe staan er expliciet bij: de route-volgorde beschermt al, maar zo
 // is de intentie leesbaar én blijft dat zo als routes ooit herschikt worden.
 Route::get('/{slug?}', [PublicPageController::class, 'show'])
-    ->where('slug', '^(?!admin|login|livewire|storage|_debugbar|design|events|t/|stripe).*$')
+    // 'mixtapes/' mét slash: bare /mixtapes en /mixtapes_categorie/* (oude
+    // WP-URL's) moeten hier blijven landen zodat de redirect-middleware ze
+    // vangt — die draait pas als een route matcht.
+    ->where('slug', '^(?!admin|login|livewire|storage|_debugbar|design|events|mixtapes/|t/|stripe).*$')
     ->name('page.show');

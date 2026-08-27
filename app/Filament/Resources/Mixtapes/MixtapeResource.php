@@ -115,6 +115,31 @@ class MixtapeResource extends Resource
                     ->label('Gepubliceerd'),
             ])
             ->recordActions([
+                \Filament\Actions\Action::make('view')
+                    ->icon(Heroicon::OutlinedEye)
+                    ->button()
+                    ->hiddenLabel()
+                    ->color('primary')
+                    ->tooltip('Bekijk op site')
+                    ->url(fn (Mixtape $record): string => $record->publicUrl()),
+                // Kopieert de deelbare URL client-side naar het klembord; de
+                // server-side action geeft alleen de bevestigings-melding.
+                \Filament\Actions\Action::make('copyLink')
+                    ->icon(Heroicon::OutlinedClipboardDocument)
+                    ->button()
+                    ->hiddenLabel()
+                    ->color('primary')
+                    ->tooltip('Kopieer publieke link')
+                    ->extraAttributes(fn (Mixtape $record): array => [
+                        'x-on:click' => 'window.navigator.clipboard.writeText('.\Illuminate\Support\Js::from($record->publicUrl()).')',
+                    ])
+                    ->action(function (Mixtape $record): void {
+                        \Filament\Notifications\Notification::make()
+                            ->title('Link gekopieerd')
+                            ->body($record->publicUrl())
+                            ->success()
+                            ->send();
+                    }),
                 \Filament\Actions\EditAction::make()
                     ->button()
                     ->hiddenLabel()

@@ -235,6 +235,65 @@ class Seo
     }
 
     /**
+     * Meta-bundel + JSON-LD voor een mixtape-detailpagina. Mixtapes zijn
+     * taal-onafhankelijk: elke taal toont dezelfde inhoud, dus de alternates
+     * dekken alle talen.
+     *
+     * @return array<string, mixed>
+     */
+    public static function fromMixtape(\App\Models\Mixtape $mixtape, string $locale): array
+    {
+        $canonical = self::absoluteUrl($mixtape->localizedPath($locale));
+
+        $description = filled($mixtape->subtitle)
+            ? $mixtape->subtitle
+            : __('Beluister de mixtape :title van :name.', ['title' => $mixtape->title, 'name' => self::siteName()]);
+
+        $dimensions = filled($mixtape->cover_url) ? WebsiteMedia::dimensionsForUrl($mixtape->cover_url) : [];
+
+        $alternates = [];
+        foreach (Locale::supported() as $alt) {
+            $alternates[$alt] = self::absoluteUrl($mixtape->localizedPath($alt));
+        }
+
+        $schema = [
+            '@type' => 'MusicPlaylist',
+            '@id' => $canonical.'#mixtape',
+            'url' => $canonical,
+            'name' => $mixtape->title,
+            'description' => $description,
+            'isPartOf' => ['@id' => self::baseUrl().'/#website'],
+        ];
+
+        if (filled($mixtape->cover_url)) {
+            $schema['image'] = self::absoluteUrl($mixtape->cover_url);
+        }
+
+        if ($audio = $mixtape->resolvedAudioUrl()) {
+            $schema['audio'] = [
+                '@type' => 'AudioObject',
+                'contentUrl' => self::absoluteUrl($audio),
+                'encodingFormat' => 'audio/mpeg',
+            ];
+        }
+
+        return [
+            'title' => $mixtape->title,
+            'description' => $description,
+            'canonical' => $canonical,
+            'robots' => 'index, follow',
+            'image' => $mixtape->cover_url,
+            'imageAlt' => $mixtape->title,
+            'imageWidth' => $dimensions['width'] ?? null,
+            'imageHeight' => $dimensions['height'] ?? null,
+            'type' => 'website',
+            'locale' => $locale,
+            'alternates' => $alternates,
+            'schema' => [$schema],
+        ];
+    }
+
+    /**
      * hreflang-alternates voor een event: NL altijd (de bron), EN/ES enkel als
      * er een vertaling mét inhoud bestaat — een lege placeholder-rij zou anders
      * naar een pagina wijzen die gewoon Nederlands toont.

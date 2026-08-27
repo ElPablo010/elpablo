@@ -75,6 +75,22 @@ class SeoController extends Controller
             ];
         }
 
+        // Mixtape-detailpagina's (taal-onafhankelijk: alternates in elke taal).
+        foreach (\App\Models\Mixtape::query()->published()->ordered()->get() as $mixtape) {
+            $alternates = [];
+            foreach (Locale::supported() as $locale) {
+                $alternates[$locale] = $mixtape->publicUrl($locale);
+            }
+            $alternates['x-default'] = $alternates[Locale::DEFAULT];
+
+            $urls[] = [
+                'loc' => $mixtape->publicUrl(Locale::DEFAULT),
+                'lastmod' => $mixtape->updated_at,
+                'priority' => '0.5',
+                'alternates' => $alternates,
+            ];
+        }
+
         return response()
             ->view('sitemap', ['urls' => $urls])
             ->header('Content-Type', 'application/xml');

@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Support\Locale;
+use App\Support\Seo;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 /**
  * Mixtape/DJ-set als eigen posttype: één globale catalogus (taal-onafhankelijk —
@@ -14,6 +17,7 @@ use Illuminate\Support\Facades\Storage;
  */
 #[Fillable([
     'title',
+    'slug',
     'subtitle',
     'audio_url',
     'cover_url',
@@ -25,9 +29,19 @@ class Mixtape extends Model
 {
     protected static function booted(): void
     {
-        // Nieuwe mixtapes achteraan in de (versleepbare) volgorde.
+        // Nieuwe mixtapes vooraan in de (versleepbare) volgorde: de nieuwste
+        // set is doorgaans wat je wilt uitlichten. Herordenen kan altijd nog.
+        // De kolom is unsigned, dus niet min-1 maar de rest een plek opschuiven.
         static::creating(function (Mixtape $mixtape): void {
-            $mixtape->position ??= (int) static::query()->max('position') + 1;
+            if ($mixtape->position === null) {
+                static::query()->increment('position');
+                $mixtape->position = 0;
+            }
+
+            // Slug voor de publieke detailpagina — uniek gemaakt op basis van
+            // de titel, en daarna stabiel (een deelbare link mag niet breken
+            // door een titelwijziging).
+            $mixtape->slug ??= static::uniqueSlug($mixtape->title);
         });
     }
 
@@ -70,5 +84,27 @@ class Mixtape extends Model
         }
 
         return Storage::disk('public')->url($audio);
+    }
+
+    public static function uniqueSlug(string $title): string
+    {
+        $base = Str::slug($title) ?: 'mixtape';
+        $slug = $base;
+
+        for ($i = 2; static::query()->where('slug', $slug)->exists(); $i++) {
+            $slug = "{$base}-{$i}";
+        }
+
+        return $slug;
+    }
+
+    public function localizedPath(?string $locale = null): string
+    {
+        return Locale::href('/mixtapes/'.$this->slug, $locale);
+    }
+
+    public function publicUrl(?string $locale = null): string
+    {
+        return Seo::absoluteUrl($this->localizedPath($locale));
     }
 }

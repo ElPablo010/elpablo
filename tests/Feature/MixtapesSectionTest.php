@@ -82,3 +82,14 @@ it('hides the download button when a mixtape disallows downloads', function () {
 
     $this->get('/muziek')->assertOk()->assertDontSee('Download');
 });
+
+it('puts a newly created mixtape first in the order', function () {
+    Mixtape::create(['title' => 'Oud', 'audio_url' => '/storage/a.mp3', 'position' => 0]);
+    Mixtape::create(['title' => 'Ouder', 'audio_url' => '/storage/b.mp3', 'position' => 1]);
+
+    // Zonder expliciete positie (zoals via de admin): vooraan, rest schuift op.
+    $new = Mixtape::create(['title' => 'Nieuw', 'audio_url' => '/storage/c.mp3']);
+
+    expect($new->position)->toBe(0);
+    expect(Mixtape::ordered()->pluck('title')->all())->toBe(['Nieuw', 'Oud', 'Ouder']);
+});

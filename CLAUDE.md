@@ -222,6 +222,18 @@ alle talen — ondertitels zijn genre/duur en dus universeel). Het vroegere
 titel) — draai `php artisan migrate` bij de deploy en het live-content komt
 vanzelf mee. Bewaakt door `tests/Feature/MixtapesSectionTest.php`.
 
+**Deelbare detailpagina per mixtape** (`/mixtapes/{slug}`, ook onder `/en`/`/es`):
+eigen OG-meta met de cover, speler + download, hreflang voor alle talen, en
+opgenomen in de sitemap. De slug wordt bij aanmaak uniek afgeleid uit de titel
+en blijft daarna stabiel (deelbare links mogen niet breken). In de admin-tabel:
+oog-knop (bekijk op site) en een **kopieerknop** die de publieke URL naar het
+klembord schrijft. Let op de oude WP-redirects: `/mixtapes` en
+`/mixtapes_categorie/*` moeten op de catch-all blijven landen (de
+redirect-middleware draait pas als een route matcht), daarom sluit de catch-all
+alleen `mixtapes/` mét slash uit. Oude `/mixtapes/{wp-slug}`-URL's redirecten
+via de middleware vóór de nieuwe route-controller iets doet. Bewaakt door
+`tests/Feature/MixtapePageTest.php` + `RedirectsTest`.
+
 ## Events & ticketverkoop
 
 Volwaardig events-posttype met tickets, kortingen en Stripe-checkout — vers

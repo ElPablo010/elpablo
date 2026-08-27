@@ -40,6 +40,26 @@ class HeroFields
 
             MediaPickerField::make('image.src', 'Achtergrondafbeelding', required: false),
 
+            Select::make('height')
+                ->label('Hoogte')
+                // Logische volgorde (klein → groot) i.p.v. alfabetisch: dit is
+                // een maatvoering, geen naamlijst.
+                ->options([
+                    'compact' => 'Compact (alleen de inhoud)',
+                    'medium' => 'Normaal (± 60% van het scherm)',
+                    'tall' => 'Groot (bijna schermvullend)',
+                ])
+                ->default('tall')
+                // Bestaande secties (van vóór dit veld) hebben geen waarde en
+                // krijgen geen default van Filament — laad ze als 'Groot' in
+                // (het gedrag tot nu toe), anders bewaart een save stilletjes null.
+                ->afterStateHydrated(function ($component, ?string $state): void {
+                    if ($state === null) {
+                        $component->state('tall');
+                    }
+                })
+                ->selectablePlaceholder(false),
+
             Grid::make(['default' => 1, 'md' => 2])
                 ->schema([
                     TextInput::make('image.alt')
