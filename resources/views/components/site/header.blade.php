@@ -91,6 +91,16 @@
                         </div>
                     </div>
 
+                    {{-- Login voor beheer (Filament) --}}
+                    <a
+                        href="/admin"
+                        aria-label="{{ __('Inloggen') }}"
+                        title="{{ __('Inloggen') }}"
+                        class="hidden h-9 w-9 items-center justify-center rounded-full text-gray-200 transition-colors hover:bg-white/10 hover:text-white sm:inline-flex"
+                    >
+                        <x-lucide-user-circle-2 class="h-5 w-5" />
+                    </a>
+
                     @if (! empty($cta['label']))
                         <a href="{{ Locale::href($cta['href'] ?? '/') }}" class="btn-primary hidden py-2.5 sm:inline-flex">{{ __($cta['label']) }}</a>
                     @endif
@@ -129,13 +139,23 @@
                 @endif
 
                 <div class="mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-4">
-                    <div class="flex gap-1">
+                    <div class="flex items-center gap-1">
                         @foreach ($locales as $code => $label)
                             <a
                                 href="{{ Locale::href($switchBase, $code) }}"
                                 class="rounded-lg px-3 py-1.5 text-xs font-semibold uppercase tracking-wide {{ $code === $currentLocale ? 'bg-white/10 text-primary-500' : 'text-gray-300' }}"
                             >{{ $label }}</a>
                         @endforeach
+
+                        {{-- Enkel het icoon — het label maakt de rij te druk op smalle schermen. --}}
+                        <a
+                            href="/admin"
+                            aria-label="{{ __('Inloggen') }}"
+                            title="{{ __('Inloggen') }}"
+                            class="ml-1 flex h-9 w-9 items-center justify-center rounded-lg text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
+                        >
+                            <x-lucide-user-circle-2 class="h-5 w-5" />
+                        </a>
                     </div>
                     @if (! empty($cta['label']))
                         <a href="{{ Locale::href($cta['href'] ?? '/') }}" class="btn-primary py-2.5">{{ __($cta['label']) }}</a>
