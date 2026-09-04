@@ -234,6 +234,42 @@ alleen `mixtapes/` mét slash uit. Oude `/mixtapes/{wp-slug}`-URL's redirecten
 via de middleware vóór de nieuwe route-controller iets doet. Bewaakt door
 `tests/Feature/MixtapePageTest.php` + `RedirectsTest`.
 
+## Leads-meetlaag (first-party attributie)
+
+Enkel het **meetgedeelte** van de Groei-laag uit de `seo-analytics`-skill — de
+actielaag (Groei-hernoeming, keyword-voorstellen, queue-acties) is hier bewust
+niet bijgewerkt (04/09/2026). Bewust geen GA4: consent mode maakt die cijfers
+onvolledig, de eigen database kent de conversies exact.
+
+- **Herkomst**: `CaptureFirstTouch` (web-groep, ná `HandleRedirects`) legt bij het
+  eerste GET van een sessie kanaal, landingspagina, referrer en utm's vast
+  (`App\Support\Attribution`, sessiekey `wg_first_touch`). Sessie-only, geen
+  cookie; bots, `/admin`, `/t/*` (QR-scans) en `/stripe/*` krijgen niets.
+- **Leads** (`leads`-tabel, `Lead`-model): één rij per conversie, met morph naar
+  het bronrecord, bedrag en herkomst. `Lead::record()` faalt nooit hard.
+  Twee conversiepunten:
+  1. **Formulieren** — `FormSubmission::booted()` registreert élke inzending
+     (contact én booking) als lead; nieuwe formuliertypes tellen dus vanzelf mee.
+  2. **Ticketaankopen** — `TicketCheckoutService` zet `Attribution::current()`
+     in de pending-payload (sleutel `attribution`, enkel als er een snapshot is:
+     de webhook heeft geen sessie), en `TicketOrderFulfillment` schrijft de lead
+     (`ticket_order`, bedrag = `total_inc_vat`, taal van de koper) **bínnen de
+     transactie ná de Paid-check** — webhook en bedankpagina tellen nooit dubbel.
+- **Harde regel**: elk nieuw conversiepunt roept `Lead::record()` aan op het
+  punt waar de conversie definitief wordt, binnen de idempotency-guard als er
+  een webhook in het spel is. Formulieren via `FormSubmission` hoeven niets.
+- **Admin**: *SEO → Leads* (`SeoLeads`): kop-cijfers t.o.v. het maanddoel,
+  leads per maand met doellijn en livegang-markering, verdeling per
+  kanaal/type/landingspagina (90 d.), recentste 50, en de nulmeting-velden
+  (`seo_live_since`, `seo_goal_leads_month`, `seo_leads_baseline`). Cijfers uit
+  `App\Support\LeadStats`. Datums `dd/mm/jjjj`.
+
+Bewaakt door `tests/Feature/LeadAttributionTest.php`,
+`tests/Feature/SeoLeadsPageTest.php` en `tests/Feature/Events/TicketOrderLeadTest.php`.
+
+### Nog in te vullen (admin)
+- [ ] **SEO → Leads**: livegang-datum, maanddoel en de opgave van vóór de meting.
+
 ## Events & ticketverkoop
 
 Volwaardig events-posttype met tickets, kortingen en Stripe-checkout — vers

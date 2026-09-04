@@ -32,4 +32,19 @@ class FormSubmission extends Model
     {
         return self::TYPE_LABELS[$this->type] ?? ucfirst($this->type);
     }
+
+    /**
+     * Leads-meetlaag: élke formulierinzending is een lead, ongeacht het
+     * formuliertype. De registratie zit hier centraal — niet in de afzonderlijke
+     * Livewire-formulieren — zodat een later toegevoegd formulier nooit stil
+     * buiten de meting valt. `Lead::record()` faalt nooit hard.
+     */
+    protected static function booted(): void
+    {
+        static::created(function (self $submission): void {
+            if (class_exists(\App\Models\Lead::class)) {
+                \App\Models\Lead::record($submission->type, $submission);
+            }
+        });
+    }
 }

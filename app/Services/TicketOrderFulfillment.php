@@ -7,6 +7,7 @@ use App\Enums\OrderStatus;
 use App\Enums\TicketStatus;
 use App\Jobs\SendTicketOrderEmailJob;
 use App\Jobs\SubscribeTicketBuyerToKitJob;
+use App\Models\Lead;
 use App\Models\PendingStripeSession;
 use App\Models\TicketOrder;
 use Illuminate\Support\Facades\DB;
@@ -57,7 +58,7 @@ class TicketOrderFulfillment
             return null;
         }
 
-        $order = DB::transaction(function () use ($orderId, $session) {
+        $order = DB::transaction(function () use ($orderId, $session, $payload) {
             /** @var TicketOrder|null $order */
             $order = TicketOrder::query()->lockForUpdate()->find($orderId);
 
@@ -103,6 +104,18 @@ class TicketOrderFulfillment
             $order->tickets()
                 ->where('status', TicketStatus::Reserved)
                 ->update(['status' => TicketStatus::Paid]);
+
+            // Leads-meetlaag: een betaalde bestelling is een conversie. Staat
+            // bewust hier, ná de statuscheck hierboven, zodat webhook en
+            // bedankpagina nooit dubbel tellen. Herkomst uit de payload (de
+            // webhook heeft geen sessie); record() faalt nooit hard.
+            Lead::record(
+                Lead::TYPE_TICKET_ORDER,
+                $order,
+                (float) $order->total_inc_vat,
+                $payload['attribution'] ?? null,
+                $order->locale,
+            );
 
             return $order;
         });

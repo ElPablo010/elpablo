@@ -10,6 +10,7 @@ use App\Models\Event;
 use App\Models\EventTicket;
 use App\Models\EventTicketType;
 use App\Models\PendingStripeSession;
+use App\Support\Attribution;
 use App\Models\TicketOrder;
 use App\Support\Locale;
 use App\Support\Seo;
@@ -186,7 +187,14 @@ class TicketCheckoutService
                 }
             }
 
-            PendingStripeSession::put($uuid, 'event_order', ['ticket_order_id' => $order->id]);
+            // De webhook heeft geen bezoekerssessie: de herkomst (first touch)
+            // reist daarom mee in de payload. Enkel als er een snapshot is —
+            // nooit een null-sleutel injecteren.
+            $payload = ['ticket_order_id' => $order->id];
+            if ($attribution = Attribution::current()) {
+                $payload['attribution'] = $attribution;
+            }
+            PendingStripeSession::put($uuid, 'event_order', $payload);
 
             return $order;
         });

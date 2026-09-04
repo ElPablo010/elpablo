@@ -14,6 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
             \App\Http\Middleware\HandleRedirects::class,
+            // Leads-meetlaag: herkomst van elke bezoeker (first touch), ná StartSession.
+            \App\Http\Middleware\CaptureFirstTouch::class,
         ]);
 
         // Stripe post webhooks zonder CSRF-token; de handtekening in de
