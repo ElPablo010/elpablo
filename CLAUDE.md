@@ -258,6 +258,16 @@ onvolledig, de eigen database kent de conversies exact.
 - **Harde regel**: elk nieuw conversiepunt roept `Lead::record()` aan op het
   punt waar de conversie definitief wordt, binnen de idempotency-guard als er
   een webhook in het spel is. Formulieren via `FormSubmission` hoeven niets.
+- **Verkeer** (*SEO → Verkeer*, `SearchConsole`): het **gemeten** Google-verkeer
+  uit Search Console — niet de DataForSEO-schatting. Clicks/vertoningen/CTR/
+  positie (28 d. t.o.v. 28 d. ervoor), weekverloop, top-zoektermen/-pagina's en
+  kansen (≥ 20 vertoningen, positie 4-20). Koppeling via OAuth op het eigen
+  Google-account (`gsc_oauth_client_id/secret`, consent-flow via
+  `SearchConsoleOAuthController` op `/admin/search-console/oauth/*`, refresh
+  token in `gsc_refresh_token`, property `gsc_site_url` automatisch gekozen).
+  Sync `seo:sync-search-console` dagelijks 6:00 (16 maanden backfill bij de
+  eerste run, daarna rollend 7-dagenvenster). Valkuilen: `access_type=offline`
+  + `prompt=consent` verplicht, en de OAuth-app in Google Cloud op "In productie".
 - **Admin**: *SEO → Leads* (`SeoLeads`): kop-cijfers t.o.v. het maanddoel,
   leads per maand met doellijn en livegang-markering, verdeling per
   kanaal/type/landingspagina (90 d.), recentste 50, en de nulmeting-velden
@@ -265,10 +275,12 @@ onvolledig, de eigen database kent de conversies exact.
   `App\Support\LeadStats`. Datums `dd/mm/jjjj`.
 
 Bewaakt door `tests/Feature/LeadAttributionTest.php`,
-`tests/Feature/SeoLeadsPageTest.php` en `tests/Feature/Events/TicketOrderLeadTest.php`.
+`tests/Feature/SeoLeadsPageTest.php`, `tests/Feature/SearchConsoleTest.php` en
+`tests/Feature/Events/TicketOrderLeadTest.php`.
 
 ### Nog in te vullen (admin)
-- [ ] **SEO → Leads**: livegang-datum, maanddoel en de opgave van vóór de meting.
+- [ ] **SEO → Leads**: livegang-datum (06/08/2026), maanddoel en de opgave van vóór de meting.
+- [ ] **SEO → Verkeer**: OAuth-client aanmaken in Google Cloud (omleidings-URI staat op de pagina), koppelen, "Ververs nu".
 
 ## Events & ticketverkoop
 

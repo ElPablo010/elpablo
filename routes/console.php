@@ -24,3 +24,10 @@ Schedule::command('queue:work --stop-when-empty')
 // vrij. De checkout.session.expired-webhook doet dit meestal al; dit is het
 // vangnet voor gemiste webhooks.
 Schedule::command('events:release-expired-reservations')->everyFiveMinutes();
+
+// Google Search Console-cijfers ophalen (dagelijks 6:00, leads-meetlaag).
+// Google levert met ~3 dagen vertraging en herziet recente dagen nog; de sync
+// haalt telkens het laatste venster opnieuw op en overschrijft per dag.
+Schedule::command('seo:sync-search-console')
+    ->dailyAt('6:00')
+    ->withoutOverlapping();
