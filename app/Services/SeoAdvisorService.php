@@ -21,7 +21,11 @@ use Illuminate\Support\Str;
  */
 class SeoAdvisorService
 {
-    protected string $model = 'claude-sonnet-5';
+    /**
+     * Het "denkwerk"-model: SEO-advies en verbeteracties. Uit config, nooit
+     * hier hardcoded — zie config/services.php.
+     */
+    protected string $model;
 
     /**
      * Hoeveel vragen een FAQ-blok hoogstens mag tellen. Boven deze grens
@@ -44,6 +48,7 @@ class SeoAdvisorService
 
     public function __construct(protected DataForSeoService $api)
     {
+        $this->model = config('services.anthropic.models.reasoning', 'claude-sonnet-5');
     }
 
     /**

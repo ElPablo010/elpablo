@@ -107,6 +107,26 @@ class ClaudeTranslator
             $payload[] = ['key' => (string) $key, 'text' => $text];
         }
 
+        // Het "sleurwerk"-model: korte strings omzetten, waar niets te bedenken
+        // valt. Zie config/services.php — nooit hier hardcoden.
+        $model = config('services.anthropic.models.bulk', 'claude-haiku-4-5-20251001');
+
+        $outputConfig = [
+            'format' => [
+                'type' => 'json_schema',
+                'schema' => $this->responseSchema(),
+            ],
+        ];
+
+        // `effort` bestaat niet op elk model: Haiku weigert de héle request met
+        // een 400 als je het meestuurt. Voor Haiku is het bovendien zinloos —
+        // dat model denkt niet adaptief, dus er valt geen denkwerk te temperen.
+        // Op de grotere modellen houdt 'low' de kosten en de wachttijd laag
+        // zonder dat de kwaliteit merkbaar zakt.
+        if ($this->supportsEffort($model)) {
+            $outputConfig['effort'] = 'low';
+        }
+
         $response = Http::withHeaders([
             'x-api-key' => $apiKey,
             'anthropic-version' => '2023-06-01',
@@ -115,17 +135,9 @@ class ClaudeTranslator
             ->timeout(180)
             ->retry(2, 2000, throw: false)
             ->post('https://api.anthropic.com/v1/messages', [
-                'model' => config('services.anthropic.model', 'claude-opus-5'),
+                'model' => $model,
                 'max_tokens' => 16000,
-                // Vertalen vraagt weinig redeneerwerk; 'low' houdt de kosten en
-                // de wachttijd laag zonder dat de kwaliteit merkbaar zakt.
-                'output_config' => [
-                    'effort' => 'low',
-                    'format' => [
-                        'type' => 'json_schema',
-                        'schema' => $this->responseSchema(),
-                    ],
-                ],
+                'output_config' => $outputConfig,
                 'system' => $this->systemPrompt($fromLocale, $toLocale, $context),
                 'messages' => [[
                     'role' => 'user',
@@ -137,7 +149,7 @@ class ClaudeTranslator
             throw TranslationException::fromResponse($response);
         }
 
-        $decoded = json_decode((string) $response->json('content.0.text'), true);
+        $decoded = json_decode((string) $this->firstTextBlock($response->json('content', [])), true);
 
         if (! is_array($decoded) || ! isset($decoded['translations']) || ! is_array($decoded['translations'])) {
             throw TranslationException::invalidResponse();
@@ -211,6 +223,38 @@ class ClaudeTranslator
         }
 
         return implode("\n", $lines);
+    }
+
+    /**
+     * Kent dit model de `effort`-parameter? Haiku niet — die geeft dan een
+     * HTTP 400 op de hele request, dus dit moet vóór het versturen gecheckt
+     * worden en niet achteraf opgevangen.
+     */
+    private function supportsEffort(string $model): bool
+    {
+        return ! str_starts_with($model, 'claude-haiku-');
+    }
+
+    /**
+     * Het eerste tekstblok uit een Messages-API-antwoord.
+     *
+     * Niet `content[0]` pakken: denkt het model bij deze prompt hardop, dan is
+     * blok 0 een thinking-blok zonder `text`, en dan faalt de vertaling op
+     * "ongeldig antwoord" terwijl het antwoord prima was — wij lazen het
+     * verkeerd. Of er gedacht wordt hangt af van de prompt, niet van het
+     * model, dus dit is een grillige fout die je niet met één test uitsluit.
+     *
+     * @param  array<int, array<string, mixed>>  $content
+     */
+    private function firstTextBlock(array $content): ?string
+    {
+        foreach ($content as $block) {
+            if (($block['type'] ?? null) === 'text' && filled($block['text'] ?? null)) {
+                return trim($block['text']);
+            }
+        }
+
+        return null;
     }
 
     private function languageName(string $locale): string
