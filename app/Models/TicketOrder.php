@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Enums\OrderStatus;
+use App\Enums\TicketStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -63,6 +65,26 @@ class TicketOrder extends Model
         return $this->hasMany(EventTicket::class);
     }
 
+    /** Geclaimde extra's (groepstafel, …) — géén tickets, dus geen bezoekers. */
+    public function extras(): HasMany
+    {
+        return $this->hasMany(TicketOrderExtra::class);
+    }
+
+    /**
+     * Bestellingen die voorraad bezetten: betaald, of een reservering die nog
+     * loopt. Dit is de enige waarheid voor de voorraad van een extra — zo geeft
+     * een verlopen reservering of een terugbetaling ze vanzelf weer vrij.
+     */
+    public function scopeOccupying(Builder $query): Builder
+    {
+        return $query->where(fn (Builder $q) => $q
+            ->where('status', OrderStatus::Paid)
+            ->orWhere(fn (Builder $pending) => $pending
+                ->where('status', OrderStatus::Pending)
+                ->where('expires_at', '>', now())));
+    }
+
     public function discountCode(): BelongsTo
     {
         return $this->belongsTo(DiscountCode::class);
@@ -80,7 +102,7 @@ class TicketOrder extends Model
             return;
         }
 
-        $this->tickets()->where('status', \App\Enums\TicketStatus::Reserved)->delete();
+        $this->tickets()->where('status', TicketStatus::Reserved)->delete();
         $this->update(['status' => OrderStatus::Expired, 'expires_at' => null]);
 
         PendingStripeSession::where('payload->ticket_order_id', $this->id)->delete();
@@ -88,15 +110,29 @@ class TicketOrder extends Model
 
     /**
      * Totale BTW afgeleid uit de regels — elke regel draagt zijn eigen tarief,
-     * er staat bewust géén BTW-tarief op de header.
+     * er staat bewust géén BTW-tarief op de header. Extra's tellen mee: ze staan
+     * los van de tickets, maar wel op dezelfde factuur.
      */
     public function vatAmount(): float
     {
-        return round($this->items->sum(function (TicketOrderItem $item) {
-            $inc = (float) $item->line_total_inc_vat;
-            $rate = (float) $item->vat_rate;
+        $vat = fn (float $inc, float $rate): float => $rate > 0 ? $inc - ($inc / (1 + $rate / 100)) : 0.0;
 
-            return $rate > 0 ? $inc - ($inc / (1 + $rate / 100)) : 0.0;
-        }), 2);
+        $fromItems = $this->items->sum(fn (TicketOrderItem $item) => $vat(
+            (float) $item->line_total_inc_vat,
+            (float) $item->vat_rate,
+        ));
+
+        $fromExtras = $this->extras->sum(fn (TicketOrderExtra $extra) => $vat(
+            (float) $extra->line_total_inc_vat,
+            (float) $extra->vat_rate,
+        ));
+
+        return round($fromItems + $fromExtras, 2);
+    }
+
+    /** Het totaal van de extra's (0 als er geen zijn). */
+    public function extrasTotal(): float
+    {
+        return round((float) $this->extras->sum(fn (TicketOrderExtra $extra) => (float) $extra->line_total_inc_vat), 2);
     }
 }

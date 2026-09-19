@@ -12,6 +12,7 @@ use App\Filament\Pages\PaymentSettings;
 use App\Filament\Resources\Events\Pages\CreateEvent;
 use App\Filament\Resources\Events\Pages\EditEvent;
 use App\Models\Event;
+use App\Models\EventExtra;
 use App\Models\EventTicketDiscount;
 use App\Models\EventTicketType;
 use App\Models\Setting;
@@ -42,6 +43,19 @@ it('creates an event with tickets, promos and translations from the admin', func
                     'valid_until' => now()->addWeek()->toDateString(),
                 ],
             ],
+            'extras' => [
+                [
+                    'name' => 'Groepstafel',
+                    'description' => 'Eén gereserveerde tafel voor je groep.',
+                    'price' => 0,
+                    'vat_rate' => 21,
+                    'capacity' => 8,
+                    'max_per_order' => 1,
+                    'min_tickets' => 12,
+                    'ticket_type_id' => null,
+                    'sold_out' => false,
+                ],
+            ],
             'translations' => [
                 'en' => ['name' => 'Latin Night (EN)', 'short_description' => null, 'description' => null],
                 'es' => ['name' => null, 'short_description' => null, 'description' => null],
@@ -55,6 +69,7 @@ it('creates an event with tickets, promos and translations from the admin', func
     expect($event->published)->toBeTrue()
         ->and(EventTicketType::where('event_id', $event->id)->count())->toBe(1)
         ->and(EventTicketDiscount::where('event_id', $event->id)->count())->toBe(1)
+        ->and(EventExtra::where('event_id', $event->id)->first()?->min_tickets)->toBe(12)
         ->and($event->translationFor('en')?->name)->toBe('Latin Night (EN)')
         ->and($event->translationFor('es')?->hasContent())->toBeFalse();
 });
@@ -64,15 +79,19 @@ it('saves an existing event unchanged without validation errors', function () {
     $event = Event::factory()->create();
     $type = TicketType::factory()->create();
     EventTicketType::factory()->create(['event_id' => $event->id, 'ticket_type_id' => $type->id]);
+    EventExtra::factory()->create(['event_id' => $event->id]);
     $event->translations()->create(['locale' => 'en', 'name' => 'English name']);
 
     Livewire::test(EditEvent::class, ['record' => $event->getRouteKey()])
         ->call('save')
         ->assertHasNoFormErrors();
 
-    // Heropslaan mag vertalingen niet wissen of dupliceren.
+    // Heropslaan mag vertalingen niet wissen of dupliceren, en de extra's
+    // moeten de rondgang door het formulier ongeschonden doorstaan.
     expect($event->fresh()->translationFor('en')?->name)->toBe('English name')
-        ->and($event->fresh()->translations()->count())->toBe(2); // en + es (lege placeholder)
+        ->and($event->fresh()->translations()->count())->toBe(2) // en + es (lege placeholder)
+        ->and($event->fresh()->extras()->count())->toBe(1)
+        ->and($event->fresh()->extras->first()->min_tickets)->toBe(12);
 });
 
 it('cancels and un-cancels an event via the toggle and keeps the message', function () {

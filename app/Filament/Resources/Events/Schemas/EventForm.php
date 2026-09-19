@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Events\Schemas;
 
 use App\Enums\TicketDiscountType;
 use App\Filament\Schemas\Components\MediaPickerField;
+use App\Models\EventExtra;
 use App\Models\EventTicketType;
 use App\Models\TicketType;
 use App\Support\Locale;
@@ -41,6 +42,9 @@ class EventForm
                         Tab::make('Promo\'s')
                             ->id('promos')
                             ->schema(self::promosTab()),
+                        Tab::make('Extra\'s')
+                            ->id('extras')
+                            ->schema(self::extrasTab()),
                         Tab::make('Vertalingen')
                             ->id('translations')
                             ->schema(self::translationsTab()),
@@ -273,6 +277,122 @@ class EventForm
                         ]),
                 ]),
         ];
+    }
+
+    /**
+     * Extra's: alles wat je bij een bestelling kunt kiezen zonder dat het een
+     * ticket is (een gratis groepstafel, later een drankkaart). Ze tellen nooit
+     * mee als bezoeker en krijgen geen QR-ticket.
+     *
+     * @return array<int, mixed>
+     */
+    private static function extrasTab(): array
+    {
+        return [
+            Repeater::make('extras')
+                ->relationship()
+                ->label('Extra\'s')
+                ->addActionLabel('Extra toevoegen')
+                ->orderColumn('position')
+                ->reorderable()
+                ->defaultItems(0)
+                ->itemLabel(fn (array $state): ?string => $state['name'] ?? null)
+                ->schema([
+                    Grid::make(['default' => 1, 'md' => 3])
+                        ->schema([
+                            TextInput::make('name')
+                                ->label('Naam')
+                                ->required()
+                                ->maxLength(255)
+                                ->helperText('bv. "Groepstafel".'),
+                            TextInput::make('price')
+                                ->label('Prijs (incl. btw)')
+                                ->numeric()
+                                ->prefix('€')
+                                ->default(0)
+                                ->required()
+                                ->helperText('0 = gratis.'),
+                            TextInput::make('vat_rate')
+                                ->label('Btw-tarief (%)')
+                                ->numeric()
+                                ->default(21)
+                                ->required(),
+                        ]),
+                    Textarea::make('description')
+                        ->label('Omschrijving')
+                        ->rows(2)
+                        ->maxLength(500)
+                        ->helperText('Eén zin onder de naam in de checkout.'),
+                    Grid::make(['default' => 1, 'md' => 3])
+                        ->schema([
+                            TextInput::make('capacity')
+                                ->label('Voorraad')
+                                ->numeric()
+                                ->minValue(1)
+                                ->helperText('bv. 8 tafels. Leeg = onbeperkt.'),
+                            TextInput::make('max_per_order')
+                                ->label('Max. per bestelling')
+                                ->numeric()
+                                ->minValue(1)
+                                ->default(1)
+                                ->required(),
+                            Toggle::make('sold_out')
+                                ->label('Handmatig volzet')
+                                ->inline(false),
+                        ]),
+                    Grid::make(['default' => 1, 'md' => 2])
+                        ->schema([
+                            TextInput::make('min_tickets')
+                                ->label('Beschikbaar vanaf … tickets')
+                                ->numeric()
+                                ->minValue(0)
+                                ->default(0)
+                                ->required()
+                                ->helperText('0 = altijd beschikbaar. Bij 12 verschijnt de extra pas vanaf 12 tickets.'),
+                            Select::make('ticket_type_id')
+                                ->label('Tel enkel dit tickettype')
+                                ->options(fn (): array => TicketType::orderBy('name')->pluck('name', 'id')->all())
+                                ->placeholder('Alle tickets samen')
+                                ->helperText('Leeg = alle tickets in de bestelling tellen mee voor de drempel.'),
+                        ]),
+                    Fieldset::make('Vertalingen')
+                        ->columns(2)
+                        ->schema(self::extraTranslationFields()),
+                    Placeholder::make('claimed_count')
+                        ->label('Geclaimd')
+                        ->content(fn (?EventExtra $record): string => $record
+                            ? $record->claimedCount().($record->capacity !== null ? ' / '.$record->capacity : '')
+                            : '—'),
+                ]),
+        ];
+    }
+
+    /**
+     * Naam en omschrijving per extra taal — lege velden vallen terug op NL.
+     *
+     * @return array<int, mixed>
+     */
+    private static function extraTranslationFields(): array
+    {
+        $fields = [];
+
+        foreach (Locale::supported() as $locale) {
+            if ($locale === Locale::DEFAULT) {
+                continue;
+            }
+
+            $label = Locale::LABELS[$locale] ?? strtoupper($locale);
+
+            $fields[] = TextInput::make("name_{$locale}")
+                ->label("Naam ({$label})")
+                ->maxLength(255);
+            $fields[] = Textarea::make("description_{$locale}")
+                ->label("Omschrijving ({$label})")
+                ->rows(2)
+                ->maxLength(500);
+        }
+
+        return $fields;
     }
 
     /**

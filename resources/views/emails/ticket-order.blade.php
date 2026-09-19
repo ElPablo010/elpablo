@@ -76,6 +76,20 @@
                         <td align="right">− € {{ number_format((float) $order->discount_amount, 2, ',', '.') }}</td>
                     </tr>
                 @endif
+                {{-- Extra's staan onder de tickets: er hoort geen QR-PDF bij, dus
+                     dit is de enige plek waar de koper ze bevestigd ziet. --}}
+                @foreach ($order->extras as $extra)
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td>{{ $extra->quantity }} × {{ $extra->description }}</td>
+                        <td align="right">
+                            @if ((float) $extra->line_total_inc_vat > 0)
+                                € {{ number_format((float) $extra->line_total_inc_vat, 2, ',', '.') }}
+                            @else
+                                {{ __('gratis') }}
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
                 <tr>
                     <td style="font-weight: bold; padding-top: 10px;">{{ __('Totaal') }}</td>
                     <td align="right" style="font-weight: bold; padding-top: 10px;">€ {{ number_format((float) $order->total_inc_vat, 2, ',', '.') }}</td>

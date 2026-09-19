@@ -7,11 +7,12 @@ use App\Enums\OrderStatus;
 use App\Enums\TicketStatus;
 use App\Exceptions\CheckoutException;
 use App\Models\Event;
+use App\Models\EventExtra;
 use App\Models\EventTicket;
 use App\Models\EventTicketType;
 use App\Models\PendingStripeSession;
-use App\Support\Attribution;
 use App\Models\TicketOrder;
+use App\Support\Attribution;
 use App\Support\Locale;
 use App\Support\Seo;
 use Illuminate\Support\Facades\DB;
@@ -46,11 +47,11 @@ class TicketCheckoutService
     public function __construct(
         private PaymentGateway $gateway,
         private DiscountCodeValidator $validator,
-    ) {
-    }
+    ) {}
 
     /**
      * @param  array<int|string, int>  $quantities  ticket_type_id => aantal
+     * @param  array<int|string, int>  $extras  event_extra_id => aantal
      * @return string De Stripe Checkout-URL om de koper naartoe te sturen.
      *
      * @throws CheckoutException met een gebruikersgerichte, vertaalde boodschap.
@@ -62,8 +63,9 @@ class TicketCheckoutService
         string $buyerEmail,
         ?string $discountCode,
         string $locale,
+        array $extras = [],
     ): string {
-        $event->load(['eventTicketTypes.ticketType', 'ticketTypes', 'ticketDiscounts']);
+        $event->load(['eventTicketTypes.ticketType', 'ticketTypes', 'ticketDiscounts', 'extras']);
 
         if (! $event->published || $event->isCancelled()) {
             throw new CheckoutException(__('Dit event is niet (meer) beschikbaar.'));
@@ -97,14 +99,71 @@ class TicketCheckoutService
             throw new CheckoutException(__('Selecteer minstens één ticket.'));
         }
 
-        $subtotal = round(array_sum(array_column($lines, 'total_inc_vat')), 2);
+        $ticketSubtotal = round(array_sum(array_column($lines, 'total_inc_vat')), 2);
         $ticketCount = (int) array_sum(array_column($lines, 'quantity'));
 
-        // Stap 2 — kortingscode server-side hervalideren (nooit de preview vertrouwen).
+        // Stap 1b — extra's hervalideren tegen de HERVALIDEERDE ticketaantallen,
+        // nooit tegen wat de browser meestuurde. De voorraadcheck volgt pas in
+        // de vergrendelde transactie hieronder.
+        $ticketQuantities = [];
+        foreach ($lines as $line) {
+            $ticketQuantities[$line['ticket_type_id']] = $line['quantity'];
+        }
+
+        $extraLines = [];
+        foreach ($extras as $extraId => $quantity) {
+            $quantity = (int) $quantity;
+            if ($quantity < 1) {
+                continue;
+            }
+
+            $extra = $event->extras->firstWhere('id', (int) $extraId);
+            if (! $extra) {
+                throw new CheckoutException(__('Eén van de gekozen extra\'s bestaat niet (meer) voor dit event.'));
+            }
+
+            $name = $extra->nameFor($locale);
+
+            if ($extra->sold_out) {
+                throw new CheckoutException(__('":extra" is niet meer beschikbaar.', ['extra' => $name]));
+            }
+
+            if (! $extra->isUnlockedBy($ticketQuantities)) {
+                throw new CheckoutException(__('":extra" kan pas vanaf :count tickets.', [
+                    'extra' => $name,
+                    'count' => $extra->min_tickets,
+                ]));
+            }
+
+            $maxPerOrder = max(1, (int) $extra->max_per_order);
+            if ($quantity > $maxPerOrder) {
+                throw new CheckoutException(__('Je kunt maximaal :count × ":extra" per bestelling kiezen.', [
+                    'count' => $maxPerOrder,
+                    'extra' => $name,
+                ]));
+            }
+
+            $unit = (float) $extra->price;
+            $extraLines[] = [
+                'extra_id' => $extra->id,
+                'name' => $name,
+                'quantity' => $quantity,
+                'unit_inc_vat' => $unit,
+                'vat_rate' => (float) $extra->vat_rate,
+                'total_inc_vat' => round($unit * $quantity, 2),
+            ];
+        }
+
+        $extrasTotal = round(array_sum(array_column($extraLines, 'total_inc_vat')), 2);
+        $subtotal = round($ticketSubtotal + $extrasTotal, 2);
+
+        // Stap 2 — kortingscode server-side hervalideren (nooit de preview
+        // vertrouwen). De code rekent bewust op het TICKETtotaal: een extra is
+        // een gunst bij de bestelling, geen korting waard.
         $discountModel = null;
         $discountAmount = 0.0;
         if (filled($discountCode)) {
-            $result = $this->validator->validate($discountCode, $buyerEmail, $subtotal, $ticketCount, $event->id);
+            $result = $this->validator->validate($discountCode, $buyerEmail, $ticketSubtotal, $ticketCount, $event->id);
             if (! $result['valid']) {
                 throw new CheckoutException($result['error']);
             }
@@ -120,7 +179,7 @@ class TicketCheckoutService
         // Stap 3 — reservering in één transactie, met rijvergrendeling.
         $uuid = (string) Str::uuid();
 
-        $order = DB::transaction(function () use ($event, $lines, $buyerName, $buyerEmail, $locale, $subtotal, $total, $discountModel, $discountAmount, $uuid) {
+        $order = DB::transaction(function () use ($event, $lines, $extraLines, $buyerName, $buyerEmail, $locale, $subtotal, $total, $discountModel, $discountAmount, $uuid) {
             // Vergrendel de pivotrijen in vaste volgorde (geen deadlocks) —
             // dit serialiseert alle gelijktijdige checkouts per tickettype.
             $pivots = EventTicketType::query()
@@ -149,6 +208,34 @@ class TicketCheckoutService
                         throw new CheckoutException($remaining > 0
                             ? __('Er zijn nog maar :count tickets beschikbaar voor ":type".', ['count' => $remaining, 'type' => $line['name']])
                             : __('":type" is uitverkocht.', ['type' => $line['name']]));
+                    }
+                }
+            }
+
+            // Dezelfde bescherming voor de extra's: wie de laatste groepstafel
+            // wil, moet eerst deze rij vergrendelen. De volgorde (eerst de
+            // tickettypes, dan de extra's op id) is voor iedereen gelijk, dus
+            // deadlocks kunnen niet.
+            if ($extraLines !== []) {
+                $lockedExtras = EventExtra::query()
+                    ->where('event_id', $event->id)
+                    ->whereIn('id', array_column($extraLines, 'extra_id'))
+                    ->orderBy('id')
+                    ->lockForUpdate()
+                    ->get()
+                    ->keyBy('id');
+
+                foreach ($extraLines as $line) {
+                    $extra = $lockedExtras[$line['extra_id']] ?? null;
+                    if (! $extra || $extra->sold_out) {
+                        throw new CheckoutException(__('":extra" is niet meer beschikbaar.', ['extra' => $line['name']]));
+                    }
+
+                    $remaining = $extra->remainingCapacity();
+                    if ($remaining !== null && $line['quantity'] > $remaining) {
+                        throw new CheckoutException($remaining > 0
+                            ? __('Er zijn er nog maar :count van ":extra" beschikbaar.', ['count' => $remaining, 'extra' => $line['name']])
+                            : __('":extra" is volzet.', ['extra' => $line['name']]));
                     }
                 }
             }
@@ -187,6 +274,19 @@ class TicketCheckoutService
                 }
             }
 
+            // Extra's: één regel per gekozen extra. Bewust GEEN event_tickets —
+            // een tafel is geen bezoeker en krijgt dus ook geen QR-ticket.
+            foreach ($extraLines as $line) {
+                $order->extras()->create([
+                    'event_extra_id' => $line['extra_id'],
+                    'description' => $line['name'],
+                    'quantity' => $line['quantity'],
+                    'unit_price_inc_vat' => $line['unit_inc_vat'],
+                    'vat_rate' => $line['vat_rate'],
+                    'line_total_inc_vat' => $line['total_inc_vat'],
+                ]);
+            }
+
             // De webhook heeft geen bezoekerssessie: de herkomst (first touch)
             // reist daarom mee in de payload. Enkel als er een snapshot is —
             // nooit een null-sleutel injecteren.
@@ -222,6 +322,7 @@ class TicketCheckoutService
         } catch (\Throwable $e) {
             $order->tickets()->delete();
             $order->items()->delete();
+            $order->extras()->delete();
             $order->delete();
             PendingStripeSession::forget($uuid);
 

@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 #[Fillable([
     'slug',
@@ -77,6 +78,15 @@ class Event extends Model
     public function tickets(): HasMany
     {
         return $this->hasMany(EventTicket::class);
+    }
+
+    /**
+     * Extra's bij dit event (groepstafel, drankkaart, …). Géén tickets: ze
+     * maken geen rij in event_tickets aan en tellen dus nooit mee als bezoeker.
+     */
+    public function extras(): HasMany
+    {
+        return $this->hasMany(EventExtra::class)->orderBy('position');
     }
 
     public function orders(): HasMany
@@ -148,7 +158,7 @@ class Event extends Model
     /**
      * Alle automatische promo's die op een datum actief zijn voor een tickettype.
      *
-     * @return \Illuminate\Support\Collection<int, EventTicketDiscount>
+     * @return Collection<int, EventTicketDiscount>
      */
     public function activeDiscountsFor(int $ticketTypeId, ?Carbon $onDate = null)
     {

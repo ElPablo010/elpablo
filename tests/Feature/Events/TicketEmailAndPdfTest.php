@@ -121,3 +121,25 @@ it('embeds the QR code as an SVG data-URI in the PDF payload', function () {
     $pdf = Storage::disk('local')->get('event-tickets/'.$ticket->token.'.pdf');
     expect($pdf)->toStartWith('%PDF');
 });
+
+it('lists a claimed extra in the mail and on the ticket, without an own PDF', function () {
+    Mail::fake();
+    Storage::fake('local');
+    $order = paidOrder();
+    $order->extras()->create([
+        'event_extra_id' => null,
+        'description' => 'Groepstafel',
+        'quantity' => 1,
+        'unit_price_inc_vat' => 0,
+        'vat_rate' => 21,
+        'line_total_inc_vat' => 0,
+    ]);
+
+    (new SendTicketOrderEmailJob($order->id))->handle(app(EventTicketPdf::class));
+
+    Mail::assertSent(TicketOrderMail::class, function (TicketOrderMail $mail) {
+        // Twee tickets, twee bijlagen: de extra krijgt géén eigen PDF.
+        return count($mail->attachments()) === 2
+            && str_contains($mail->render(), 'Groepstafel');
+    });
+});

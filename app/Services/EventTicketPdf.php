@@ -21,7 +21,7 @@ class EventTicketPdf
             return $ticket->pdf_path;
         }
 
-        $ticket->loadMissing(['event', 'ticketType', 'order']);
+        $ticket->loadMissing(['event', 'ticketType', 'order.extras']);
 
         $pdf = Pdf::loadView('pdf.event-ticket', [
             'ticket' => $ticket,

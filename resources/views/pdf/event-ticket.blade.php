@@ -52,6 +52,13 @@
                     <div class="label">{{ __('Naam') }}</div>
                     <div class="value">{{ $ticket->order->buyer_name }}</div>
 
+                    {{-- Extra's hebben geen eigen ticket; ze staan hier zodat de
+                         deur niets hoeft op te zoeken. --}}
+                    @if ($ticket->order->extras->isNotEmpty())
+                        <div class="label">{{ __('Inclusief') }}</div>
+                        <div class="value">{{ $ticket->order->extras->map(fn ($extra) => $extra->quantity.' × '.$extra->description)->join(', ') }}</div>
+                    @endif
+
                     <div class="token">{{ $ticket->token }}</div>
                 </div>
                 <div class="qr">

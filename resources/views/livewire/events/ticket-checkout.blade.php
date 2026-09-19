@@ -48,7 +48,12 @@
                                     aria-label="{{ __('Minder') }}">
                                 <x-lucide-minus class="h-4 w-4" />
                             </button>
-                            <span class="w-6 text-center font-semibold text-white">{{ $line['quantity'] }}</span>
+                            {{-- Invoerveld i.p.v. een teller: bij een groep van
+                                 24 tickets wil niemand 24 keer klikken. --}}
+                            <input type="number" inputmode="numeric" min="0" max="{{ $line['max'] }}"
+                                   wire:model.live.debounce.500ms="quantities.{{ $line['pivot']->ticket_type_id }}"
+                                   aria-label="{{ __('Aantal') }}"
+                                   class="w-14 rounded-lg border border-white/10 bg-ink-950 px-2 py-1.5 text-center font-semibold text-white transition-colors focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none">
                             <button type="button"
                                     wire:click="increment({{ $line['pivot']->ticket_type_id }})"
                                     class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-white/15 text-white transition-colors hover:border-primary-500"
@@ -63,6 +68,90 @@
             @endforelse
         </div>
         @error('quantities') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+
+        {{-- Extra's: geen tickets, dus ze tellen niet mee als bezoeker. Een
+             extra die de drempel nog niet haalt blijft zichtbaar — dat is net
+             de reden om er tickets bij te nemen. --}}
+        @if ($this->extras)
+            <div class="mt-6 border-t border-white/10 pt-6">
+                <h3 class="font-display text-lg text-white">{{ __('Extra\'s') }}</h3>
+
+                <div class="mt-3 space-y-3">
+                    @foreach ($this->extras as $extra)
+                        <div @class([
+                            'flex flex-wrap items-center gap-4 rounded-xl border p-4 transition-colors',
+                            'border-white/10 bg-ink-950/60' => $extra['selectable'],
+                            'border-white/5 bg-ink-950/30 opacity-60' => ! $extra['selectable'],
+                        ])>
+                            <div class="min-w-0 flex-1">
+                                <p class="font-semibold text-white">
+                                    {{ $extra['name'] }}
+                                    <span class="ml-1 text-sm font-medium text-primary-500">
+                                        {{ $extra['price'] > 0 ? $fmt($extra['price']) : __('gratis') }}
+                                    </span>
+                                </p>
+
+                                @if ($extra['description'])
+                                    <p class="mt-0.5 text-sm text-gray-400">{{ $extra['description'] }}</p>
+                                @endif
+
+                                @if ($extra['sold_out'])
+                                    <p class="mt-1 text-xs font-semibold uppercase tracking-wide text-red-400">{{ __('Volzet') }}</p>
+                                @elseif (! $extra['unlocked'])
+                                    <p class="mt-1 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-amber-400">
+                                        <x-lucide-lock class="h-3.5 w-3.5" />
+                                        @if ($extra['ticket_type_name'])
+                                            {{ __('Vanaf :count × :type', ['count' => $extra['min_tickets'], 'type' => $extra['ticket_type_name']]) }}
+                                        @else
+                                            {{ __('Vanaf :count tickets', ['count' => $extra['min_tickets']]) }}
+                                        @endif
+                                    </p>
+                                @elseif ($extra['remaining'] !== null && $extra['remaining'] <= 10)
+                                    <p class="mt-1 text-xs font-medium text-amber-400">{{ __('Nog :count beschikbaar', ['count' => $extra['remaining']]) }}</p>
+                                @endif
+                            </div>
+
+                            @if ($extra['selectable'])
+                                @if ($extra['max'] > 1)
+                                    <div class="flex items-center gap-3">
+                                        <button type="button"
+                                                wire:click="decrementExtra({{ $extra['model']->id }})"
+                                                @disabled($extra['quantity'] < 1)
+                                                class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-white/15 text-white transition-colors hover:border-primary-500 disabled:cursor-not-allowed disabled:opacity-40"
+                                                aria-label="{{ __('Minder') }}">
+                                            <x-lucide-minus class="h-4 w-4" />
+                                        </button>
+                                        <span class="w-6 text-center font-semibold text-white">{{ $extra['quantity'] }}</span>
+                                        <button type="button"
+                                                wire:click="incrementExtra({{ $extra['model']->id }})"
+                                                class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-white/15 text-white transition-colors hover:border-primary-500"
+                                                aria-label="{{ __('Meer') }}">
+                                            <x-lucide-plus class="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                @else
+                                    <button type="button"
+                                            wire:click="toggleExtra({{ $extra['model']->id }})"
+                                            @class([
+                                                'inline-flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-colors',
+                                                'border-primary-500 bg-primary-600/15 text-primary-500' => $extra['quantity'] > 0,
+                                                'border-white/15 text-white hover:border-primary-500' => $extra['quantity'] < 1,
+                                            ])>
+                                        @if ($extra['quantity'] > 0)
+                                            <x-lucide-check class="h-4 w-4" />
+                                            {{ __('Toegevoegd') }}
+                                        @else
+                                            <x-lucide-plus class="h-4 w-4" />
+                                            {{ __('Toevoegen') }}
+                                        @endif
+                                    </button>
+                                @endif
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
 
         @if ($this->ticketCount > 0)
             {{-- Kortingscode --}}
@@ -114,6 +203,13 @@
                         <span>− {{ $fmt($this->discountAmount) }}</span>
                     </div>
                 @endif
+
+                @foreach ($this->extraLines as $extraLine)
+                    <div class="flex justify-between text-gray-300">
+                        <span>{{ $extraLine['quantity'] }} × {{ $extraLine['name'] }}</span>
+                        <span>{{ $extraLine['total_inc_vat'] > 0 ? $fmt($extraLine['total_inc_vat']) : __('gratis') }}</span>
+                    </div>
+                @endforeach
 
                 <div class="flex justify-between border-t border-white/10 pt-3 text-base font-semibold text-white">
                     <span>{{ __('Totaal') }}</span>

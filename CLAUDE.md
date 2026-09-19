@@ -337,6 +337,41 @@ events) is registreerbaar op elke pagina. Oude WP `/events/*`-URL's redirecten
 nu naar `/events` (de `/events`-redirect zelf wordt door de seeder verwijderd —
 draai hem bij deploy).
 
+**Extra's (geen tickets).** Naast de tickets kan een event **extra's** aanbieden
+— een gratis groepstafel, later een drankkaart. Bewust een eigen laag
+(`event_extras` + `ticket_order_extras`, tab *Extra's* op het event), want een
+extra is géén bezoeker: ze maakt **geen rij in `event_tickets`**, krijgt geen
+QR-PDF en laat elk ticketaantal (eventlijst, bestelling, scanner, capaciteit)
+exact het aantal mensen blijven.
+
+Per extra stel je in: prijs (0 = gratis) + btw, **voorraad**, **max. per
+bestelling**, en **"beschikbaar vanaf … tickets"** — eventueel geteld op één
+tickettype (`ticket_type_id`, leeg = alle tickets samen). Onder de drempel toont
+de checkout de extra grijs met "vanaf 12 tickets" (bewust zichtbaar: dat is de
+reden om tickets bij te nemen); zakt het aantal weer, dan valt de keuze er
+vanzelf af. Alles wordt server-side hervalideerd in `TicketCheckoutService`
+tegen de **hervalideerde** ticketaantallen, en de voorraad in dezelfde
+vergrendelde transactie als de tickets (eerst `event_ticket_types` op
+ticket_type_id, dán `event_extras` op id — vaste volgorde, dus geen deadlock).
+
+Twee ontwerpkeuzes om te onthouden:
+- `ticket_order_extras` draagt **geen eigen status**. Of een claim voorraad
+  bezet volgt uit de bestelling (`TicketOrder::scopeOccupying()`: betaald, of
+  een reservering die nog loopt). Een verlopen reservering of terugbetaling
+  geeft de tafel dus vanzelf vrij, zonder tweede statusveld.
+- **Kortingscodes rekenen op het tickettotaal**, niet op de extra's (anders
+  krijg je "20% korting op een gratis tafel"). `subtotal_inc_vat` op de
+  bestelling is wél tickets + extra's; de korting is bij `calculateDiscount()`
+  al geplafonneerd op het tickettotaal.
+
+De extra verschijnt in de bevestigingsmail en op de bedankpagina, en als regel
+*Inclusief* op elk ticket-PDF (zodat de deur niets hoeft op te zoeken). In de
+admin: *Extra's* in de bestelling, een eigen kolom en het filter **Extra** op de
+bestellingenlijst, en "geclaimd / voorraad" per extra op het event.
+
+`MAX_PER_TYPE` in `TicketCheckout` staat op **30** (was 10) en de stepper heeft
+een invoerveld — anders kom je nooit aan een groep van 12 of 24 tickets.
+
 **Bij go-live niet vergeten:**
 - [ ] Stripe-keys invullen (Instellingen → Betalingen) en in het
       Stripe-dashboard de webhook `https://www.el-pablo.com/stripe/webhook`
@@ -347,7 +382,9 @@ draai hem bij deploy).
       `/events`-redirect op).
 
 Bewaakt door `tests/Feature/Events/` (pricing, validator, capaciteit, checkout,
-webhook-idempotentie, mail/PDF, scan, publieke pagina's, SEO-assets, admin).
+webhook-idempotentie, mail/PDF, scan, publieke pagina's, SEO-assets, admin) en
+`tests/Feature/Events/EventExtrasTest.php` (drempel, maximum, voorraad,
+vrijgave, server-side hervalidatie, en dat een extra géén bezoeker is).
 
 ## Redirects van de oude site (bij go-live)
 

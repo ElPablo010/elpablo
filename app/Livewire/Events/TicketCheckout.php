@@ -2,8 +2,11 @@
 
 namespace App\Livewire\Events;
 
+use App\Enums\TicketDiscountType;
+use App\Exceptions\CheckoutException;
 use App\Livewire\Concerns\PersistsLocale;
 use App\Models\Event;
+use App\Models\EventExtra;
 use App\Models\EventTicketType;
 use App\Services\DiscountCodeValidator;
 use App\Services\TicketCheckoutService;
@@ -15,6 +18,10 @@ use Livewire\Component;
  * server-side via Event::lineTotalFor() — Livewire re-rendert bij elke
  * wijziging, dus er bestaat géén JavaScript-spiegel van de prijslogica.
  *
+ * Naast tickets kan een event EXTRA'S aanbieden (een gratis groepstafel, een
+ * drankkaart). Die zijn geen tickets: ze tellen niet mee als bezoeker en komen
+ * pas vrij vanaf een instelbaar aantal tickets in de selectie.
+ *
  * De submit maakt via TicketCheckoutService een Stripe Checkout-sessie aan
  * (met capaciteitsreservering) en stuurt de bezoeker naar Stripe.
  */
@@ -22,13 +29,20 @@ class TicketCheckout extends Component
 {
     use PersistsLocale;
 
-    /** Maximum per bestelling, per tickettype — houdt reserveringen behapbaar. */
-    public const MAX_PER_TYPE = 10;
+    /**
+     * Maximum per bestelling, per tickettype — houdt reserveringen behapbaar.
+     * Ruim genoeg voor groepsbestellingen (een "koop 5, 1 gratis"-ladder loopt
+     * tot 24 tickets); daarboven is het een gesprek, geen webshop.
+     */
+    public const MAX_PER_TYPE = 30;
 
     public int $eventId;
 
     /** @var array<int|string, int> ticket_type_id => aantal */
     public array $quantities = [];
+
+    /** @var array<int|string, int> event_extra_id => aantal */
+    public array $selectedExtras = [];
 
     public string $discountCode = '';
 
@@ -47,6 +61,16 @@ class TicketCheckout extends Component
     public function mount(Event $event): void
     {
         $this->eventId = $event->id;
+
+        // Alle aantallen op 0 zetten, zodat de invoervelden een waarde hebben
+        // om aan te binden (een ontbrekende sleutel toont een leeg veld).
+        $this->quantities = $event->eventTicketTypes
+            ->mapWithKeys(fn (EventTicketType $pivot): array => [$pivot->ticket_type_id => 0])
+            ->all();
+
+        $this->selectedExtras = $event->extras
+            ->mapWithKeys(fn (EventExtra $extra): array => [$extra->id => 0])
+            ->all();
     }
 
     /** @return array<string, string> Validatieberichten (locale-bewust via __()). */
@@ -62,7 +86,7 @@ class TicketCheckout extends Component
     public function getEventProperty(): Event
     {
         return Event::query()
-            ->with(['eventTicketTypes.ticketType', 'ticketTypes', 'ticketDiscounts', 'translations'])
+            ->with(['eventTicketTypes.ticketType', 'ticketTypes', 'ticketDiscounts', 'translations', 'extras'])
             ->findOrFail($this->eventId);
     }
 
@@ -80,7 +104,7 @@ class TicketCheckout extends Component
             $buyable = $pivot->salesOpen() && ! $pivot->isSoldOut() && ! $this->event->isCancelled();
 
             $bogo = $this->event->activeDiscountsFor($pivot->ticket_type_id)
-                ->firstWhere('type', \App\Enums\TicketDiscountType::BuyXGetY);
+                ->firstWhere('type', TicketDiscountType::BuyXGetY);
 
             return [
                 'pivot' => $pivot,
@@ -91,6 +115,7 @@ class TicketCheckout extends Component
                 'sold_out' => $pivot->isSoldOut(),
                 'remaining' => $remaining,
                 'quantity' => $this->quantityFor($pivot->ticket_type_id),
+                'max' => $this->maxQuantityFor($pivot),
                 'bogo' => $bogo,
             ];
         })->all();
@@ -101,25 +126,182 @@ class TicketCheckout extends Component
         return max(0, (int) ($this->quantities[$ticketTypeId] ?? 0));
     }
 
-    public function increment(int $ticketTypeId): void
+    /** Het plafond voor dit tickettype: het ordermaximum, begrensd door de voorraad. */
+    private function maxQuantityFor(EventTicketType $pivot): int
     {
-        $pivot = $this->event->eventTicketTypes->firstWhere('ticket_type_id', $ticketTypeId);
-        if (! $pivot || ! $pivot->salesOpen() || $pivot->isSoldOut() || $this->event->isCancelled()) {
-            return;
-        }
-
         $max = self::MAX_PER_TYPE;
+
         if (($remaining = $pivot->remainingCapacity()) !== null) {
             $max = min($max, $remaining);
         }
 
-        $this->quantities[$ticketTypeId] = min($max, $this->quantityFor($ticketTypeId) + 1);
+        return max(0, $max);
+    }
+
+    /**
+     * Het aantal per tickettype, zoals het in de selectie mag staan. Zowel de
+     * plus-knop als het invoerveld lopen hierlangs — een bezoeker die "999"
+     * typt krijgt gewoon het maximum.
+     */
+    private function clampQuantity(int $ticketTypeId, int $value): int
+    {
+        $pivot = $this->event->eventTicketTypes->firstWhere('ticket_type_id', $ticketTypeId);
+
+        if (! $pivot || ! $pivot->salesOpen() || $pivot->isSoldOut() || $this->event->isCancelled()) {
+            return 0;
+        }
+
+        return max(0, min($this->maxQuantityFor($pivot), $value));
+    }
+
+    /** Het invoerveld naast de stepper: clampen en de extra's herijken. */
+    public function updatedQuantities(mixed $value, ?string $key = null): void
+    {
+        if ($key !== null) {
+            $this->quantities[$key] = $this->clampQuantity((int) $key, (int) $value);
+        }
+
+        $this->pruneExtras();
+    }
+
+    public function increment(int $ticketTypeId): void
+    {
+        $this->quantities[$ticketTypeId] = $this->clampQuantity($ticketTypeId, $this->quantityFor($ticketTypeId) + 1);
+        $this->pruneExtras();
     }
 
     public function decrement(int $ticketTypeId): void
     {
         $this->quantities[$ticketTypeId] = max(0, $this->quantityFor($ticketTypeId) - 1);
+        $this->pruneExtras();
     }
+
+    /* -----------------------------------------------------------------
+     |  Extra's
+     | ----------------------------------------------------------------- */
+
+    /**
+     * De extra's van dit event met hun status. Een extra die de drempel nog
+     * niet haalt blijft zichtbaar — mét "vanaf N tickets" — want dat is net de
+     * reden om er tickets bij te nemen.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getExtrasProperty(): array
+    {
+        if ($this->event->isCancelled()) {
+            return [];
+        }
+
+        return $this->event->extras->map(function (EventExtra $extra) {
+            $unlocked = $extra->isUnlockedBy($this->quantities);
+            $soldOut = $extra->isSoldOut();
+
+            return [
+                'model' => $extra,
+                'name' => $extra->nameFor($this->locale),
+                'description' => $extra->descriptionFor($this->locale),
+                'price' => (float) $extra->price,
+                'unlocked' => $unlocked,
+                'sold_out' => $soldOut,
+                'selectable' => $unlocked && ! $soldOut,
+                'remaining' => $extra->remainingCapacity(),
+                'min_tickets' => $extra->min_tickets,
+                'ticket_type_name' => $extra->ticket_type_id
+                    ? $this->event->eventTicketTypes
+                        ->firstWhere('ticket_type_id', $extra->ticket_type_id)?->ticketType?->nameFor($this->locale)
+                    : null,
+                'quantity' => $this->extraQuantityFor($extra->id),
+                'max' => $extra->maxSelectable(),
+            ];
+        })->all();
+    }
+
+    public function extraQuantityFor(int $extraId): int
+    {
+        return max(0, (int) ($this->selectedExtras[$extraId] ?? 0));
+    }
+
+    /** Vinkje voor een extra met maximum 1; de stepper gebruikt increment/decrement. */
+    public function toggleExtra(int $extraId): void
+    {
+        $this->selectedExtras[$extraId] = $this->extraQuantityFor($extraId) > 0
+            ? 0
+            : $this->clampExtra($extraId, 1);
+    }
+
+    public function incrementExtra(int $extraId): void
+    {
+        $this->selectedExtras[$extraId] = $this->clampExtra($extraId, $this->extraQuantityFor($extraId) + 1);
+    }
+
+    public function decrementExtra(int $extraId): void
+    {
+        $this->selectedExtras[$extraId] = max(0, $this->extraQuantityFor($extraId) - 1);
+    }
+
+    /**
+     * Een gekozen aantal binnen de grenzen van één extra: drempel gehaald,
+     * niet volzet, en niet boven het maximum per bestelling of de voorraad.
+     */
+    private function clampExtra(int $extraId, int $value): int
+    {
+        $extra = $this->event->extras->firstWhere('id', $extraId);
+
+        if (! $extra || $extra->isSoldOut() || ! $extra->isUnlockedBy($this->quantities) || $this->event->isCancelled()) {
+            return 0;
+        }
+
+        return max(0, min($extra->maxSelectable(), $value));
+    }
+
+    /**
+     * Zakt het ticketaantal onder de drempel (of raakt de voorraad op), dan valt
+     * de extra er vanzelf af — anders zou de checkout een keuze tonen die de
+     * server daarna weigert.
+     */
+    private function pruneExtras(): void
+    {
+        foreach (array_keys($this->selectedExtras) as $extraId) {
+            $this->selectedExtras[$extraId] = $this->clampExtra((int) $extraId, $this->extraQuantityFor((int) $extraId));
+        }
+    }
+
+    /**
+     * De gekozen extra's als regels, met hun prijs.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getExtraLinesProperty(): array
+    {
+        $lines = [];
+
+        foreach ($this->event->extras as $extra) {
+            $qty = $this->extraQuantityFor($extra->id);
+            if ($qty < 1) {
+                continue;
+            }
+
+            $lines[] = [
+                'extra_id' => $extra->id,
+                'name' => $extra->nameFor($this->locale),
+                'quantity' => $qty,
+                'unit_inc_vat' => (float) $extra->price,
+                'total_inc_vat' => round((float) $extra->price * $qty, 2),
+            ];
+        }
+
+        return $lines;
+    }
+
+    public function getExtrasTotalProperty(): float
+    {
+        return round(array_sum(array_column($this->extraLines, 'total_inc_vat')), 2);
+    }
+
+    /* -----------------------------------------------------------------
+     |  Totalen
+     | ----------------------------------------------------------------- */
 
     /**
      * @return array<int, array<string, mixed>> Regels met aantal > 0, mét prijs.
@@ -143,6 +325,7 @@ class TicketCheckout extends Component
         return $lines;
     }
 
+    /** Het tickettotaal — de basis waarop een kortingscode rekent. */
     public function getSubtotalProperty(): float
     {
         return round(array_sum(array_column($this->orderLines, 'total_inc_vat')), 2);
@@ -170,9 +353,13 @@ class TicketCheckout extends Component
         return $result['valid'] ? $result['discount_amount'] : 0.0;
     }
 
+    /**
+     * Kortingscodes rekenen op de tickets; de extra's komen er daarna bij. Zo
+     * kan een code nooit "20% korting op een gratis tafel" worden.
+     */
     public function getTotalProperty(): float
     {
-        return round(max(0, $this->subtotal - $this->discountAmount), 2);
+        return round(max(0, $this->subtotal - $this->discountAmount) + $this->extrasTotal, 2);
     }
 
     public function applyDiscountCode(): void
@@ -229,6 +416,13 @@ class TicketCheckout extends Component
             }
         }
 
+        $extras = [];
+        foreach ($this->event->extras as $extra) {
+            if (($qty = $this->extraQuantityFor($extra->id)) > 0) {
+                $extras[$extra->id] = $qty;
+            }
+        }
+
         try {
             $url = app(TicketCheckoutService::class)->createSession(
                 event: $this->event,
@@ -237,8 +431,9 @@ class TicketCheckout extends Component
                 buyerEmail: $this->buyerEmail,
                 discountCode: $this->appliedCode !== '' ? $this->appliedCode : null,
                 locale: $this->locale,
+                extras: $extras,
             );
-        } catch (\App\Exceptions\CheckoutException $e) {
+        } catch (CheckoutException $e) {
             throw ValidationException::withMessages(['quantities' => $e->getMessage()]);
         }
 

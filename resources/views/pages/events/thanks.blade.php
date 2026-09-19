@@ -37,6 +37,18 @@
                                 <span>− € {{ number_format((float) $order->discount_amount, 2, ',', '.') }}</span>
                             </div>
                         @endif
+                        @foreach ($order->extras as $extra)
+                            <div class="flex justify-between text-gray-300">
+                                <span>{{ $extra->quantity }} × {{ $extra->description }}</span>
+                                <span>
+                                    @if ((float) $extra->line_total_inc_vat > 0)
+                                        € {{ number_format((float) $extra->line_total_inc_vat, 2, ',', '.') }}
+                                    @else
+                                        {{ __('gratis') }}
+                                    @endif
+                                </span>
+                            </div>
+                        @endforeach
                         <div class="flex justify-between border-t border-white/10 pt-3 text-base font-semibold text-white">
                             <span>{{ __('Totaal') }}</span>
                             <span>€ {{ number_format((float) $order->total_inc_vat, 2, ',', '.') }}</span>

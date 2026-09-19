@@ -6,8 +6,10 @@ use App\Enums\OrderStatus;
 use App\Filament\Resources\TicketOrders\Pages\ListTicketOrders;
 use App\Filament\Resources\TicketOrders\Pages\ViewTicketOrder;
 use App\Filament\Resources\TicketOrders\RelationManagers\TicketsRelationManager;
+use App\Models\EventExtra;
 use App\Models\TicketOrder;
 use BackedEnum;
+use Filament\Actions\ViewAction;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
@@ -102,6 +104,18 @@ class TicketOrderResource extends Resource
                                 ' — € '.number_format((float) $item->line_total_inc_vat, 2, ',', '.').
                                 ' ('.rtrim(rtrim(number_format((float) $item->vat_rate, 2, ',', '.'), '0'), ',').'% btw)')
                             ->join("\n")),
+                    TextEntry::make('extras')
+                        ->label('Extra\'s')
+                        ->columnSpanFull()
+                        ->placeholder('—')
+                        ->state(fn (TicketOrder $record): ?string => $record->extras->isEmpty()
+                            ? null
+                            : $record->extras
+                                ->map(fn ($extra) => "{$extra->quantity} × {$extra->description}".
+                                    ((float) $extra->line_total_inc_vat > 0
+                                        ? ' — € '.number_format((float) $extra->line_total_inc_vat, 2, ',', '.')
+                                        : ' — gratis'))
+                                ->join("\n")),
                 ]),
 
             Section::make('Betaling')
@@ -118,7 +132,7 @@ class TicketOrderResource extends Resource
     {
         return $table
             ->defaultSort('created_at', 'desc')
-            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['event', 'discountCode'])->withCount('tickets'))
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['event', 'discountCode'])->withCount(['tickets', 'extras']))
             ->columns([
                 TextColumn::make('id')
                     ->label('#')
@@ -134,6 +148,13 @@ class TicketOrderResource extends Resource
                     ->label('Tickets')
                     ->badge()
                     ->color('gray'),
+                // Apart van het ticketaantal: een extra is geen bezoeker.
+                TextColumn::make('extras_count')
+                    ->label('Extra\'s')
+                    ->badge()
+                    ->color('info')
+                    ->placeholder('—')
+                    ->state(fn (TicketOrder $record): ?int => $record->extras_count ?: null),
                 TextColumn::make('total_inc_vat')
                     ->label('Totaal')
                     ->money('EUR')
@@ -154,9 +175,23 @@ class TicketOrderResource extends Resource
                 SelectFilter::make('status')
                     ->label('Status')
                     ->options(OrderStatus::class),
+                // Zo haal je in één klik de groepen met een tafel uit de lijst.
+                SelectFilter::make('extra')
+                    ->label('Extra')
+                    ->options(fn (): array => EventExtra::query()
+                        ->with('event')
+                        ->orderBy('name')
+                        ->get()
+                        ->mapWithKeys(fn (EventExtra $extra): array => [
+                            $extra->id => $extra->name.' — '.($extra->event?->name ?? '?'),
+                        ])
+                        ->all())
+                    ->query(fn (Builder $query, array $data): Builder => filled($data['value'] ?? null)
+                        ? $query->whereHas('extras', fn (Builder $q) => $q->where('event_extra_id', $data['value']))
+                        : $query),
             ])
             ->recordActions([
-                \Filament\Actions\ViewAction::make()
+                ViewAction::make()
                     ->button()
                     ->hiddenLabel()
                     ->color('primary')
