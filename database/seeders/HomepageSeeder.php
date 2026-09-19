@@ -956,6 +956,7 @@ class HomepageSeeder extends Seeder
         foreach ([
             ['label' => 'Over', 'page_id' => $over->id],
             ['label' => 'Muziek', 'page_id' => $muziek->id],
+            ['label' => 'Events', 'url' => '/events'],
             ['label' => 'Contact', 'page_id' => $contact->id],
         ] as $i => $item) {
             $main->allItems()->create([...$item, 'position' => $i]);
@@ -969,6 +970,7 @@ class HomepageSeeder extends Seeder
             ['label' => 'Over El Pablo', 'page_id' => $over->id],
             ['label' => 'Muziek', 'page_id' => $muziek->id],
             ['label' => 'Boeken', 'page_id' => $boeken->id],
+            ['label' => 'Events', 'url' => '/events'],
             ['label' => 'Contact', 'page_id' => $contact->id],
         ] as $i => $item) {
             $f1->allItems()->create([...$item, 'position' => $i]);
