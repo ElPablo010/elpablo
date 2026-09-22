@@ -31,9 +31,12 @@ class ViewTicketOrder extends ViewRecord
                 ->action(function (): void {
                     SendTicketOrderEmailJob::dispatch($this->getRecord()->id, force: true);
 
+                    // Geen technische uitleg in de melding: de beheerder hoeft
+                    // niet te weten dát er een wachtrij bestaat, alleen wanneer
+                    // de mail vertrekt (de scheduler leegt de wachtrij elke minuut).
                     Notification::make()
                         ->title('Ticketmail wordt opnieuw verzonden')
-                        ->body('De mail staat in de wachtrij (queue-worker vereist).')
+                        ->body('Binnen een minuut onderweg naar '.$this->getRecord()->buyer_email.'.')
                         ->success()
                         ->send();
                 }),
