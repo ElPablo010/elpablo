@@ -304,7 +304,11 @@ class TicketCheckoutService
         try {
             $session = $this->gateway->createCheckoutSession([
                 'mode' => 'payment',
-                'payment_method_types' => ['card', 'bancontact', 'ideal', 'link', 'paypal'],
+                // Bewust GEEN payment_method_types: Stripe toont dan exact de
+                // methodes die in het dashboard aanstaan, afgestemd op het land
+                // en de munt van de koper. Een vaste lijst hier zou de hele
+                // betaalsessie laten falen zodra één methode uitstaat — en elke
+                // wijziging zou een deploy vragen.
                 'line_items' => [[
                     'price_data' => [
                         'currency' => 'eur',

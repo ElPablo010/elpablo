@@ -25,16 +25,20 @@ it('omits draft events from the sitemap', function () {
 });
 
 it('lists upcoming events in llms.txt with their date', function () {
+    // Datum bewust meebewegend: een vaste datum maakt hier een tijdbom van —
+    // zodra die dag voorbij is, telt het event niet meer als aankomend.
+    $date = now()->addMonth()->startOfMonth();
+
     Event::factory()->create([
         'slug' => 'latin-night',
         'name' => 'Latin Night',
-        'start_date' => '2026-09-19',
+        'start_date' => $date->toDateString(),
     ]);
 
     $txt = $this->get('/llms.txt')->assertOk()->getContent();
 
     expect($txt)->toContain('## Events')
-        ->toContain('Latin Night (19/09/2026)')
+        ->toContain('Latin Night ('.$date->format('d/m/Y').')')
         ->toContain('/events/latin-night');
 });
 
