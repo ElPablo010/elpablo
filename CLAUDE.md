@@ -337,6 +337,28 @@ events) is registreerbaar op elke pagina. Oude WP `/events/*`-URL's redirecten
 nu naar `/events` (de `/events`-redirect zelf wordt door de seeder verwijderd —
 draai hem bij deploy).
 
+**Rich results — de drie valkuilen in `eventNode()`.** Search Console meldde
+(22/09/2026) twee ontbrekende velden; alle drie de punten hieronder leven in
+dezelfde functie in `app/Support/Seo.php`:
+
+- **`performer`** — de artiest. `Event::performerNames()` splitst het
+  `lineup`-veld (*Basis*-tab, komma-gescheiden) en valt zonder line-up terug op
+  `Seo::brandName()`. De DJ zelf krijgt een vast `@id` (`/#performer`) plus de
+  socials uit de footer, zodat Google al zijn optredens aan één entiteit hangt;
+  een gastartiest blijft een kale `Person`-naam.
+- **`offers.validFrom`** — vanaf wanneer het ticket te koop is. Voedt zich uit
+  de nieuwe kolom `sales_start_date` op `event_ticket_types` (*Verkoop vanaf*,
+  tegenhanger van `sales_end_date`), en valt zonder voorverkoop terug op de
+  `created_at` van de pivotrij. Het venster loopt via
+  `Event::ticketSalesOpenFor($start, $end)`; `salesPending()` onderscheidt
+  "nog niet begonnen" van "afgesloten" — de checkout toont dan
+  *Verkoop vanaf dd/mm/jjjj* in plaats van een gesloten deur.
+- **Tijdzone** — de app draait op `UTC`, maar een uur in de admin is een uur
+  aan de deur. `startDate`/`endDate` gaan daarom door `shiftTimezone(Seo::TIMEZONE)`,
+  anders vertrekt 22:00 als `+00:00` en maakt Google er middernacht van.
+
+Bewaakt door `tests/Feature/Events/EventPublicPagesTest.php`.
+
 **Extra's (geen tickets).** Naast de tickets kan een event **extra's** aanbieden
 — een gratis groepstafel, later een drankkaart. Bewust een eigen laag
 (`event_extras` + `ticket_order_extras`, tab *Extra's* op het event), want een
@@ -430,9 +452,12 @@ de vorige site op dit domein bleef tonen. Nu:
 Bewaakt door `tests/Feature/BrandingTest.php`.
 
 ### Nog te doen
-- [ ] **Echte content**: placeholder-foto's (Unsplash) en de demo-mp3's (2 sets
-      herhaald) vervangen via de media-library / **Website → Mixtapes**.
-- [ ] Content migreren van de bestaande el-pablo.com.
+- [ ] **Echte content**: placeholder-foto's (Unsplash — nog 24 secties) en de
+      demo-mp3's vervangen via de media-library / **Website → Mixtapes**.
+      Bronmateriaal staat in `~/Development/elpablo-oud-archief/uploads/`
+      (zie *Oude WordPress opgeruimd*).
+- [x] Content migreren van de bestaande el-pablo.com — de oude WordPress is
+      van de hosting verwijderd (21/09/2026).
 - [x] Redirects oude WP-site (57) + eigen 404-pagina.
 - [x] Lettertype gekozen (Anton + Inter).
 - [x] Juridische pagina's geseed (cookiebeleid + privacybeleid).
@@ -443,6 +468,32 @@ Bewaakt door `tests/Feature/BrandingTest.php`.
       en `og:locale` (+ alternates) in de `<head>` (`Seo::alternates()` /
       `meta.blade`); sitemap met alle NL/EN/ES-URL's + `xhtml:link`-hreflang,
       noindex-pagina's uitgesloten.
+
+## Oude WordPress opgeruimd (21/09/2026)
+
+Combell's CMS-scanner bleef elke week **2 WordPress-installaties** melden op deze
+hosting — de bewaarde kopie van de oude live-site (7.0.2) in
+`~/www-wordpress-backup` en een staging-WP (6.0.1) uit 2022 in
+`~/staging-wordpress-backup`, samen 7 GB met 24 verouderde plugins. Die zijn
+verwijderd, plus `~/.wp-cli`, `~/wpmgmt`, `~/rollback.sh` en `~/cutover.sh`.
+
+**Eerst gearchiveerd, en dat archief blijft nodig.** De 2,1 GB
+`wp-content/uploads` staat nu lokaal in `~/Development/elpablo-oud-archief/uploads/`
+(1.609 bestanden, byte-voor-byte geverifieerd tegen de server): 1.562 foto's per
+jaar 2015-2026 en **27 mp3's** met de echte DJ-sets (o.a. *Reggaeton Sessions
+2020*, *Kizomba Sessions 2020*, *Salchata 2021 Vol. 1 & 2*, *Urban Sessions
+2018/2019*, *El Pablo @ Chique Beach 01-07-22*). Ruim twintig daarvan staan nog
+niet op de nieuwe site. Dit is het bronmateriaal voor de openstaande
+content-taak hierboven — het staat **alleen nog op de Mac**, neem het dus mee in
+je backup.
+
+**Niet verwijderd:** beide WordPress-databases (`ID207573_elpablo` met prefix
+`0_`, en de staging-DB `ID207573_wordpress318533`). De teksten van de oude site
+zijn daar dus nog opvraagbaar. Schrappen kan later via het Combell-controlepaneel.
+
+`rollback.sh` (de noodrem terug naar WordPress) werkt hierna per definitie niet
+meer. Samen met `cutover.sh` staat die nog wel in git onder `deploy/`, maar beide
+zijn na de cutover van 06/08/2026 zonder functie.
 
 ## Lokaal draaien
 

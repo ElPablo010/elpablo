@@ -10,6 +10,7 @@ use App\Models\EventExtra;
 use App\Models\EventTicketType;
 use App\Services\DiscountCodeValidator;
 use App\Services\TicketCheckoutService;
+use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
@@ -112,6 +113,10 @@ class TicketCheckout extends Component
                 'price' => $price,
                 'buyable' => $buyable,
                 'sales_open' => $pivot->salesOpen(),
+                'sales_pending' => $pivot->salesPending(),
+                'sales_starts_on' => $pivot->sales_start_date
+                    ? Carbon::parse($pivot->sales_start_date)->format('d/m/Y')
+                    : null,
                 'sold_out' => $pivot->isSoldOut(),
                 'remaining' => $remaining,
                 'quantity' => $this->quantityFor($pivot->ticket_type_id),

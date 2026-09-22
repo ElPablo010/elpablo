@@ -7,7 +7,9 @@
  */
 
 use App\Models\Event;
+use App\Models\EventTicket;
 use App\Models\EventTicketType;
+use App\Models\Page;
 use App\Models\TicketType;
 
 function publishedEvent(array $attributes = []): Event
@@ -78,6 +80,54 @@ it('renders schema.org Event and Offer JSON-LD on the detail page', function () 
         ->toContain('"eventStatus":"https://schema.org/EventScheduled"');
 });
 
+it('names a performer and an offer validFrom in the JSON-LD', function () {
+    // Search Console vroeg om net deze twee velden; zonder line-up is de
+    // artiest de DJ zelf en loopt de verkoop vanaf het aanmaken van het type.
+    publishedEvent();
+
+    $html = $this->get('/events/latin-night')->assertOk()->getContent();
+
+    expect($html)->toContain('"performer"')
+        ->toContain('"@type":"Person"')
+        ->toContain('"validFrom":"'.now()->format('Y-m-d').'"');
+});
+
+it('lists every artist from the line-up as a performer', function () {
+    $event = publishedEvent();
+    $event->update(['lineup' => 'El Pablo, DJ Invitado , ']);
+
+    $html = $this->get('/events/latin-night')->getContent();
+
+    expect($html)->toContain('"name":"DJ Invitado"')
+        // De DJ zelf houdt zijn vaste @id, zodat Google al zijn optredens
+        // aan één entiteit kan hangen; een gast krijgt enkel een naam.
+        ->toContain('#performer');
+});
+
+it('uses the sales start date as the offer validFrom when there is a presale', function () {
+    $event = publishedEvent();
+    $event->eventTicketTypes()->first()->update(['sales_start_date' => '2026-12-01']);
+
+    $html = $this->get('/events/latin-night')->getContent();
+
+    expect($html)->toContain('"validFrom":"2026-12-01"');
+});
+
+it('dates the event in Brussels time, not in the app UTC', function () {
+    // Een feest dat om 22:00 begint mag in Google niet om middernacht staan.
+    publishedEvent([
+        'start_date' => '2026-10-30',
+        'start_time' => '22:00',
+        'end_time' => '03:00',
+    ]);
+
+    $html = $this->get('/events/latin-night')->getContent();
+
+    expect($html)->toContain('"startDate":"2026-10-30T22:00:00+01:00')
+        // Einduur vóór het startuur = de nacht erna.
+        ->toContain('"endDate":"2026-10-31T03:00:00+01:00');
+});
+
 it('marks a cancelled event as EventCancelled in JSON-LD', function () {
     publishedEvent(['cancelled_at' => now()]);
 
@@ -100,7 +150,7 @@ it('only lists hreflang alternates for translations with content', function () {
 
 it('serves the public ticket status page and 404s for unknown tokens', function () {
     $event = publishedEvent();
-    $ticket = \App\Models\EventTicket::factory()->create([
+    $ticket = EventTicket::factory()->create([
         'event_id' => $event->id,
         'ticket_type_id' => $event->ticketTypes->first()->id,
     ]);
@@ -128,7 +178,7 @@ it('links the language switcher to the same event path per locale', function () 
 
 it('sends the language switcher home on paths without a locale variant', function () {
     $event = publishedEvent();
-    $ticket = \App\Models\EventTicket::factory()->create([
+    $ticket = EventTicket::factory()->create([
         'event_id' => $event->id,
         'ticket_type_id' => $event->ticketTypes->first()->id,
     ]);
@@ -139,7 +189,7 @@ it('sends the language switcher home on paths without a locale variant', functio
 });
 
 it('still resolves CMS pages through the catch-all', function () {
-    $page = \App\Models\Page::create([
+    $page = Page::create([
         'title' => 'Over', 'slug' => 'over', 'locale' => 'nl', 'published' => true,
     ]);
 

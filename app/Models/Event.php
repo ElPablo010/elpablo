@@ -27,6 +27,7 @@ use Illuminate\Support\Collection;
     'venue_address',
     'venue_postal_code',
     'venue_city',
+    'lineup',
     'image_url',
     'image_alt',
     'published',
@@ -56,7 +57,7 @@ class Event extends Model
     public function ticketTypes(): BelongsToMany
     {
         return $this->belongsToMany(TicketType::class, 'event_ticket_types')
-            ->withPivot(['id', 'price', 'vat_rate', 'sales_end_date', 'capacity', 'sold_out', 'position'])
+            ->withPivot(['id', 'price', 'vat_rate', 'sales_start_date', 'sales_end_date', 'capacity', 'sold_out', 'position'])
             ->withTimestamps()
             ->orderByPivot('position');
     }
@@ -138,17 +139,51 @@ class Event extends Model
     }
 
     /**
-     * Of een tickettype vandaag nog online verkocht mag worden. De verkoop
-     * blijft open t/m het einde van sales_end_date (de laatste verkoopdag).
-     * Zonder waarde is er geen deadline en blijft de verkoop altijd open.
+     * De artiesten die optreden, in de volgorde van de line-up. Staat er niets
+     * ingevuld, dan is de DJ zelf de artiest — de merknaam uit de
+     * footer-instellingen. Voedt schema.org Event.performer.
+     *
+     * @return array<int, string>
      */
-    public static function ticketSalesOpenFor(?string $salesEndDate): bool
+    public function performerNames(): array
     {
-        if (! $salesEndDate) {
+        $names = array_values(array_filter(
+            array_map('trim', explode(',', (string) $this->lineup)),
+            fn (string $name): bool => $name !== '',
+        ));
+
+        return $names !== [] ? $names : [Seo::brandName()];
+    }
+
+    /**
+     * Of een tickettype vandaag online verkocht mag worden. Het venster loopt
+     * van sales_start_date t/m sales_end_date, allebei de héle dag; een lege
+     * grens betekent "geen grens aan die kant".
+     */
+    public static function ticketSalesOpenFor(?string $salesStartDate, ?string $salesEndDate = null): bool
+    {
+        return self::ticketSalesStartedFor($salesStartDate)
+            && ! self::ticketSalesEndedFor($salesEndDate);
+    }
+
+    /** De verkoop is begonnen — of heeft geen startdatum en loopt dus altijd al. */
+    public static function ticketSalesStartedFor(?string $salesStartDate): bool
+    {
+        if (! $salesStartDate) {
             return true;
         }
 
-        return Carbon::today()->lessThanOrEqualTo(Carbon::parse($salesEndDate)->startOfDay());
+        return Carbon::today()->greaterThanOrEqualTo(Carbon::parse($salesStartDate)->startOfDay());
+    }
+
+    /** De laatste verkoopdag is voorbij. */
+    private static function ticketSalesEndedFor(?string $salesEndDate): bool
+    {
+        if (! $salesEndDate) {
+            return false;
+        }
+
+        return Carbon::today()->greaterThan(Carbon::parse($salesEndDate)->startOfDay());
     }
 
     /* -----------------------------------------------------------------

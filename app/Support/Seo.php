@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Event;
+use App\Models\Mixtape;
 use App\Models\Page;
 use App\Models\WebsiteMedia;
 use Illuminate\Support\Str;
@@ -48,6 +49,18 @@ class Seo
     public static function siteName(): string
     {
         return (string) config('app.name');
+    }
+
+    /**
+     * De merknaam zoals de bezoeker hem kent: de naam uit de footer-instellingen,
+     * met de app-naam als terugval. Eén bron voor de LocalBusiness-node én voor
+     * de standaard-performer op een event.
+     */
+    public static function brandName(): string
+    {
+        $name = SiteFooter::current()['brand']['name'] ?? null;
+
+        return filled($name) ? (string) $name : self::siteName();
     }
 
     public static function defaultDescription(): string
@@ -241,7 +254,7 @@ class Seo
      *
      * @return array<string, mixed>
      */
-    public static function fromMixtape(\App\Models\Mixtape $mixtape, string $locale): array
+    public static function fromMixtape(Mixtape $mixtape, string $locale): array
     {
         $canonical = self::absoluteUrl($mixtape->localizedPath($locale));
 
@@ -325,11 +338,16 @@ class Seo
      */
     private static function eventNode(Event $event, string $locale, string $canonical, string $description): array
     {
+        // Een uur in de admin is een uur aan de deur: Brusselse tijd. De app
+        // draait op UTC, dus shiftTimezone() hangt diezelfde wijzerplaat aan de
+        // juiste zone — zonder shift zou 22:00 als "+00:00" naar Google gaan en
+        // die er middernacht van maken.
         $startDate = $event->start_date->format('Y-m-d');
         if ($event->start_time) {
             $startDate = $event->start_date
                 ->copy()
                 ->setTimeFromTimeString($event->start_time)
+                ->shiftTimezone(self::TIMEZONE)
                 ->format('Y-m-d\TH:i:sP');
         }
 
@@ -341,7 +359,7 @@ class Seo
             if (! $event->end_date && $event->start_time && $event->end_time < $event->start_time) {
                 $end = $end->addDay();
             }
-            $endDate = $end->format('Y-m-d\TH:i:sP');
+            $endDate = $end->shiftTimezone(self::TIMEZONE)->format('Y-m-d\TH:i:sP');
         }
 
         $offers = [];
@@ -355,6 +373,11 @@ class Seo
                 'availability' => $pivot->isSoldOut() || ! $pivot->salesOpen()
                     ? 'https://schema.org/SoldOut'
                     : 'https://schema.org/InStock',
+                // Google wil weten vanaf wanneer het ticket te koop is. Zonder
+                // voorverkoopdatum is dat het moment dat het tickettype
+                // aangemaakt werd: vanaf dan stond het online.
+                'validFrom' => $pivot->sales_start_date
+                    ?: $pivot->created_at?->format('Y-m-d'),
                 'validThrough' => $pivot->sales_end_date,
                 'url' => $canonical,
             ], fn ($v) => filled($v));
@@ -384,10 +407,54 @@ class Seo
                 ], fn ($v) => filled($v)),
             ], fn ($v) => filled($v)),
             'image' => self::absoluteUrl($event->image_url),
+            'performer' => self::performerNodes($event),
             'organizer' => ['@id' => self::baseUrl().'/#business'],
             'offers' => $offers !== [] ? $offers : null,
             'inLanguage' => self::htmlLang($locale),
         ], fn ($v) => filled($v));
+    }
+
+    /**
+     * De artiest(en) van een event als schema.org-nodes. De DJ zelf krijgt een
+     * vast @id plus zijn socials, zodat Google al zijn optredens aan één
+     * entiteit kan koppelen; gastartiesten uit de line-up blijven een naam.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private static function performerNodes(Event $event): array
+    {
+        $brand = self::brandName();
+
+        return array_map(function (string $name) use ($brand): array {
+            if ($name !== $brand) {
+                return ['@type' => 'Person', 'name' => $name];
+            }
+
+            return array_filter([
+                '@type' => 'Person',
+                '@id' => self::baseUrl().'/#performer',
+                'name' => $name,
+                'url' => self::baseUrl().'/',
+                'sameAs' => self::brandSameAs(),
+            ], fn ($v) => filled($v));
+        }, $event->performerNames());
+    }
+
+    /**
+     * De social-profielen uit de footer, als sameAs-lijst. Gedeeld door de
+     * LocalBusiness- en de performer-node — één bron voor entiteitsherkenning.
+     *
+     * @return array<int, string>
+     */
+    private static function brandSameAs(): array
+    {
+        $social = SiteFooter::current()['social'] ?? [];
+
+        return array_values(array_filter([
+            $social['facebook'] ?? null,
+            $social['instagram'] ?? null,
+            $social['youtube'] ?? null,
+        ], fn ($v) => filled($v)));
     }
 
     /**
@@ -402,19 +469,13 @@ class Seo
         $footer = SiteFooter::current();
         $contact = $footer['contact'] ?? [];
         $brand = $footer['brand'] ?? [];
-        $social = $footer['social'] ?? [];
         $base = self::baseUrl();
-
-        $sameAs = array_values(array_filter([
-            $social['facebook'] ?? null,
-            $social['instagram'] ?? null,
-            $social['youtube'] ?? null,
-        ], fn ($v) => filled($v)));
+        $sameAs = self::brandSameAs();
 
         $business = array_filter([
             '@type' => 'LocalBusiness',
             '@id' => $base.'/#business',
-            'name' => $brand['name'] ?? self::siteName(),
+            'name' => self::brandName(),
             'url' => $base.'/',
             'logo' => self::absoluteUrl($brand['logo'] ?? null),
             'telephone' => $contact['phone'] ?? null,

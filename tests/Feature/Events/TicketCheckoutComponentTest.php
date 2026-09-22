@@ -15,6 +15,7 @@ use App\Models\EventTicketDiscount;
 use App\Models\EventTicketType;
 use App\Models\TicketOrder;
 use App\Models\TicketType;
+use App\Services\TicketCheckoutService;
 use Livewire\Livewire;
 use Tests\Fakes\FakePaymentGateway;
 
@@ -101,6 +102,19 @@ it('hides steppers for sold-out and closed ticket types', function () {
         ->assertSee('Verkoop afgesloten');
 });
 
+it('announces the start date for a ticket type that is not on sale yet', function () {
+    $start = now()->addWeek();
+    [$event, $type] = componentEvent(['sales_start_date' => $start->toDateString()]);
+
+    // "Verkoop vanaf 29/09/2026" — een reden om terug te komen, niet een
+    // gesloten deur, en de datum dag-eerst zoals overal op de site.
+    Livewire::test(TicketCheckout::class, ['event' => $event])
+        ->assertSee('Verkoop vanaf '.$start->format('d/m/Y'))
+        ->assertDontSee('Verkoop afgesloten')
+        ->call('increment', $type->id)
+        ->assertSet("quantities.{$type->id}", 0);
+});
+
 it('requires buyer details and at least one ticket', function () {
     [$event, $type] = componentEvent();
 
@@ -146,7 +160,7 @@ it('surfaces capacity errors from the service as validation errors', function ()
     [$event, $type] = componentEvent(['capacity' => 1]);
 
     // Iemand anders reserveerde intussen het laatste ticket.
-    app(\App\Services\TicketCheckoutService::class)->createSession(
+    app(TicketCheckoutService::class)->createSession(
         event: $event->fresh(),
         quantities: [$type->id => 1],
         buyerName: 'Snelle Koper',

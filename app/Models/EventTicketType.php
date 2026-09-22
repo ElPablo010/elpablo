@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'ticket_type_id',
     'price',
     'vat_rate',
+    'sales_start_date',
     'sales_end_date',
     'capacity',
     'sold_out',
@@ -88,6 +89,16 @@ class EventTicketType extends Model
 
     public function salesOpen(): bool
     {
-        return Event::ticketSalesOpenFor($this->sales_end_date);
+        return Event::ticketSalesOpenFor($this->sales_start_date, $this->sales_end_date);
+    }
+
+    /**
+     * De verkoop moet nog beginnen — iets anders dan "afgesloten", want dit
+     * type komt later vanzelf in de verkoop. De checkout toont daarom
+     * "Verkoop vanaf ..." in plaats van een gesloten deur.
+     */
+    public function salesPending(): bool
+    {
+        return ! Event::ticketSalesStartedFor($this->sales_start_date);
     }
 }

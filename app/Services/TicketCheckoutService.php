@@ -15,6 +15,7 @@ use App\Models\TicketOrder;
 use App\Support\Attribution;
 use App\Support\Locale;
 use App\Support\Seo;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -85,6 +86,13 @@ class TicketCheckoutService
             }
 
             $name = $pivot->ticketType->nameFor($locale);
+
+            if ($pivot->salesPending()) {
+                throw new CheckoutException(__('De verkoop voor ":type" start pas op :date.', [
+                    'type' => $name,
+                    'date' => Carbon::parse($pivot->sales_start_date)->format('d/m/Y'),
+                ]));
+            }
 
             if (! $pivot->salesOpen()) {
                 throw new CheckoutException(__('De verkoop voor ":type" is afgesloten.', ['type' => $name]));

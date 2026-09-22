@@ -110,6 +110,14 @@ it('rejects totals below the Stripe minimum of fifty cents', function () {
         ->and(EventTicket::count())->toBe(0);
 });
 
+it('rejects sales windows that have not started yet', function () {
+    $start = now()->addWeek();
+    [$event, $type] = checkoutEvent(['sales_start_date' => $start->toDateString()]);
+
+    expect(fn () => createSession($event, [$type->id => 1]))
+        ->toThrow(CheckoutException::class, 'start pas op '.$start->format('d/m/Y'));
+});
+
 it('rejects closed sales windows, sold-out flags, cancelled and draft events', function () {
     [$event, $type] = checkoutEvent(['sales_end_date' => now()->subDay()->toDateString()]);
     expect(fn () => createSession($event, [$type->id => 1]))

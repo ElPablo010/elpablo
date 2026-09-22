@@ -8,6 +8,7 @@ use App\Models\EventExtra;
 use App\Models\EventTicketType;
 use App\Models\TicketType;
 use App\Support\Locale;
+use App\Support\Seo;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
@@ -123,6 +124,10 @@ class EventForm
                         ->label('Stad')
                         ->maxLength(255),
                 ]),
+            TextInput::make('lineup')
+                ->label('Line-up')
+                ->maxLength(255)
+                ->helperText('Wie er optreedt, gescheiden door komma\'s. Leeg = enkel '.Seo::brandName().'. Google toont dit bij het event en koppelt het aan de artiest.'),
             MediaPickerField::make('image_url', 'Afbeelding', required: false, helperText: 'Wordt getoond op de eventpagina en in het overzicht.'),
             TextInput::make('image_alt')
                 ->label('Afbeelding — alt-tekst')
@@ -184,12 +189,18 @@ class EventForm
                                 ->default(21)
                                 ->required(),
                         ]),
-                    Grid::make(['default' => 1, 'md' => 3])
+                    Grid::make(['default' => 1, 'md' => 4])
                         ->schema([
+                            DatePicker::make('sales_start_date')
+                                ->label('Verkoop vanaf')
+                                ->native(false)
+                                ->displayFormat('d/m/Y')
+                                ->helperText('Leeg = meteen te koop.'),
                             DatePicker::make('sales_end_date')
                                 ->label('Verkoop t/m')
                                 ->native(false)
                                 ->displayFormat('d/m/Y')
+                                ->after('sales_start_date')
                                 ->helperText('Leeg = geen deadline.'),
                             TextInput::make('capacity')
                                 ->label('Capaciteit')

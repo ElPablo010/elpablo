@@ -35,7 +35,11 @@
                         @endif
                     </div>
 
-                    @if (! $line['sales_open'])
+                    @if ($line['sales_pending'])
+                        {{-- Nog niet in de verkoop: toon de startdatum, dat is een
+                             reden om terug te komen i.p.v. een gesloten deur. --}}
+                        <span class="rounded-full bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-gray-300">{{ __('Verkoop vanaf :date', ['date' => $line['sales_starts_on']]) }}</span>
+                    @elseif (! $line['sales_open'])
                         <span class="rounded-full bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-gray-400">{{ __('Verkoop afgesloten') }}</span>
                     @elseif ($line['sold_out'])
                         <span class="rounded-full bg-red-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-400">{{ __('Uitverkocht') }}</span>
