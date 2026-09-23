@@ -90,6 +90,15 @@ De AI-vertaallaag uit ark-van-noe is geïnstalleerd via de `make-multilingual`-s
   Knop **"Vertalen met AI"** vult de EN/ES-velden in het formulier (nog niet in
   de DB) — controleren en dan Opslaan. Leeg veld = terugval op `lang/{locale}.json`
   en daarna het NL-label (`MenuItem::labelFor()`, `Menu::titleFor()`).
+- **Media volgen altijd het NL-origineel** (`TranslationMediaSync`): bij elk
+  opslaan van een NL-pagina gaan `src`/`image`/`image_url`/`video_url`/`cover_url`
+  (+ `seo_image_url`) naar de EN/ES-vertalingen; nieuwe items in een fotolijst
+  komen er integraal bij. Tekst blijft ongemoeid. Secties koppelen op
+  **positie + type** — `translation_of` op secties is onbetrouwbaar, want
+  `ManagesPageSections` maakt ze bij elk opslaan opnieuw aan. Wijkt de opbouw
+  af, dan wordt die sectie overgeslagen (dan opnieuw "Vertalen met AI").
+  Nieuw mediaveld? Voeg de sleutel toe aan `TranslationMediaSync::MEDIA_KEYS`.
+  Bestaande pagina's gelijktrekken: `php artisan pages:sync-translation-media`.
 - De paginakeuze in `PageLinkField` (menu's, CTA's, footer) toont **enkel
   NL-pagina's**: opgeslagen links zijn NL-vormig en worden per taal gelokaliseerd.
 

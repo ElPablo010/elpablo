@@ -2,6 +2,8 @@
 
 namespace App\Filament\Concerns;
 
+use App\Services\Translation\TranslationMediaSync;
+
 trait ManagesPageSections
 {
     protected ?array $pendingSections = null;
@@ -62,5 +64,9 @@ trait ManagesPageSections
                 'content' => $entry['data'] ?? [],
             ]);
         }
+
+        // Foto's en video's zijn taalloos: een bewerkte NL-pagina zet ze door
+        // naar haar EN/ES-vertalingen (tekst blijft ongemoeid).
+        app(TranslationMediaSync::class)->sync($this->record->refresh());
     }
 }
