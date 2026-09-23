@@ -31,11 +31,24 @@ class EventTranslator
             throw new TranslationException('Dit event heeft geen tekst om te vertalen.');
         }
 
+        // De extra's (groepstafel, drankkaart…) gaan in dezelfde call mee. Zij
+        // bewaren hun vertaling niet in event_translations maar in eigen
+        // name_{locale}/description_{locale}-kolommen op event_extras.
+        $extras = $event->extras()->get();
+
+        foreach ($extras as $extra) {
+            foreach (['name', 'description'] as $field) {
+                if (filled($extra->{$field})) {
+                    $texts["extra.{$extra->id}.{$field}"] = $extra->{$field};
+                }
+            }
+        }
+
         $translated = $this->translator->translate(
             $texts,
             Locale::DEFAULT,
             $toLocale,
-            context: 'Event page for an Urban Latin DJ (name, short teaser, full description). The description may contain HTML — keep all tags and attributes exactly as they are.',
+            context: 'Event page for an Urban Latin DJ (name, short teaser, full description, plus the names and descriptions of optional extras such as a group table). The description may contain HTML — keep all tags and attributes exactly as they are.',
         );
 
         $event->translations()->updateOrCreate(
@@ -46,5 +59,19 @@ class EventTranslator
                 'description' => $translated['description'] ?? $event->description,
             ],
         );
+
+        foreach ($extras as $extra) {
+            $updates = [];
+
+            foreach (['name', 'description'] as $field) {
+                if (isset($translated["extra.{$extra->id}.{$field}"])) {
+                    $updates["{$field}_{$toLocale}"] = $translated["extra.{$extra->id}.{$field}"];
+                }
+            }
+
+            if ($updates !== []) {
+                $extra->update($updates);
+            }
+        }
     }
 }

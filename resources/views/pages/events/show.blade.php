@@ -11,6 +11,7 @@
     :schema="$seo['schema']"
     :locale="$seo['locale']"
     :alternates="$seo['alternates']"
+    :edit-url="\App\Filament\Resources\Events\EventResource::getUrl('edit', ['record' => $event])"
 >
     <section class="relative overflow-hidden bg-ink-950">
         <div class="pointer-events-none absolute -top-32 -left-24 h-96 w-96 rounded-full bg-primary-600/20 blur-3xl"></div>
@@ -79,7 +80,10 @@
                     @endif
                 </div>
 
-                <div>
+                {{-- #tickets: deelbare link die meteen naar de checkout springt
+                     (bv. vanuit een Facebook-event). scroll-mt compenseert de
+                     fixed header. --}}
+                <div id="tickets" class="scroll-mt-32">
                     @livewire('events.ticket-checkout', ['event' => $event], key('checkout-'.$event->id))
                 </div>
             </div>

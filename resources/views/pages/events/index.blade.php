@@ -7,6 +7,7 @@
     :schema="$seo['schema']"
     :locale="$seo['locale']"
     :alternates="$seo['alternates']"
+    :edit-url="\App\Filament\Resources\Events\EventResource::getUrl('index')"
 >
     <section class="relative overflow-hidden bg-ink-950">
         <div class="pointer-events-none absolute -top-32 -left-24 h-96 w-96 rounded-full bg-primary-600/20 blur-3xl"></div>

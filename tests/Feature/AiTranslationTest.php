@@ -5,6 +5,7 @@ use App\Models\Page;
 use App\Services\Translation\ClaudeTranslator;
 use App\Services\Translation\EventTranslator;
 use App\Services\Translation\PageTranslator;
+use App\Services\Translation\TranslateRecord;
 
 /**
  * De AI-vertaallaag (geport uit ark-van-noe via de make-multilingual-skill).
@@ -89,7 +90,7 @@ it('vertaalt een event naar zijn event_translations-rij', function () {
         'published' => true,
     ]);
 
-    app(App\Services\Translation\TranslateRecord::class)->handle($event, 'es');
+    app(TranslateRecord::class)->handle($event, 'es');
 
     $translation = $event->translations()->where('locale', 'es')->first();
 
@@ -102,4 +103,29 @@ it('vertaalt een event naar zijn event_translations-rij', function () {
     app(EventTranslator::class)->translate($event, 'es');
 
     expect($event->translations()->where('locale', 'es')->count())->toBe(1);
+});
+
+it('vertaalt de extra\'s van een event mee', function () {
+    fakeClaudeTranslator();
+
+    $event = Event::create([
+        'slug' => 'fiesta',
+        'name' => 'Fiesta',
+        'start_date' => '2026-10-01',
+        'published' => true,
+    ]);
+
+    $table = $event->extras()->create([
+        'name' => 'Gratis groepstafel',
+        'description' => 'Vanaf 12 tickets.',
+    ]);
+    $bare = $event->extras()->create(['name' => 'Drankkaart']);
+
+    app(EventTranslator::class)->translate($event, 'en');
+
+    expect($table->fresh()->name_en)->toBe('EN: Gratis groepstafel')
+        ->and($table->fresh()->description_en)->toBe('EN: Vanaf 12 tickets.')
+        ->and($table->fresh()->name_es)->toBeNull()
+        ->and($bare->fresh()->name_en)->toBe('EN: Drankkaart')
+        ->and($bare->fresh()->description_en)->toBeNull();
 });

@@ -10,6 +10,9 @@
     'type' => 'website',
     'schema' => [],
     'page' => null,
+    // Bewerk-URL in de admin voor wat géén Page is (bv. een event); leeg =
+    // de admin-edit-knop valt terug op de pagina.
+    'editUrl' => null,
     'locale' => null,
     'alternates' => [],
 ])
@@ -61,7 +64,7 @@
     <x-site.header :page="$page" />
 
     {{-- Snelkoppeling naar de admin, enkel zichtbaar voor ingelogde beheerders. --}}
-    <x-site.admin-edit :page="$page" />
+    <x-site.admin-edit :page="$page" :edit-url="$editUrl" />
 
     <main class="flex-1">
         {{ $slot }}

@@ -56,7 +56,7 @@
                                 @if ($item->target_blank) target="_blank" rel="noopener" @endif
                                 class="group relative text-sm font-medium uppercase tracking-wide text-gray-200 transition-colors hover:text-white"
                             >
-                                {{ __($item->label) }}
+                                {{ $item->labelFor() }}
                                 <span class="absolute -bottom-1.5 left-0 h-0.5 w-0 bg-primary-500 transition-all duration-300 group-hover:w-full"></span>
                             </a>
                         @endforeach
@@ -133,7 +133,7 @@
                                 href="{{ Locale::href($item->resolvedHref()) }}"
                                 @if ($item->target_blank) target="_blank" rel="noopener" @endif
                                 class="rounded-lg px-3 py-3 text-base font-medium uppercase tracking-wide text-gray-200 transition-colors hover:bg-white/5 hover:text-white"
-                            >{{ __($item->label) }}</a>
+                            >{{ $item->labelFor() }}</a>
                         @endforeach
                     </nav>
                 @endif

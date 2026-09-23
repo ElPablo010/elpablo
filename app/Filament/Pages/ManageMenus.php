@@ -5,6 +5,9 @@ namespace App\Filament\Pages;
 use App\Filament\Schemas\Components\PageLinkField;
 use App\Models\Menu;
 use App\Models\MenuItem;
+use App\Services\Translation\ClaudeTranslator;
+use App\Services\Translation\TranslationException;
+use App\Support\Locale;
 use App\Support\Url;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -13,6 +16,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -74,10 +78,18 @@ class ManageMenus extends Page
         $components = [];
 
         if ($config['showTitle']) {
-            $components[] = TextInput::make("{$location}.title")
-                ->label('Titel')
-                ->maxLength(64)
-                ->helperText('Wordt als kop boven deze footerkolom getoond (bv. "Ontdekken").');
+            $components[] = Grid::make(['default' => 1, 'md' => 3])->schema([
+                TextInput::make("{$location}.title")
+                    ->label('Titel')
+                    ->maxLength(64)
+                    ->helperText('Wordt als kop boven deze footerkolom getoond (bv. "Ontdekken").'),
+                TextInput::make("{$location}.title_en")
+                    ->label('Titel (EN)')
+                    ->maxLength(64),
+                TextInput::make("{$location}.title_es")
+                    ->label('Titel (ES)')
+                    ->maxLength(64),
+            ]);
         }
 
         $components[] = Repeater::make("{$location}.items")
@@ -103,10 +115,7 @@ class ManageMenus extends Page
     protected function itemSchema(bool $withChildren): array
     {
         $schema = [
-            TextInput::make('label')
-                ->label('Label')
-                ->required()
-                ->maxLength(255),
+            $this->labelFields(),
             PageLinkField::make(false),
             Toggle::make('target_blank')
                 ->label('Openen in nieuw tabblad')
@@ -123,10 +132,7 @@ class ManageMenus extends Page
                 ->reorderable()
                 ->defaultItems(0)
                 ->schema([
-                    TextInput::make('label')
-                        ->label('Label')
-                        ->required()
-                        ->maxLength(255),
+                    $this->labelFields(),
                     PageLinkField::make(false),
                     Toggle::make('target_blank')
                         ->label('Openen in nieuw tabblad')
@@ -135,6 +141,26 @@ class ManageMenus extends Page
         }
 
         return $schema;
+    }
+
+    /**
+     * Label per taal. EN/ES leeg = de site valt terug op lang/{locale}.json en
+     * daarna op het NL-label (zie MenuItem::labelFor()).
+     */
+    protected function labelFields(): Grid
+    {
+        return Grid::make(['default' => 1, 'md' => 3])->schema([
+            TextInput::make('label')
+                ->label('Label')
+                ->required()
+                ->maxLength(255),
+            TextInput::make('label_en')
+                ->label('Label (EN)')
+                ->maxLength(255),
+            TextInput::make('label_es')
+                ->label('Label (ES)')
+                ->maxLength(255),
+        ]);
     }
 
     protected function fillForm(): void
@@ -150,6 +176,8 @@ class ManageMenus extends Page
 
             $data[$location] = [
                 'title' => $menu->title,
+                'title_en' => $menu->title_en,
+                'title_es' => $menu->title_es,
                 'items' => $menu->items
                     ->map(fn (MenuItem $item) => $this->itemToState($item, $config['children']))
                     ->all(),
@@ -166,6 +194,8 @@ class ManageMenus extends Page
     {
         $state = [
             'label' => $item->label,
+            'label_en' => $item->label_en,
+            'label_es' => $item->label_es,
             'link_type' => $item->page_id ? 'page' : 'url',
             'page_id' => $item->page_id,
             'href' => $item->page_id ? $item->resolvedHref() : $item->url,
@@ -191,7 +221,11 @@ class ManageMenus extends Page
                 ['name' => $config['name']],
             );
 
-            $menu->update(['title' => $state[$location]['title'] ?? null]);
+            $menu->update([
+                'title' => $state[$location]['title'] ?? null,
+                'title_en' => $state[$location]['title_en'] ?? null,
+                'title_es' => $state[$location]['title_es'] ?? null,
+            ]);
 
             // Delete-and-recreate: eenvoudiger en betrouwbaarder dan diffen.
             MenuItem::where('menu_id', $menu->id)->delete();
@@ -224,6 +258,8 @@ class ManageMenus extends Page
             'menu_id' => $menuId,
             'parent_id' => $parentId,
             'label' => $item['label'],
+            'label_en' => $item['label_en'] ?? null,
+            'label_es' => $item['label_es'] ?? null,
             'page_id' => $isPage ? ($item['page_id'] ?? null) : null,
             'url' => $isPage ? null : Url::normalize($item['href'] ?? null),
             'position' => $position,
@@ -231,9 +267,87 @@ class ManageMenus extends Page
         ]);
     }
 
+    /**
+     * Vertaalt alle NL-labels en -titels naar elke andere taal en zet het
+     * resultaat in het formulier — niet in de database. Zo zie je de
+     * vertaling eerst en bewaar je ze zelf met Opslaan. Bestaande EN/ES-waarden
+     * worden overschreven (zelfde gedrag als "Vertalen met AI" op pagina's).
+     */
+    public function translateWithAi(): void
+    {
+        $data = $this->data;
+        $texts = [];
+
+        // Sleutel = het pad in $data waar de vertaling naast komt te staan
+        // (label → label_en/label_es), zodat terugschrijven een data_set() is.
+        foreach (self::MENUS as $location => $config) {
+            if (filled($data[$location]['title'] ?? null)) {
+                $texts["{$location}.title"] = $data[$location]['title'];
+            }
+
+            foreach ($data[$location]['items'] ?? [] as $key => $item) {
+                if (filled($item['label'] ?? null)) {
+                    $texts["{$location}.items.{$key}.label"] = $item['label'];
+                }
+
+                foreach ($item['children'] ?? [] as $childKey => $child) {
+                    if (filled($child['label'] ?? null)) {
+                        $texts["{$location}.items.{$key}.children.{$childKey}.label"] = $child['label'];
+                    }
+                }
+            }
+        }
+
+        if ($texts === []) {
+            Notification::make()->title('Er staan nog geen menu-items om te vertalen.')->warning()->send();
+
+            return;
+        }
+
+        try {
+            foreach (Locale::supported() as $locale) {
+                if ($locale === Locale::DEFAULT) {
+                    continue;
+                }
+
+                $translated = app(ClaudeTranslator::class)->translate(
+                    $texts,
+                    Locale::DEFAULT,
+                    $locale,
+                    context: 'Website navigation labels and footer column headings for an Urban Latin DJ. Keep them short, like menu items.',
+                );
+
+                foreach ($translated as $path => $text) {
+                    data_set($data, "{$path}_{$locale}", $text);
+                }
+            }
+        } catch (TranslationException $exception) {
+            Notification::make()->title('Vertalen mislukt')->body($exception->getMessage())->danger()->send();
+
+            return;
+        }
+
+        $this->data = $data;
+
+        Notification::make()
+            ->title('Menu\'s vertaald.')
+            ->body('Controleer de EN/ES-velden en klik op Opslaan.')
+            ->success()
+            ->send();
+    }
+
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('translate')
+                ->label('Vertalen met AI')
+                ->icon(Heroicon::OutlinedLanguage)
+                ->color('gray')
+                ->requiresConfirmation()
+                ->modalHeading('Menu\'s vertalen met AI')
+                ->modalDescription('Alle labels en titels worden naar het Engels en Spaans vertaald. Bestaande vertalingen worden overschreven. Je controleert het resultaat en slaat daarna zelf op.')
+                ->modalSubmitActionLabel('Vertalen')
+                ->action(fn () => $this->translateWithAi()),
             Action::make('save')
                 ->label('Opslaan')
                 ->icon(Heroicon::OutlinedCheck)

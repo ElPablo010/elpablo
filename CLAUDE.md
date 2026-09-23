@@ -83,7 +83,17 @@ De AI-vertaallaag uit ark-van-noe is geïnstalleerd via de `make-multilingual`-s
 - Vaste UI-teksten blijven via `lang/en.json`/`lang/es.json` (`__()`) — die vertaal
   je nog handmatig; alleen pagina- en eventcontent loopt via de AI-knoppen.
 
-Tests: `tests/Feature/AiTranslationTest.php`.
+- **Extra's van een event** (groepstafel, drankkaart) gaan in dezelfde call mee
+  en landen in `name_{locale}`/`description_{locale}` op `event_extras`.
+- **Menu's** (*Website → Menu's*): één set items voor alle talen, enkel het label
+  (`label_en`/`label_es`) en de footertitel (`title_en`/`title_es`) verschillen.
+  Knop **"Vertalen met AI"** vult de EN/ES-velden in het formulier (nog niet in
+  de DB) — controleren en dan Opslaan. Leeg veld = terugval op `lang/{locale}.json`
+  en daarna het NL-label (`MenuItem::labelFor()`, `Menu::titleFor()`).
+- De paginakeuze in `PageLinkField` (menu's, CTA's, footer) toont **enkel
+  NL-pagina's**: opgeslagen links zijn NL-vormig en worden per taal gelokaliseerd.
+
+Tests: `tests/Feature/AiTranslationTest.php`, `tests/Feature/MenuTranslationTest.php`.
 
 ## SEO-monitoring (seo-analytics)
 

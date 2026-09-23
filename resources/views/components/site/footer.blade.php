@@ -64,7 +64,7 @@
                 @if ($fm && $fm->items->isNotEmpty())
                     <div>
                         @if (! empty($fm->title))
-                            <div class="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-white">{{ __($fm->title) }}</div>
+                            <div class="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-white">{{ $fm->titleFor() }}</div>
                         @endif
                         <ul class="space-y-3 text-sm">
                             @foreach ($fm->items as $item)
@@ -73,7 +73,7 @@
                                         href="{{ Locale::href($item->resolvedHref()) }}"
                                         @if ($item->target_blank) target="_blank" rel="noopener" @endif
                                         class="text-gray-400 transition-colors hover:text-primary-400"
-                                    >{{ __($item->label) }}</a>
+                                    >{{ $item->labelFor() }}</a>
                                 </li>
                             @endforeach
                         </ul>
@@ -115,7 +115,7 @@
                 @php $legal = $footerMenus->get('footer_3'); @endphp
                 @if ($legal && $legal->items->isNotEmpty())
                     @foreach ($legal->items as $item)
-                        <a href="{{ Locale::href($item->resolvedHref()) }}" class="transition-colors hover:text-gray-300">{{ __($item->label) }}</a>
+                        <a href="{{ Locale::href($item->resolvedHref()) }}" class="transition-colors hover:text-gray-300">{{ $item->labelFor() }}</a>
                     @endforeach
                 @endif
                 {{-- Heropent de cookiebanner; verplicht zodat een bezoeker z'n keuze kan herzien. --}}

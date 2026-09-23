@@ -3,6 +3,7 @@
 namespace App\Filament\Schemas\Components;
 
 use App\Models\Page;
+use App\Support\Locale;
 use App\Support\Url;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -17,6 +18,24 @@ class PageLinkField
      *                          CTA (cards, tiles, tarieven) so a section without
      *                          a button can be saved without choosing a page.
      */
+    /**
+     * Kiesbare pagina's: enkel NL. Elke taal deelt dezelfde slug en links
+     * worden bij het renderen gelokaliseerd (Locale::href()), dus opgeslagen
+     * links zijn altijd NL-vormig. Met alle talen erin stond elke pagina er
+     * drie keer.
+     *
+     * @return array<int, string>
+     */
+    public static function pageOptions(): array
+    {
+        return Page::query()
+            ->where('locale', Locale::DEFAULT)
+            ->where(fn ($q) => $q->where('published', true)->orWhere('is_homepage', true))
+            ->orderBy('title')
+            ->pluck('title', 'id')
+            ->all();
+    }
+
     public static function make(bool $required = true): Grid
     {
         return Grid::make(['default' => 1, 'md' => 3])
@@ -32,10 +51,7 @@ class PageLinkField
 
                 Select::make('page_id')
                     ->label('Kies een pagina')
-                    ->options(fn () => Page::query()
-                        ->where(fn ($q) => $q->where('published', true)->orWhere('is_homepage', true))
-                        ->orderBy('title')
-                        ->pluck('title', 'id'))
+                    ->options(fn () => self::pageOptions())
                     ->searchable()
                     ->placeholder('Kies een pagina...')
                     ->visible(fn (callable $get) => ($get('link_type') ?? 'page') === 'page')

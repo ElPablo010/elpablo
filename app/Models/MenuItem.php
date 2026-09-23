@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Locale;
 use App\Support\Url;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
@@ -12,6 +13,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'menu_id',
     'parent_id',
     'label',
+    'label_en',
+    'label_es',
     'page_id',
     'url',
     'position',
@@ -44,6 +47,22 @@ class MenuItem extends Model
     public function children(): HasMany
     {
         return $this->hasMany(self::class, 'parent_id')->orderBy('position');
+    }
+
+    /**
+     * Het label in de gevraagde taal. Zonder eigen vertaling valt het terug op
+     * lang/{locale}.json (zo werkten menulabels vóór de EN/ES-kolommen) en
+     * daarna op het NL-label.
+     */
+    public function labelFor(?string $locale = null): string
+    {
+        $locale ??= Locale::current();
+
+        if ($locale !== Locale::DEFAULT && filled($this->{"label_{$locale}"} ?? null)) {
+            return $this->{"label_{$locale}"};
+        }
+
+        return __($this->label, locale: $locale);
     }
 
     /**
