@@ -12,7 +12,10 @@
 > `public/.htaccess`, vastgepind op het apex-domein zodat staging niet meegaat).
 > `APP_URL=https://www.el-pablo.com`.
 >
-> Volgende deploys: `git push` lokaal, dan op de server `bash deploy.sh`.
+> Volgende deploys: `git push` lokaal, dan op de server `bash deploy.sh`:
+> `ssh el-pablocom@ssh.el-pablo.com 'bash ~/deploy.sh'` (key-login; de key staat
+> in het Combell-paneel bij het el-pablo.com-pakket. Let op: gebruiker is
+> `el-pablocom`, mét streepje — te veel mislukte logins blokkeren je IP tijdelijk).
 
 Hieronder de procedure zoals uitgevoerd — bewaard als referentie voor de volgende
 site. De hosting draaide WordPress; die bleef ongestoord online terwijl de
