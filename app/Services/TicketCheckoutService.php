@@ -12,7 +12,7 @@ use App\Models\EventTicket;
 use App\Models\EventTicketType;
 use App\Models\PendingStripeSession;
 use App\Models\TicketOrder;
-use App\Support\Attribution;
+use Webgoeroe\SeoGrowth\Support\Attribution;
 use App\Support\Locale;
 use App\Support\Seo;
 use Carbon\Carbon;

@@ -57,6 +57,9 @@
          pagina staat, waardoor de cookiebanner, het mobiele menu, de FAQ-accordeon
          en de audiospeler stilvallen op formulier-loze pagina's. --}}
     @livewireStyles
+
+    {{-- Google Analytics, enkel na toestemming in de cookiebanner (package webgoeroe/seo-growth). --}}
+    <x-seo-growth::site.analytics />
 </head>
 {{-- flex flex-col + flex-1 op <main>: duwt de footer naar de onderkant van het
      scherm op pagina's met weinig content. --}}

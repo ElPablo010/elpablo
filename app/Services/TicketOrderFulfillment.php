@@ -7,7 +7,7 @@ use App\Enums\OrderStatus;
 use App\Enums\TicketStatus;
 use App\Jobs\SendTicketOrderEmailJob;
 use App\Jobs\SubscribeTicketBuyerToKitJob;
-use App\Models\Lead;
+use Webgoeroe\SeoGrowth\Models\Lead;
 use App\Models\PendingStripeSession;
 use App\Models\TicketOrder;
 use Illuminate\Support\Facades\DB;
@@ -110,7 +110,7 @@ class TicketOrderFulfillment
             // bedankpagina nooit dubbel tellen. Herkomst uit de payload (de
             // webhook heeft geen sessie); record() faalt nooit hard.
             Lead::record(
-                Lead::TYPE_TICKET_ORDER,
+                \App\Models\TicketOrder::LEAD_TYPE,
                 $order,
                 (float) $order->total_inc_vat,
                 $payload['attribution'] ?? null,

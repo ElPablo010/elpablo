@@ -1,8 +1,8 @@
 <?php
 
 use App\Models\Page;
-use App\Models\SeoActionItem;
-use App\Services\SeoActionApplier;
+use Webgoeroe\SeoGrowth\Models\SeoActionItem;
+use Webgoeroe\SeoGrowth\Services\SeoActionApplier;
 
 /**
  * De SEO-laag schrijft content rechtstreeks in de page-builder. Deze tests
@@ -123,4 +123,23 @@ it('keeps slugs unique per locale only', function () {
     // De EN-pagina bezet dezelfde slug, maar in een andere taal — de NL-pagina
     // mag daardoor geen "-2" achter zich krijgen.
     expect(Page::find($item->refresh()->created_page_id)->slug)->toBe('dj-huren');
+});
+
+it('zegt de AI dat de site meertalig is en enkel de NL-versie bewerkt mag worden', function () {
+    Page::create(['title' => 'Home', 'slug' => 'home', 'locale' => 'nl', 'published' => true, 'is_homepage' => true]);
+    Page::create(['title' => 'Home', 'slug' => 'home', 'locale' => 'en', 'published' => true, 'is_homepage' => true]);
+    Page::create(['title' => 'Inicio', 'slug' => 'home', 'locale' => 'es', 'published' => true, 'is_homepage' => true]);
+
+    expect(Webgoeroe\SeoGrowth\Support\ContentPages::isMultilingual())->toBeTrue()
+        ->and(Webgoeroe\SeoGrowth\Support\ContentPages::promptNote('actions'))
+        ->toContain('meertalig (EN/ES/NL)')
+        ->toContain('Werk uitsluitend op de NL-versie')
+        ->toContain('/en en /es-URL');
+});
+
+it('zoekt pagina\'s enkel in de hoofdtaal', function () {
+    Page::create(['title' => 'DJ huren', 'slug' => 'dj-huren', 'locale' => 'en', 'published' => true]);
+    $nl = Page::create(['title' => 'DJ huren', 'slug' => 'dj-huren', 'locale' => 'nl', 'published' => true]);
+
+    expect(Webgoeroe\SeoGrowth\Support\ContentPages::query()->where('slug', 'dj-huren')->sole()->is($nl))->toBeTrue();
 });

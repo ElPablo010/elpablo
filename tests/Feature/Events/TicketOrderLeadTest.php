@@ -10,13 +10,13 @@
 use App\Contracts\PaymentGateway;
 use App\Models\Event;
 use App\Models\EventTicketType;
-use App\Models\Lead;
+use Webgoeroe\SeoGrowth\Models\Lead;
 use App\Models\PendingStripeSession;
 use App\Models\TicketOrder;
 use App\Models\TicketType;
 use App\Services\TicketCheckoutService;
 use App\Services\TicketOrderFulfillment;
-use App\Support\Attribution;
+use Webgoeroe\SeoGrowth\Support\Attribution;
 use Illuminate\Support\Facades\Queue;
 use Tests\Fakes\FakePaymentGateway;
 
@@ -82,7 +82,7 @@ it('registreert een betaalde bestelling als lead met bedrag, herkomst en taal', 
     app(TicketOrderFulfillment::class)->complete($session, $uuid, $payload);
 
     $lead = Lead::sole();
-    expect($lead->lead_type)->toBe(Lead::TYPE_TICKET_ORDER)
+    expect($lead->lead_type)->toBe(\App\Models\TicketOrder::LEAD_TYPE)
         ->and($lead->source_type)->toBe($order->getMorphClass())
         ->and($lead->source_id)->toBe($order->id)
         ->and((float) $lead->value)->toBe(30.0)
@@ -100,5 +100,5 @@ it('registreert de lead ook zonder herkomst', function () {
     $order = leadOrder();
     completeOrder($order);
 
-    expect(Lead::sole())->channel->toBeNull()->lead_type->toBe(Lead::TYPE_TICKET_ORDER);
+    expect(Lead::sole())->channel->toBeNull()->lead_type->toBe(\App\Models\TicketOrder::LEAD_TYPE);
 });

@@ -19,6 +19,7 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Webgoeroe\SeoGrowth\SeoGrowthPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -35,7 +36,7 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
                 'Website',
                 'Events',
-                'SEO',
+                'Groei',
                 'Instellingen',
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
@@ -46,6 +47,10 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class,
+            ])
+            // Groei-module (Search Console, Analytics, leads, SEO-advies en acties).
+            ->plugins([
+                SeoGrowthPlugin::make(),
             ])
             ->middleware([
                 EncryptCookies::class,

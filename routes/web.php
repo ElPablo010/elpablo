@@ -3,7 +3,6 @@
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\MixtapeController;
 use App\Http\Controllers\PublicPageController;
-use App\Http\Controllers\SearchConsoleOAuthController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\TicketStatusController;
 use Illuminate\Support\Facades\Route;
@@ -62,15 +61,8 @@ Route::prefix('{locale}')
             ->name('page.show.localized');
     });
 
-// Google Search Console — OAuth-koppeling (leads-meetlaag). De callback-URL
-// moet exact zo in Google Cloud geregistreerd staan; de Verkeer-pagina toont hem.
-Route::middleware('auth')
-    ->prefix('admin/search-console/oauth')
-    ->controller(SearchConsoleOAuthController::class)
-    ->group(function () {
-        Route::get('/redirect', 'redirect')->name('seo.gsc.oauth.redirect');
-        Route::get('/callback', 'callback')->name('seo.gsc.oauth.callback');
-    });
+// Google OAuth (Search Console + Analytics) komt uit de package
+// webgoeroe/seo-growth (admin/search-console/oauth/*), vóór deze routes.
 
 // Events (NL, op de root) — vóór de catch-all geregistreerd.
 Route::get('/events', [EventController::class, 'index'])->name('events.index');

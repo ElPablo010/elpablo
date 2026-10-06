@@ -2,7 +2,7 @@
 
 use App\Models\Page;
 use App\Models\Setting;
-use App\Services\SeoAdvisorService;
+use Webgoeroe\SeoGrowth\Services\SeoAdvisorService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;

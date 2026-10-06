@@ -104,31 +104,27 @@ De AI-vertaallaag uit ark-van-noe is geïnstalleerd via de `make-multilingual`-s
 
 Tests: `tests/Feature/AiTranslationTest.php`, `tests/Feature/MenuTranslationTest.php`.
 
-## SEO-monitoring (seo-analytics)
+## Groei-module (package webgoeroe/seo-growth)
 
-De `seo-analytics`-skill draait: DataForSEO-tracking, een wekelijkse AI-briefing
-en een goedkeuringsdashboard dat adviezen omzet in publiceerbare content.
+De SEO- en meetlaag komt uit de package **`webgoeroe/seo-growth`** (code in
+`Internal OS/Modules/repo/seo-growth`, private repo `ElPablo010/seo-growth`), niet
+meer uit gekopieerde bestanden. Pas de module nooit hier aan, maar in de package.
+Admin: sidebar-groep **Groei** → *Overzicht, Verkeer, Leads, Keywords, Acties,
+SEO-instellingen*. De planning (briefing maandag 7:00, Search Console 6:00,
+Analytics 6:15) en de OAuth-routes komen uit de package; een draaiende
+queue-worker blijft nodig voor "Ververs cijfers".
 
-Admin: sidebar-groep **SEO** → *Overzicht, Keywords, Acties, Instellingen*.
-De weekcron staat in `routes/console.php` (maandag 7:00, `seo:weekly-report`) en
-vereist een draaiende **queue-worker** voor "Ververs cijfers" op het dashboard.
-
-**Project-specifieke afwijkingen van de skill** (belangrijk bij het porten van
-bugfixes):
-- De skill verwacht een `GeneralSettings`-pagina uit een nieuwere `new-website`;
-  die ontbrak hier en is toegevoegd als `App\Filament\Pages\GeneralSettings`
-  (*Instellingen → Algemeen*): merknaam, omschrijving, Anthropic-key en "feiten
-  voor AI". De SEO-laag leest die sleutels alleen. Bewust **regel voor regel
-  gelijk** aan de versie in `webgoeroe` (enkel de twee helperText-voorbeelden
-  verschillen), zodat de latere extractie naar een gedeelde plugin schoon blijft.
-- Het sectietype `rich_text` bestaat hier niet — de actie-applier schrijft
-  `hero → text → faq → cta`. Wijzigt het sectiecontract, pas dan
-  `SeoActionApplier` én `SeoAdvisorService::buildLandingSections()` samen aan.
-- **Meertaligheid**: de SEO-acties werken uitsluitend op NL (`Locale::DEFAULT`).
-  Pagina-resolutie, slug-uniekheid, de homepage-CTA en de grounding zijn expliciet
-  op die locale gescoped — zonder dat zou een actie op een EN/ES-vertaling kunnen
-  landen (alle talen delen dezelfde slugs).
-- `text.blade.php` kiest zijn kopniveau nu op basis van `position`: bovenaan een
+**Wat El Pablo-eigen is** (de rest is standaard):
+- `config/seo-growth.php`: het conversietype `ticket_order` ("Ticketaankoop").
+  Een betaalde bestelling registreert zich in `TicketOrderFulfillment` met
+  `Lead::record(TicketOrder::LEAD_TYPE, …)`, met de herkomst uit de
+  Stripe-payload (de webhook heeft geen sessie).
+- **Meertaligheid** regelt de package zelf (`ContentPages`): pagina's zoeken,
+  slugs uniek maken en nieuwe pagina's/secties aanmaken gebeurt enkel in de
+  hoofdtaal (`app.locale` = nl), en de AI krijgt te horen dat de site meertalig
+  is en enkel de NL-versie bewerkt mag worden.
+- Het tekstblok heet hier `text`; de package herkent dat zelf.
+- `text.blade.php` kiest zijn kopniveau op basis van `position`: bovenaan een
   pagina H1 (juridische pagina's), eronder H2. Zo krijgt een gegenereerde
   landingspagina met hero geen tweede H1.
 

@@ -8,10 +8,9 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Wekelijkse SEO-briefing: verse posities ophalen, AI-advies + verbeteracties
-// genereren en de stand van zaken mailen. Maandagochtend, zodat het rapport er
-// staat bij de start van de week.
-Schedule::command('seo:weekly-report')->weeklyOn(1, '7:00');
+// Groei-module (webgoeroe/seo-growth): de wekelijkse SEO-briefing (maandag
+// 7:00) en de syncs van Search Console (6:00) en Analytics (6:15) plant de
+// package zelf in. Aan/uit op Groei → SEO-instellingen.
 
 // Queued jobs (o.a. bulk-AI-vertalingen) verwerken zonder permanente daemon:
 // elke minuut een worker die stopt zodra de wachtrij leeg is. Vereist op de
@@ -24,10 +23,3 @@ Schedule::command('queue:work --stop-when-empty')
 // vrij. De checkout.session.expired-webhook doet dit meestal al; dit is het
 // vangnet voor gemiste webhooks.
 Schedule::command('events:release-expired-reservations')->everyFiveMinutes();
-
-// Google Search Console-cijfers ophalen (dagelijks 6:00, leads-meetlaag).
-// Google levert met ~3 dagen vertraging en herziet recente dagen nog; de sync
-// haalt telkens het laatste venster opnieuw op en overschrijft per dag.
-Schedule::command('seo:sync-search-console')
-    ->dailyAt('6:00')
-    ->withoutOverlapping();

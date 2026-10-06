@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5ae8f600fbab5254c665eff2391a7825",
+    "content-hash": "649f507e32e608892ad4f76e3e3267e6",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -9191,6 +9191,41 @@
                 }
             ],
             "time": "2026-04-26T05:33:54+00:00"
+        },
+        {
+            "name": "webgoeroe/seo-growth",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "../../../Modules/repo/seo-growth",
+                "reference": "99dd8fde1d2607a40f3bf8220c6205439525e7cb"
+            },
+            "require": {
+                "filament/filament": "^5.0",
+                "laravel/framework": "^13.0",
+                "php": "^8.3"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Webgoeroe\\SeoGrowth\\SeoGrowthServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Webgoeroe\\SeoGrowth\\": "src/"
+                }
+            },
+            "license": [
+                "proprietary"
+            ],
+            "description": "Groei-module van De WebGoeroe: Search Console, Google Analytics 4, leads-attributie, DataForSEO, AI-briefing en goedkeuringsdashboard voor Laravel + Filament-sites.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         }
     ],
     "packages-dev": [
@@ -12766,7 +12801,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "webgoeroe/seo-growth": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
