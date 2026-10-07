@@ -3,10 +3,10 @@
 namespace App\Services;
 
 use App\Models\EventTicket;
-use App\Support\SiteHeader;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Webgoeroe\Core\Support\SiteHeader;
 
 class EventTicketPdf
 {

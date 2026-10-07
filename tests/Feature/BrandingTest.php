@@ -2,8 +2,8 @@
 
 use App\Models\Page;
 use App\Models\Setting;
-use App\Support\SiteFooter;
-use App\Support\SiteHeader;
+use Webgoeroe\Core\Support\SiteFooter;
+use Webgoeroe\Core\Support\SiteHeader;
 
 /**
  * Merk-chrome op de publieke site: het beeldmerk met de naam ernaast (header én

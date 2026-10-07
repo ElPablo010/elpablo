@@ -4,16 +4,26 @@ namespace App\Filament\Resources\Mixtapes;
 
 use App\Filament\Resources\Mixtapes\Pages\ManageMixtapes;
 use App\Filament\Schemas\Components\AudioPickerField;
-use App\Filament\Schemas\Components\MediaPickerField;
 use App\Models\Mixtape;
 use BackedEnum;
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Js;
+use Webgoeroe\Core\Filament\NavigationOrder;
+use Webgoeroe\Core\Filament\Schemas\Components\MediaPickerField;
 
 /**
  * Mixtapes/DJ-sets als eigen posttype — één catalogus, taal-onafhankelijk.
@@ -29,7 +39,8 @@ class MixtapeResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'Website';
 
-    protected static ?int $navigationSort = 8;
+    // Tweede posttype, direct na Events (zie NavigationOrder).
+    protected static ?int $navigationSort = NavigationOrder::POST_TYPES + 1;
 
     protected static ?string $recordTitleAttribute = 'title';
 
@@ -94,7 +105,7 @@ class MixtapeResource extends Resource
             ->defaultSort('position')
             ->reorderable('position')
             ->columns([
-                \Filament\Tables\Columns\ImageColumn::make('cover_url')
+                ImageColumn::make('cover_url')
                     ->label('Cover')
                     ->square()
                     // Absolute URL verplicht: een relatief pad (/storage/…)
@@ -104,18 +115,18 @@ class MixtapeResource extends Resource
                     // absolute URL's ongemoeid. Zelfde patroon als de
                     // thumbnail-kolom in WebsiteMediaTable.
                     ->getStateUsing(fn (Mixtape $record): ?string => filled($record->cover_url) ? url($record->cover_url) : null),
-                \Filament\Tables\Columns\TextColumn::make('title')
+                TextColumn::make('title')
                     ->label('Titel')
                     ->searchable()
                     ->description(fn (Mixtape $record): ?string => $record->subtitle),
-                \Filament\Tables\Columns\IconColumn::make('allow_download')
+                IconColumn::make('allow_download')
                     ->label('Download')
                     ->boolean(),
-                \Filament\Tables\Columns\ToggleColumn::make('published')
+                ToggleColumn::make('published')
                     ->label('Gepubliceerd'),
             ])
             ->recordActions([
-                \Filament\Actions\Action::make('view')
+                Action::make('view')
                     ->icon(Heroicon::OutlinedEye)
                     ->button()
                     ->hiddenLabel()
@@ -124,29 +135,29 @@ class MixtapeResource extends Resource
                     ->url(fn (Mixtape $record): string => $record->publicUrl()),
                 // Kopieert de deelbare URL client-side naar het klembord; de
                 // server-side action geeft alleen de bevestigings-melding.
-                \Filament\Actions\Action::make('copyLink')
+                Action::make('copyLink')
                     ->icon(Heroicon::OutlinedClipboardDocument)
                     ->button()
                     ->hiddenLabel()
                     ->color('primary')
                     ->tooltip('Kopieer publieke link')
                     ->extraAttributes(fn (Mixtape $record): array => [
-                        'x-on:click' => 'window.navigator.clipboard.writeText('.\Illuminate\Support\Js::from($record->publicUrl()).')',
+                        'x-on:click' => 'window.navigator.clipboard.writeText('.Js::from($record->publicUrl()).')',
                     ])
                     ->action(function (Mixtape $record): void {
-                        \Filament\Notifications\Notification::make()
+                        Notification::make()
                             ->title('Link gekopieerd')
                             ->body($record->publicUrl())
                             ->success()
                             ->send();
                     }),
-                \Filament\Actions\EditAction::make()
+                EditAction::make()
                     ->button()
                     ->hiddenLabel()
                     ->color('primary')
                     ->tooltip('Bewerken')
                     ->modalSubmitActionLabel('Opslaan'),
-                \Filament\Actions\DeleteAction::make()
+                DeleteAction::make()
                     ->button()
                     ->hiddenLabel()
                     ->tooltip('Verwijderen'),

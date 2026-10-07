@@ -3,7 +3,6 @@
 use App\Enums\UserRole;
 use App\Filament\Pages\ManageMenus;
 use App\Filament\Resources\Events\EventResource;
-use App\Filament\Schemas\Components\PageLinkField;
 use App\Models\Event;
 use App\Models\Menu;
 use App\Models\MenuItem;
@@ -11,6 +10,7 @@ use App\Models\Page;
 use App\Models\User;
 use App\Services\Translation\ClaudeTranslator;
 use Livewire\Livewire;
+use Webgoeroe\Core\Filament\Schemas\Components\PageLinkField;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;

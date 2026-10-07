@@ -10,15 +10,15 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
-use Illuminate\Support\Facades\View;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Webgoeroe\Core\CorePlugin;
+use Webgoeroe\Core\Filament\Pages\ManageMenus;
 use Webgoeroe\SeoGrowth\SeoGrowthPlugin;
 
 class AdminPanelProvider extends PanelProvider
@@ -35,7 +35,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 'Website',
-                'Events',
+                'Tickets',
                 'Groei',
                 'Instellingen',
             ])
@@ -48,8 +48,13 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 AccountWidget::class,
             ])
-            // Groei-module (Search Console, Analytics, leads, SEO-advies en acties).
             ->plugins([
+                // Site-basis: pagina's, media, menu's, redirects, header, footer,
+                // algemene instellingen, inzendingen en de admin-chrome. De
+                // menu's komen uit App\Filament\Pages\ManageMenus (core +
+                // "Vertalen met AI").
+                CorePlugin::make()->without(ManageMenus::class),
+                // Groei-module (Search Console, Analytics, leads, SEO-advies en acties).
                 SeoGrowthPlugin::make(),
             ])
             ->middleware([
@@ -65,21 +70,6 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ])
-            ->renderHook(
-                PanelsRenderHook::HEAD_END,
-                fn (): string => View::make('filament.admin.customizations')->render(),
-            )
-            // Altijd zichtbaar oogje in de topbalk: opent de publieke site in
-            // het huidige tabblad, vanaf élke adminpagina.
-            ->renderHook(
-                PanelsRenderHook::TOPBAR_END,
-                fn (): string => View::make('filament.admin.view-site-button')->render(),
-            )
-            // Uitlogknop onderaan de zijbalk.
-            ->renderHook(
-                PanelsRenderHook::SIDEBAR_FOOTER,
-                fn (): string => View::make('filament.admin.sidebar-logout')->render(),
-            );
+            ]);
     }
 }

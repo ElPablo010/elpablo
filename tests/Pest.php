@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\UserRole;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -16,8 +18,9 @@ use Tests\TestCase;
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
-    // De standaardtests van de Groei-module draaien vanuit de package mee.
-    ->in('Feature', '../vendor/webgoeroe/seo-growth/tests/Feature');
+    // De standaardtests van de site-basis en de Groei-module draaien vanuit
+    // de packages mee.
+    ->in('Feature', '../vendor/webgoeroe/core/tests/Feature', '../vendor/webgoeroe/seo-growth/tests/Feature');
 
 /*
 |--------------------------------------------------------------------------
@@ -48,7 +51,7 @@ expect()->extend('toBeOne', function () {
 /**
  * Een ingelogde beheerder — Filament laat enkel de Admin-rol op het paneel.
  */
-function admin(): App\Models\User
+function admin(): User
 {
-    return App\Models\User::factory()->create(['role' => App\Enums\UserRole::Admin]);
+    return User::factory()->create(['role' => UserRole::Admin]);
 }

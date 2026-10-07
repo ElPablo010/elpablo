@@ -1,9 +1,9 @@
 <?php
 
-use App\Filament\Resources\Pages\Pages\EditPage;
 use App\Models\Page;
 use Database\Seeders\HomepageSeeder;
 use Livewire\Livewire;
+use Webgoeroe\Core\Filament\Resources\Pages\Pages\EditPage;
 
 /**
  * Geseede content moet door het eigen bewerkformulier komen. Ging dit fout, dan

@@ -12,13 +12,13 @@ use App\Models\EventTicket;
 use App\Models\EventTicketType;
 use App\Models\PendingStripeSession;
 use App\Models\TicketOrder;
-use Webgoeroe\SeoGrowth\Support\Attribution;
-use App\Support\Locale;
-use App\Support\Seo;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Webgoeroe\Core\Support\Locale;
+use Webgoeroe\Core\Support\Seo;
+use Webgoeroe\SeoGrowth\Support\Attribution;
 
 /**
  * Bouwt van een ticketselectie een Stripe Checkout-sessie, mét race-vrije

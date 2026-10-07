@@ -1,8 +1,8 @@
 <?php
 
-use App\Filament\Resources\Pages\Pages\ListPages;
 use App\Models\Page;
 use Livewire\Livewire;
+use Webgoeroe\Core\Filament\Resources\Pages\Pages\ListPages;
 
 /**
  * De site is meertalig: elke pagina bestaat per taal als eigen rij, gekoppeld via

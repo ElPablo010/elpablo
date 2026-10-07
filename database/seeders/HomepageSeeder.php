@@ -6,9 +6,9 @@ use App\Models\Menu;
 use App\Models\Mixtape;
 use App\Models\Page;
 use App\Models\Setting;
-use App\Support\SiteFooter;
-use App\Support\SiteHeader;
 use Illuminate\Database\Seeder;
+use Webgoeroe\Core\Support\SiteFooter;
+use Webgoeroe\Core\Support\SiteHeader;
 
 /**
  * Demo-content voor El Pablo: een volledige, conversie-gerichte homepage +

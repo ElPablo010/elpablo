@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Webgoeroe\Core\Filament\NavigationOrder;
 
 class EventResource extends Resource
 {
@@ -20,9 +21,10 @@ class EventResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Events';
+    protected static string|\UnitEnum|null $navigationGroup = 'Website';
 
-    protected static ?int $navigationSort = 10;
+    // Eerste posttype van de site: na Pagina's, vóór Media (zie NavigationOrder).
+    protected static ?int $navigationSort = NavigationOrder::POST_TYPES;
 
     protected static ?string $recordTitleAttribute = 'name';
 

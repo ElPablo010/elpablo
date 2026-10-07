@@ -4,6 +4,7 @@ use App\Models\Page;
 use App\Models\WebsiteMedia;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
+use Webgoeroe\Core\Filament\Resources\WebsiteMedia\Pages\ListWebsiteMedia;
 
 /**
  * Media-URL's worden als string opgeslagen (in page_sections.content en
@@ -90,6 +91,6 @@ it('feeds the admin media thumbnail an absolute url', function () {
 
     $this->actingAs(admin());
 
-    Livewire::test(\App\Filament\Resources\WebsiteMedia\Pages\ListWebsiteMedia::class)
+    Livewire::test(ListWebsiteMedia::class)
         ->assertTableColumnStateSet('thumbnail', url('/storage/website-media/foo.webp'), $media);
 });

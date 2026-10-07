@@ -4,7 +4,6 @@ namespace App\Livewire\Events;
 
 use App\Enums\TicketDiscountType;
 use App\Exceptions\CheckoutException;
-use App\Livewire\Concerns\PersistsLocale;
 use App\Models\Event;
 use App\Models\EventExtra;
 use App\Models\EventTicketType;
@@ -13,6 +12,7 @@ use App\Services\TicketCheckoutService;
 use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
+use Webgoeroe\Core\Livewire\Concerns\PersistsLocale;
 
 /**
  * De ticketcheckout op de event-detailpagina. Alle prijsberekening gebeurt

@@ -1,11 +1,11 @@
 <?php
 
 use App\Enums\UserRole;
-use App\Filament\Resources\Pages\Pages\EditPage;
 use App\Models\Page;
 use App\Models\User;
 use App\Services\Translation\TranslationMediaSync;
 use Livewire\Livewire;
+use Webgoeroe\Core\Filament\Resources\Pages\Pages\EditPage;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\artisan;

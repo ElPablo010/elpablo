@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use App\Support\Locale;
-use App\Support\Seo;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Webgoeroe\Core\Support\Locale;
+use Webgoeroe\Core\Support\Seo;
 
 /**
  * Mixtape/DJ-set als eigen posttype: één globale catalogus (taal-onafhankelijk —

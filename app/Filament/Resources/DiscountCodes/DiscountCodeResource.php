@@ -5,7 +5,6 @@ namespace App\Filament\Resources\DiscountCodes;
 use App\Enums\DiscountCodeType;
 use App\Filament\Resources\DiscountCodes\Pages\ManageDiscountCodes;
 use App\Models\DiscountCode;
-use App\Models\Event;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -27,7 +26,7 @@ class DiscountCodeResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedReceiptPercent;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Events';
+    protected static string|\UnitEnum|null $navigationGroup = 'Tickets';
 
     protected static ?int $navigationSort = 40;
 

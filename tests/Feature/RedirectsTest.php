@@ -3,6 +3,7 @@
 use App\Models\Redirect;
 use Database\Seeders\RedirectSeeder;
 use Illuminate\Support\Facades\Cache;
+use Webgoeroe\Core\Http\Middleware\HandleRedirects;
 
 /**
  * De oude WordPress-site (www.el-pablo.com) had 72 geïndexeerde URL's; de nieuwe
@@ -11,7 +12,7 @@ use Illuminate\Support\Facades\Cache;
  */
 beforeEach(function () {
     // De middleware cachet de volledige redirect-map 300s; per test vers beginnen.
-    Cache::forget(App\Http\Middleware\HandleRedirects::CACHE_KEY);
+    Cache::forget(HandleRedirects::CACHE_KEY);
 });
 
 it('redirects old WordPress URLs to their new counterpart', function (string $from, string $to) {

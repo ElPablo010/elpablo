@@ -5,11 +5,14 @@ namespace App\Filament\Resources\TicketTypes;
 use App\Filament\Resources\TicketTypes\Pages\ManageTicketTypes;
 use App\Models\TicketType;
 use BackedEnum;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 /**
@@ -23,7 +26,7 @@ class TicketTypeResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTicket;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Events';
+    protected static string|\UnitEnum|null $navigationGroup = 'Tickets';
 
     protected static ?int $navigationSort = 30;
 
@@ -85,25 +88,25 @@ class TicketTypeResource extends Resource
         return $table
             ->defaultSort('name')
             ->columns([
-                \Filament\Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label('Naam')
                     ->searchable()
                     ->sortable(),
-                \Filament\Tables\Columns\TextColumn::make('default_price')
+                TextColumn::make('default_price')
                     ->label('Standaardprijs')
                     ->money('EUR')
                     ->sortable(),
-                \Filament\Tables\Columns\TextColumn::make('default_vat_rate')
+                TextColumn::make('default_vat_rate')
                     ->label('Btw')
                     ->formatStateUsing(fn ($state): string => rtrim(rtrim(number_format((float) $state, 2, ',', '.'), '0'), ',').'%'),
             ])
             ->recordActions([
-                \Filament\Actions\EditAction::make()
+                EditAction::make()
                     ->button()
                     ->hiddenLabel()
                     ->color('primary')
                     ->tooltip('Bewerken'),
-                \Filament\Actions\DeleteAction::make()
+                DeleteAction::make()
                     ->button()
                     ->hiddenLabel()
                     ->tooltip('Verwijderen'),

@@ -1,7 +1,7 @@
 @props(['section' => null, 'content' => []])
 
 @php
-    $bg = \App\Filament\Schemas\Sections\SectionBackground::classes($content['background'] ?? null);
+    $bg = \Webgoeroe\Core\Filament\Schemas\Sections\SectionBackground::classes($content['background'] ?? null);
     $limit = (int) ($content['limit'] ?? 3);
 
     $events = \App\Models\Event::query()
@@ -67,7 +67,7 @@
             </div>
 
             <div class="mt-12">
-                <a href="{{ \App\Support\Locale::href('/events') }}" class="btn-secondary">
+                <a href="{{ \Webgoeroe\Core\Support\Locale::href('/events') }}" class="btn-secondary">
                     {{ filled($content['cta_label'] ?? null) ? $content['cta_label'] : __('Alle events') }}
                     <x-lucide-arrow-right class="h-4 w-4" />
                 </a>

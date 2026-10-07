@@ -18,7 +18,7 @@
         <div class="pointer-events-none absolute -top-32 -left-24 h-96 w-96 rounded-full bg-primary-600/20 blur-3xl"></div>
 
         <div class="relative mx-auto w-full max-w-7xl px-4 pb-24 pt-36 sm:pt-44 lg:px-6">
-            <a href="{{ \App\Support\Locale::href('/muziek') }}"
+            <a href="{{ \Webgoeroe\Core\Support\Locale::href('/muziek') }}"
                class="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-400 transition-colors hover:text-primary-500">
                 <x-lucide-arrow-left class="h-4 w-4" />
                 {{ __('Alle mixtapes') }}

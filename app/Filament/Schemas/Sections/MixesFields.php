@@ -6,6 +6,8 @@ use App\Models\Mixtape;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Utilities\Get;
+use Webgoeroe\Core\Filament\Schemas\Sections\CtaLinkSchema;
+use Webgoeroe\Core\Filament\Schemas\Sections\HeadingFields;
 
 /**
  * Mixes — muziek/sets van de DJ, met een inline audiospeler (afspelen op de

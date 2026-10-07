@@ -29,6 +29,52 @@ Kleurschaal staat in `resources/css/app.css` (`@theme`): volledige `primary`- en
 `secondary`-schaal. `SectionBackground` gebruikt `bg-primary-600` voor de
 merk-achtergrond.
 
+## Site-basis — package webgoeroe/core
+
+De basis (modellen, page-builder en core-blokken, media, menu's, redirects,
+header/footer/algemene instellingen, inzendingen, sitemap/robots/llms, de
+pagina-routes + catch-all, de taalbasis, contactformulier, admin-chrome) komt
+uit **`webgoeroe/core`** (code in `Internal OS/Modules/repo/core`, zie de README
+daar). Pas die nooit hier aan: een verbetering of fix gaat in de package, met een
+nieuwe versie. Hier blijft wat eigen is aan deze site:
+
+- **Design**: layout, header, footer, meta, cookiebanner, `admin-edit`, alle
+  sectieviews, `pages/show`, de formulierviews en de 404 in `resources/views`
+  (die gaan voor op de core). De "Bekijk website"-knop in de admin is de El
+  Pablo-variant: `resources/views/vendor/core/filament/admin/view-site.blade.php`.
+- **Modellen** in `app/Models` zijn dunne subklassen (`Page extends
+  Webgoeroe\Core\Models\Page`); `FormSubmission::TYPE_LABELS` (contact + booking)
+  staat hier. Events, tickets, mixtapes enz. zijn van deze site.
+- **`config/core.php`**: talen nl/en/es, uitgesloten paden voor de catch-all
+  (`events`, `mixtapes/`, `t/`, `stripe`), taalschakelaar (`/t/`, `/design/` →
+  home), geen host-redirect (www doet `.htaccess`), de donkere achtergronden
+  (`white` = standaard zwart), blokken zonder El Pablo-view uit (booking,
+  probleemherkenning, voordelen, werkwijze), blokopties (reviews zonder kolommen
+  en uitgelichte zin, cards zonder badge, tekst-en-media zonder beeldvorm, cta
+  zonder noot), formuliertype `booking`, favicon + "naam tonen" op Header/Footer,
+  geen LinkedIn, `normalize_empty_html` uit (aan haalt 5 lege intro-blokjes
+  `<p></p>` weg op home/muziek/over — beslissing Pieter).
+- **`AppServiceProvider`**: blokken `events` en `mixes`, de vertaallaag op de
+  core-schermen (`Core::pageTable()` → "Vertalen met AI" rij + bulk; listener op
+  `PageSectionsSaved` → `TranslationMediaSync`) en `ContentSeo::register()`.
+- **`App\Support\ContentSeo`**: events en mixtapes in sitemap.xml (met
+  hreflang) en llms.txt, en de macro's `Seo::fromEvent()`, `fromEventIndex()`,
+  `fromMixtape()`, `eventAlternates()`. `Seo::brandName()` komt uit de core.
+- **Menu's**: `App\Filament\Pages\ManageMenus` = core-pagina + knop "Vertalen
+  met AI" (`CorePlugin::make()->without(core ManageMenus)` in de PanelProvider).
+- **Blijft volledig hier**: events/tickets/Stripe (webhook, checkout,
+  ticketstatus, routes en controllers), mixtapes, Kit, de AI-vertaling
+  (`TranslateAction`, `Services/Translation`), `BookingForm`, `VideoEmbed`,
+  `AudioPickerField`.
+- **Sidebar**: Website = Pagina's, Events, Mixtapes, Media, Menu's, Redirects,
+  Header, Footer, Inzendingen (`NavigationOrder`); groep **Tickets** =
+  Bestellingen, Tickettypes, Kortingscodes, Scannen.
+- De standaardtests van de core draaien mee (`tests/Pest.php`, `phpunit.xml`).
+
+Composer: lokaal staat de core als path-repository (`../../../Modules/repo/core`,
+`@dev`). Vóór een deploy: core v0.3.0 pushen en de VCS-repository
+`ElPablo010/core` met `^0.3` zetten.
+
 ## Meertaligheid — aandachtspunt
 
 De site is meertalig (NL/EN/ES). Pagina's dragen een `locale` en koppelen via
@@ -42,8 +88,10 @@ Inter). Pagina's: Home, Over, Muziek (inline audiospelers + download), Boeken
 (apart boekingsformulier), Contact, + juridisch (Cookiebeleid, Privacybeleid).
 
 **Meertalig (NL/EN/ES)** is volledig opgezet én vertaald:
-- NL draait op de root; EN/ES onder `/en` en `/es` (zie `routes/web.php` +
-  `PublicPageController` + `App\Support\Locale`).
+- NL draait op de root; EN/ES onder `/en` en `/es`. De taalbasis
+  (`Webgoeroe\Core\Support\Locale`, de pagina-routes `/{locale}/…` en de
+  catch-all, hreflang) komt uit webgoeroe/core; events en mixtapes hebben eigen
+  routes in `routes/web.php`.
 - Pagina's delen dezelfde slug per taal (`unique(['locale','slug'])`); interne
   links worden gelokaliseerd via `Locale::href()`.
 - **Pagina-content** (koppen, teksten, FAQ, reviews, legal) is vertaald via een
@@ -53,7 +101,7 @@ Inter). Pagina's: Home, Over, Muziek (inline audiospelers + download), Boeken
 - **UI-chrome** (nav-labels, footer, cookiebanner, knoppen) via Laravel
   `lang/en.json` + `lang/es.json` met `__()`.
 - **Formulieren** (contact + boeking): labels, placeholders, keuzelijsten én
-  Livewire-validatieberichten vertaald. De trait `App\Livewire\Concerns\PersistsLocale`
+  Livewire-validatieberichten vertaald. De trait `Webgoeroe\Core\Livewire\Concerns\PersistsLocale`
   bewaart de locale in de component en herstelt ze bij élke Livewire-render, zodat
   de taal klopt ook na een re-render (Livewire post naar /livewire/update zonder
   locale-prefix).
@@ -87,10 +135,13 @@ De AI-vertaallaag uit ark-van-noe is geïnstalleerd via de `make-multilingual`-s
   en landen in `name_{locale}`/`description_{locale}` op `event_extras`.
 - **Menu's** (*Website → Menu's*): één set items voor alle talen, enkel het label
   (`label_en`/`label_es`) en de footertitel (`title_en`/`title_es`) verschillen.
-  Knop **"Vertalen met AI"** vult de EN/ES-velden in het formulier (nog niet in
-  de DB) — controleren en dan Opslaan. Leeg veld = terugval op `lang/{locale}.json`
+  De velden per taal komen uit de core (kolommen `label_en`/`label_es`,
+  `title_en`/`title_es`); de knop **"Vertalen met AI"** zit in de subklasse
+  `App\Filament\Pages\ManageMenus` en vult de EN/ES-velden in het formulier
+  (nog niet in de DB) — controleren en dan Opslaan. Leeg veld = terugval op `lang/{locale}.json`
   en daarna het NL-label (`MenuItem::labelFor()`, `Menu::titleFor()`).
-- **Media volgen altijd het NL-origineel** (`TranslationMediaSync`): bij elk
+- **Media volgen altijd het NL-origineel** (`TranslationMediaSync`, listener op
+  het core-event `PageSectionsSaved` in `AppServiceProvider`): bij elk
   opslaan van een NL-pagina gaan `src`/`image`/`image_url`/`video_url`/`cover_url`
   (+ `seo_image_url`) naar de EN/ES-vertalingen; nieuwe items in een fotolijst
   komen er integraal bij. Tekst blijft ongemoeid. Secties koppelen op
@@ -337,7 +388,7 @@ gratis-order-bypass is bewust niet gebouwd.
 **Tickets.** Bevestigingsmail in de taal van de koper (`SendTicketOrderEmailJob`,
 queue + dedupe per order, `force` voor opnieuw verzenden) met per ticket een
 PDF-bijlage (dompdf, QR als **SVG**-data-URI — geen imagick op Combell). QR wijst
-naar `/t/{token}` (publieke statuspagina). Check-in via **Events → Scannen**
+naar `/t/{token}` (publieke statuspagina). Check-in via **Tickets → Scannen**
 (html5-qrcode) of handmatig/omkeerbaar in de bestelling; `TicketScanner` kent
 ok/already/wrong_event/refunded/unpaid/not_found. Refund = actie op de
 bestelling (volledig, via Stripe; tickets worden ongeldig en geven capaciteit
@@ -345,8 +396,8 @@ vrij). Events afgelasten = toggle (blijft zichtbaar met banner, verkoop stopt;
 terugbetalen blijft handmatig per bestelling).
 
 **Publiek.** `/events` + `/events/{slug}` (+ `/en`, `/es`; gedeelde slug), routes
-vóór de catch-all én vóór de `{slug}`-route in de locale-groep. `Seo::fromEvent()`
-levert meta + schema.org `Event`/`Offer`-JSON-LD; hreflang volgt `hasContent()`.
+vóór de catch-all én vóór de `{slug}`-route van de core. `Seo::fromEvent()` (macro
+uit `App\Support\ContentSeo`) levert meta + schema.org `Event`/`Offer`-JSON-LD; hreflang volgt `hasContent()`.
 Sitemap en llms.txt nemen events mee. Sectieblok `events` (teaser aankomende
 events) is registreerbaar op elke pagina. Oude WP `/events/*`-URL's redirecten
 nu naar `/events` (de `/events`-redirect zelf wordt door de seeder verwijderd —
@@ -354,7 +405,7 @@ draai hem bij deploy).
 
 **Rich results — de drie valkuilen in `eventNode()`.** Search Console meldde
 (22/09/2026) twee ontbrekende velden; alle drie de punten hieronder leven in
-dezelfde functie in `app/Support/Seo.php`:
+dezelfde functie in `app/Support/ContentSeo.php`:
 
 - **`performer`** — de artiest. `Event::performerNames()` splitst het
   `lineup`-veld (*Basis*-tab, komma-gescheiden) en valt zonder line-up terug op

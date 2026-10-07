@@ -35,14 +35,14 @@
                 </p>
 
                 <div class="mt-9 flex flex-wrap gap-4">
-                    <a href="{{ \App\Support\Locale::href('/') }}" class="btn-primary">
+                    <a href="{{ \Webgoeroe\Core\Support\Locale::href('/') }}" class="btn-primary">
                         {{ __('Naar de homepage') }}
                         <x-lucide-arrow-right class="h-4 w-4" />
                     </a>
-                    <a href="{{ \App\Support\Locale::href('/muziek') }}" class="btn-secondary">
+                    <a href="{{ \Webgoeroe\Core\Support\Locale::href('/muziek') }}" class="btn-secondary">
                         {{ __('Beluister de mixes') }}
                     </a>
-                    <a href="{{ \App\Support\Locale::href('/boeken') }}" class="btn-ghost">
+                    <a href="{{ \Webgoeroe\Core\Support\Locale::href('/boeken') }}" class="btn-ghost">
                         {{ __('El Pablo boeken') }}
                     </a>
                 </div>

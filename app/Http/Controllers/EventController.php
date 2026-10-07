@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use App\Enums\OrderStatus;
 use App\Models\Event;
 use App\Models\TicketOrder;
-use App\Support\Locale;
-use App\Support\Seo;
+use App\Services\TicketOrderFulfillment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
+use Webgoeroe\Core\Support\Locale;
+use Webgoeroe\Core\Support\Seo;
 
 class EventController extends Controller
 {
@@ -68,7 +69,7 @@ class EventController extends Controller
         $order = null;
 
         if ($sessionId !== '') {
-            rescue(fn () => app(\App\Services\TicketOrderFulfillment::class)->completeFromStripeSessionId($sessionId));
+            rescue(fn () => app(TicketOrderFulfillment::class)->completeFromStripeSessionId($sessionId));
 
             $order = TicketOrder::query()
                 ->where('stripe_session_id', $sessionId)
@@ -89,7 +90,7 @@ class EventController extends Controller
     {
         $locale = Locale::isSupported($request->route('locale'))
             ? $request->route('locale')
-            : Locale::DEFAULT;
+            : Locale::defaultLocale();
         app()->setLocale($locale);
 
         return $locale;

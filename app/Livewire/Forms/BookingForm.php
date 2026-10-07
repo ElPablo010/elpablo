@@ -2,13 +2,13 @@
 
 namespace App\Livewire\Forms;
 
-use App\Livewire\Concerns\PersistsLocale;
-use App\Mail\FormSubmissionMail;
 use App\Models\FormSubmission;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
+use Webgoeroe\Core\Livewire\Concerns\PersistsLocale;
+use Webgoeroe\Core\Mail\FormSubmissionMail;
 
 /**
  * Boekingsformulier — de primaire conversie. Vangt meteen de info voor een

@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-use App\Support\Locale;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Webgoeroe\Core\Support\Locale;
 
 /**
  * Een extra bij een bestelling — een gratis groepstafel, later bijvoorbeeld een

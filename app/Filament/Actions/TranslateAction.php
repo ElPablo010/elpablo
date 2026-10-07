@@ -6,7 +6,6 @@ use App\Jobs\TranslateRecordJob;
 use App\Models\User;
 use App\Services\Translation\TranslateRecord;
 use App\Services\Translation\TranslationException;
-use App\Support\Locale;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Forms\Components\Select;
@@ -19,6 +18,7 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Throwable;
+use Webgoeroe\Core\Support\Locale;
 
 /**
  * De "Vertalen met AI"-knoppen in de admin, in twee smaken. Welke vertaler bij
@@ -174,14 +174,14 @@ class TranslateAction
     private static function isSource(Model $record): bool
     {
         return $record->getAttribute('translation_of') === null
-            && Locale::others($record->getAttribute('locale') ?? Locale::DEFAULT) !== [];
+            && Locale::others($record->getAttribute('locale') ?? Locale::defaultLocale()) !== [];
     }
 
     private static function localeSelect(): Select
     {
         $options = [];
 
-        foreach (Locale::others(Locale::DEFAULT) as $locale) {
+        foreach (Locale::others(Locale::defaultLocale()) as $locale) {
             $options[$locale] = Locale::name($locale);
         }
 

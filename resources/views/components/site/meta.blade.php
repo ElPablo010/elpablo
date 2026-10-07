@@ -14,10 +14,10 @@
 ])
 
 @php
-    $title = $title ?? \App\Support\Seo::siteName();
-    $description = $description ?? \App\Support\Seo::defaultDescription();
-    $ogImage = \App\Support\Seo::absoluteUrl($image);
-    $favicon = \App\Support\SiteHeader::current()['favicon'] ?? null;
+    $title = $title ?? \Webgoeroe\Core\Support\Seo::siteName();
+    $description = $description ?? \Webgoeroe\Core\Support\Seo::defaultDescription();
+    $ogImage = \Webgoeroe\Core\Support\Seo::absoluteUrl($image);
+    $favicon = \Webgoeroe\Core\Support\SiteHeader::current()['favicon'] ?? null;
 @endphp
 
 <title>{{ $title }}</title>
@@ -51,11 +51,11 @@
 
 {{-- Open Graph (Facebook, LinkedIn, WhatsApp, …) --}}
 <meta property="og:type" content="{{ $type }}">
-<meta property="og:site_name" content="{{ \App\Support\Seo::siteName() }}">
-<meta property="og:locale" content="{{ \App\Support\Seo::ogLocale($locale) }}">
+<meta property="og:site_name" content="{{ \Webgoeroe\Core\Support\Seo::siteName() }}">
+<meta property="og:locale" content="{{ \Webgoeroe\Core\Support\Seo::ogLocale($locale) }}">
 @foreach ($alternates as $altLocale => $altUrl)
     @if ($altLocale !== $locale)
-        <meta property="og:locale:alternate" content="{{ \App\Support\Seo::ogLocale($altLocale) }}">
+        <meta property="og:locale:alternate" content="{{ \Webgoeroe\Core\Support\Seo::ogLocale($altLocale) }}">
     @endif
 @endforeach
 <meta property="og:title" content="{{ $title }}">
@@ -84,5 +84,5 @@
 
 {{-- Structured data (schema.org JSON-LD) — site-breed + pagina-specifiek in één @graph. --}}
 @if (! empty($graph))
-    <script type="application/ld+json">{!! \App\Support\Seo::jsonLd($graph) !!}</script>
+    <script type="application/ld+json">{!! \Webgoeroe\Core\Support\Seo::jsonLd($graph) !!}</script>
 @endif

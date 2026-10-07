@@ -3,8 +3,6 @@
 namespace App\Models;
 
 use App\Enums\TicketDiscountType;
-use App\Support\Locale;
-use App\Support\Seo;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -13,6 +11,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
+use Webgoeroe\Core\Support\Locale;
+use Webgoeroe\Core\Support\Seo;
 
 #[Fillable([
     'slug',
@@ -325,7 +325,7 @@ class Event extends Model
     {
         $locale ??= Locale::current();
 
-        if ($locale === Locale::DEFAULT) {
+        if ($locale === Locale::defaultLocale()) {
             return $this->{$field};
         }
 

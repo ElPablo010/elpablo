@@ -1,9 +1,9 @@
 @php
-    use App\Support\Locale;
+    use Webgoeroe\Core\Support\Locale;
 
     // Dark nightlife-footer. Leest instellingen uit de admin (Footer-pagina) +
     // de footermenu's uit de DB.
-    $footer = \App\Support\SiteFooter::current();
+    $footer = \Webgoeroe\Core\Support\SiteFooter::current();
     $contact = $footer['contact'] ?? [];
     $brand = $footer['brand'] ?? [];
     $social = array_filter($footer['social'] ?? []);

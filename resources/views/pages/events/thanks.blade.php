@@ -69,7 +69,7 @@
             @endif
 
             <div class="mt-10">
-                <a href="{{ \App\Support\Locale::href('/events') }}" class="btn-secondary">
+                <a href="{{ \Webgoeroe\Core\Support\Locale::href('/events') }}" class="btn-secondary">
                     <x-lucide-arrow-left class="h-4 w-4" />
                     {{ __('Alle events') }}
                 </a>

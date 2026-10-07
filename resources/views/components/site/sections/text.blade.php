@@ -1,7 +1,7 @@
 @props(['section' => null, 'content' => []])
 
 @php
-    $bg = \App\Filament\Schemas\Sections\SectionBackground::classes($content['background'] ?? null);
+    $bg = \Webgoeroe\Core\Filament\Schemas\Sections\SectionBackground::classes($content['background'] ?? null);
 
     // Kopniveau volgt de plaats op de pagina: staat deze sectie bovenaan (juridische
     // pagina's, die geen hero hebben), dan is dit de H1. Komt er een sectie vóór —

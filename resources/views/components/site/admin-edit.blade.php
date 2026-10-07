@@ -2,7 +2,7 @@
 
 @php
     use App\Enums\UserRole;
-    use App\Filament\Resources\Pages\PageResource;
+    use Webgoeroe\Core\Filament\Resources\Pages\PageResource;
 
     // Zelfde poort als Filament zelf hanteert (User::canAccessPanel): enkel de
     // Admin-rol. Een ingelogde niet-admin krijgt de knop dus niet te zien.

@@ -1,7 +1,9 @@
 <?php
 
+use App\Enums\UserRole;
 use App\Models\Page;
 use App\Models\User;
+use Webgoeroe\Core\Filament\Resources\Pages\PageResource;
 
 /**
  * De frontend toont voor ingelogde beheerders een snelkoppeling naar de admin,
@@ -37,7 +39,7 @@ it('hides the admin shortcut from logged-in non-admins', function () {
 
     // Staff mag niet op het Filament-paneel (zie User::canAccessPanel), dus ook
     // de snelkoppeling ernaartoe hoort verborgen te blijven.
-    $this->actingAs(User::factory()->create(['role' => App\Enums\UserRole::Staff]))
+    $this->actingAs(User::factory()->create(['role' => UserRole::Staff]))
         ->get('/')
         ->assertOk()
         ->assertDontSee('Bewerk deze pagina');
@@ -50,7 +52,7 @@ it('shows the admin shortcut linking to the edit screen of the current page', fu
         ->get('/')
         ->assertOk()
         ->assertSee('Bewerk deze pagina')
-        ->assertSee(App\Filament\Resources\Pages\PageResource::getUrl('edit', ['record' => $page]), escape: false);
+        ->assertSee(PageResource::getUrl('edit', ['record' => $page]), escape: false);
 });
 
 it('falls back to the page overview when there is no page (404)', function () {
@@ -58,5 +60,5 @@ it('falls back to the page overview when there is no page (404)', function () {
         ->get('/bestaat-niet')
         ->assertNotFound()
         ->assertSee('Naar de admin')
-        ->assertSee(App\Filament\Resources\Pages\PageResource::getUrl('index'), escape: false);
+        ->assertSee(PageResource::getUrl('index'), escape: false);
 });

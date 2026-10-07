@@ -1,7 +1,7 @@
 @props(['section' => null, 'content' => []])
 
 @php
-    $bg = \App\Filament\Schemas\Sections\SectionBackground::classes($content['background'] ?? null);
+    $bg = \Webgoeroe\Core\Filament\Schemas\Sections\SectionBackground::classes($content['background'] ?? null);
     $mediaType = $content['media_type'] ?? 'image';
     $mediaSide = $content['media_side'] ?? 'right';
     $ctas = $content['ctas'] ?? [];
@@ -34,7 +34,7 @@
             @if (! empty($ctas))
                 <div class="mt-8 flex flex-wrap gap-4">
                     @foreach ($ctas as $cta)
-                        <a href="{{ \App\Support\Locale::href($cta['href'] ?? '/') }}" class="{{ $btnClass($cta['variant'] ?? 'primary') }}">{{ $cta['label'] ?? '' }}</a>
+                        <a href="{{ \Webgoeroe\Core\Support\Locale::href($cta['href'] ?? '/') }}" class="{{ $btnClass($cta['variant'] ?? 'primary') }}">{{ $cta['label'] ?? '' }}</a>
                     @endforeach
                 </div>
             @endif

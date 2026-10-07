@@ -3,7 +3,7 @@
 namespace App\Filament\Concerns;
 
 use App\Models\Event;
-use App\Support\Locale;
+use Webgoeroe\Core\Support\Locale;
 
 /**
  * Gedeelde vorm-logica voor de Create- en Edit-pagina van events:
@@ -26,7 +26,7 @@ trait ManagesEventFormData
         $data['is_cancelled'] = filled($data['cancelled_at'] ?? null);
 
         foreach (Locale::supported() as $locale) {
-            if ($locale === Locale::DEFAULT) {
+            if ($locale === Locale::defaultLocale()) {
                 continue;
             }
 

@@ -1,20 +1,20 @@
 @props(['page' => null])
 
 @php
-    use App\Support\Locale;
+    use Webgoeroe\Core\Support\Locale;
 
     // Zwevende "pill"-header: een afgeronde balk met een eigen halftransparante
     // achtergrond + rand, die over de content zweeft. Zo blijft de nav-tekst
     // altijd leesbaar (ook boven een lichte hero of over content bij het scrollen).
     // Wordt iets meer opaak zodra je scrolt.
-    $header = \App\Support\SiteHeader::current();
+    $header = \Webgoeroe\Core\Support\SiteHeader::current();
     $menu = \App\Models\Menu::where('location', 'main')->with('items.children')->first();
     $cta = $header['cta'] ?? [];
 
     // Taalschakelaar — meertalig (NL/EN/ES). De schakelaar linkt naar dezelfde
     // pagina in de doeltaal (zelfde slug per taal). Het basis-pad komt uit het
     // request, zodat ook niet-builder-pagina's (events) correct wisselen.
-    $locales = Locale::LABELS;
+    $locales = Locale::labels();
     $currentLocale = Locale::current();
     $switchBase = Locale::switchBase();
 @endphp

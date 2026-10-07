@@ -1,7 +1,8 @@
 {{--
-    "Bekijk website"-knop in de topbalk van de admin — altijd zichtbaar, op
-    elke pagina. Filament's icon-button-component zorgt voor de juiste
-    hover/focus-styling in licht én donker thema.
+    "Bekijk website"-knop in de topbalk van de admin (El Pablo-variant van de
+    core-knop): altijd zichtbaar, op elke pagina, in de merkkleur. Filament's
+    icon-button-component zorgt voor de juiste hover/focus-styling in licht én
+    donker thema.
 --}}
 {{-- Inline-marge: de app-Tailwind wordt niet in de Filament-bundle geladen,
      dus ademruimte t.o.v. het accountmenu zetten we expliciet. --}}
@@ -15,5 +16,5 @@
     tooltip="Bekijk website"
     color="primary"
     size="lg"
-    style="margin-inline-start: 0.75rem;"
+    style="margin-inline-end: 0.5rem;"
 />

@@ -116,7 +116,7 @@
                 <div class="font-semibold text-white">{{ __('Wij respecteren jouw privacy') }}</div>
                 <p class="mt-1 text-sm text-gray-400">
                     {{ __('We gebruiken cookies om onze site goed te laten werken en, met jouw toestemming, om bezoekersstatistieken te verzamelen. Lees ons') }}
-                    <a href="{{ \App\Support\Locale::href('/cookiebeleid') }}" class="text-primary-400 hover:underline">{{ __('cookiebeleid') }}</a> {{ __('voor meer info.') }}
+                    <a href="{{ \Webgoeroe\Core\Support\Locale::href('/cookiebeleid') }}" class="text-primary-400 hover:underline">{{ __('cookiebeleid') }}</a> {{ __('voor meer info.') }}
                 </p>
             </div>
         </div>

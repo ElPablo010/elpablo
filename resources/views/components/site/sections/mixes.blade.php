@@ -1,7 +1,7 @@
 @props(['section' => null, 'content' => []])
 
 @php
-    $bg = \App\Filament\Schemas\Sections\SectionBackground::classes($content['background'] ?? null);
+    $bg = \Webgoeroe\Core\Filament\Schemas\Sections\SectionBackground::classes($content['background'] ?? null);
 
     // Mixtapes zijn een eigen posttype (Website → Mixtapes). "Toon alle
     // mixtapes" volgt de versleepbare volgorde uit de admin; een handmatige
@@ -134,7 +134,7 @@
         @if (! empty($ctas))
             <div class="mt-12 flex flex-wrap justify-center gap-4">
                 @foreach ($ctas as $cta)
-                    <a href="{{ \App\Support\Locale::href($cta['href'] ?? '/') }}" class="{{ $btnClass($cta['variant'] ?? 'secondary') }}">
+                    <a href="{{ \Webgoeroe\Core\Support\Locale::href($cta['href'] ?? '/') }}" class="{{ $btnClass($cta['variant'] ?? 'secondary') }}">
                         {{ $cta['label'] ?? '' }}
                         <x-lucide-arrow-right class="h-4 w-4" />
                     </a>

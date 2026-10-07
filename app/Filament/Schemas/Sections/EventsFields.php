@@ -5,6 +5,7 @@ namespace App\Filament\Schemas\Sections;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Grid;
+use Webgoeroe\Core\Filament\Schemas\Sections\HeadingFields;
 
 /**
  * Events — teaser van de eerstvolgende events (uit het Events-posttype), met

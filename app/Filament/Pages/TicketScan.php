@@ -9,6 +9,7 @@ use App\Services\TicketScanner;
 use BackedEnum;
 use Carbon\Carbon;
 use Filament\Pages\Page;
+use Filament\Support\Icons\Heroicon;
 use UnitEnum;
 
 /**
@@ -18,9 +19,9 @@ use UnitEnum;
  */
 class TicketScan extends Page
 {
-    protected static string|BackedEnum|null $navigationIcon = \Filament\Support\Icons\Heroicon::OutlinedQrCode;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedQrCode;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Events';
+    protected static string|UnitEnum|null $navigationGroup = 'Tickets';
 
     protected static ?string $navigationLabel = 'Scannen';
 

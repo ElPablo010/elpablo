@@ -29,7 +29,9 @@
     <div @class(['pt-10 md:pt-16 lg:pt-20' => ! $startsWithHero])>
     @foreach ($page->sections as $section)
         @php
-            $componentName = 'site.sections.' . str_replace('_', '-', $section->section_type);
+            // Sectieview uit dit project (components/site/sections/<type>), anders
+            // de standaardview van de core; null = geen view → niets renderen.
+            $componentName = \Webgoeroe\Core\Support\Views::section($section->section_type);
             $content = $section->content ?? [];
             $anchorId = $content['section_id'] ?? null;
 
@@ -45,11 +47,13 @@
             <div id="{{ $anchorId }}" class="scroll-mt-32"></div>
         @endif
 
-        <x-dynamic-component
-            :component="$componentName"
-            :section="$section"
-            :content="$content"
-        />
+        @if ($componentName)
+            <x-dynamic-component
+                :component="$componentName"
+                :section="$section"
+                :content="$content"
+            />
+        @endif
     @endforeach
     </div>
 </x-layouts.site>

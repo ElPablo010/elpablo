@@ -46,7 +46,7 @@ return [
             // het dev-domein in de database gebakken en breekt élke afbeelding
             // zodra de site naar het echte domein verhuist. '/storage' werkt op
             // elke omgeving zonder DB-aanpassing. Voor og:image/canonical maakt
-            // App\Support\Seo::absolute() er alsnog een volledige URL van.
+            // Webgoeroe\Core\Support\Seo::absolute() er alsnog een volledige URL van.
             'url' => '/storage',
             'visibility' => 'public',
             'throw' => false,

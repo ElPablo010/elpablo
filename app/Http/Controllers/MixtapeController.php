@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Mixtape;
-use App\Support\Locale;
-use App\Support\Seo;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
+use Webgoeroe\Core\Support\Locale;
+use Webgoeroe\Core\Support\Seo;
 
 /**
  * Publieke detailpagina per mixtape — een deelbare URL (social/mail) met eigen
@@ -20,7 +20,7 @@ class MixtapeController extends Controller
     {
         $locale = Locale::isSupported($request->route('locale'))
             ? $request->route('locale')
-            : Locale::DEFAULT;
+            : Locale::defaultLocale();
         app()->setLocale($locale);
 
         $mixtape = Mixtape::query()

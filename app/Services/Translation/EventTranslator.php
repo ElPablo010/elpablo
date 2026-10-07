@@ -3,7 +3,7 @@
 namespace App\Services\Translation;
 
 use App\Models\Event;
-use App\Support\Locale;
+use Webgoeroe\Core\Support\Locale;
 
 /**
  * Vertaalt de tekstvelden van een event naar de rijen in `event_translations`.
@@ -46,7 +46,7 @@ class EventTranslator
 
         $translated = $this->translator->translate(
             $texts,
-            Locale::DEFAULT,
+            Locale::defaultLocale(),
             $toLocale,
             context: 'Event page for an Urban Latin DJ (name, short teaser, full description, plus the names and descriptions of optional extras such as a group table). The description may contain HTML — keep all tags and attributes exactly as they are.',
         );

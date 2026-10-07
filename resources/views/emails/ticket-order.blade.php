@@ -9,7 +9,7 @@
              bestaat alleen bij echt verzenden — bij render() valt de embed terug
              op een absolute URL. --}}
         @php
-            $emailHeader = \App\Support\SiteHeader::current();
+            $emailHeader = \Webgoeroe\Core\Support\SiteHeader::current();
             $logoUrl = $emailHeader['logo'] ?? null;
             $logoPath = null;
             if (filled($logoUrl)) {

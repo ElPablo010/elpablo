@@ -3,12 +3,9 @@
 namespace App\Filament\Resources\Events\Schemas;
 
 use App\Enums\TicketDiscountType;
-use App\Filament\Schemas\Components\MediaPickerField;
 use App\Models\EventExtra;
 use App\Models\EventTicketType;
 use App\Models\TicketType;
-use App\Support\Locale;
-use App\Support\Seo;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
@@ -24,6 +21,9 @@ use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
+use Webgoeroe\Core\Filament\Schemas\Components\MediaPickerField;
+use Webgoeroe\Core\Support\Locale;
+use Webgoeroe\Core\Support\Seo;
 
 class EventForm
 {
@@ -388,11 +388,11 @@ class EventForm
         $fields = [];
 
         foreach (Locale::supported() as $locale) {
-            if ($locale === Locale::DEFAULT) {
+            if ($locale === Locale::defaultLocale()) {
                 continue;
             }
 
-            $label = Locale::LABELS[$locale] ?? strtoupper($locale);
+            $label = Locale::labels()[$locale] ?? strtoupper($locale);
 
             $fields[] = TextInput::make("name_{$locale}")
                 ->label("Naam ({$label})")
@@ -417,11 +417,11 @@ class EventForm
         $fieldsets = [];
 
         foreach (Locale::supported() as $locale) {
-            if ($locale === Locale::DEFAULT) {
+            if ($locale === Locale::defaultLocale()) {
                 continue;
             }
 
-            $fieldsets[] = Fieldset::make(Locale::LABELS[$locale] ?? strtoupper($locale))
+            $fieldsets[] = Fieldset::make(Locale::labels()[$locale] ?? strtoupper($locale))
                 ->statePath("translations.{$locale}")
                 ->columns(1)
                 ->schema([
