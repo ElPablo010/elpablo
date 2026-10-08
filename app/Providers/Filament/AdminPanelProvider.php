@@ -30,6 +30,9 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            // Meldingen van achtergrondjobs (bv. "vertaling klaar" na een bulk-
+            // vertaling, TranslateAction::sendToDatabase) komen in de bel rechtsboven.
+            ->databaseNotifications()
             ->colors([
                 'primary' => Color::hex('#E01B4B'),
             ])

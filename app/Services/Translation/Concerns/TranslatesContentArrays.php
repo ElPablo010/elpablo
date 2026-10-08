@@ -22,7 +22,7 @@ trait TranslatesContentArrays
     private array $skipKeys = [
         // Verwijzingen en identificatie
         'page_id', 'event_ids', 'mixtape_ids', 'program_ids', 'media_id', 'media_ids',
-        'section_id', 'section_type', 'form_type', 'link_type', 'id', 'type',
+        'section_id', 'section_type', 'form_type', 'link_type', 'id', 'type', 'provider',
         'bookeo_account_id', 'key', 'slug',
 
         // Media en links
@@ -34,6 +34,7 @@ trait TranslatesContentArrays
         'media_side', 'media_type', 'mode', 'shape', 'source', 'specs_display',
         'style', 'theme', 'third_type', 'variant', 'accent', 'badge_color',
         'text_align', 'image_position', 'position', 'height', 'padding',
+        'image_layout', 'media_shape', 'form_layout',
 
         // Getallen en schakelaars
         'heading_level', 'max_visible', 'show_all', 'show_filters', 'new_tab', 'rating',

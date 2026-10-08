@@ -130,8 +130,11 @@ De AI-vertaallaag uit ark-van-noe is geïnstalleerd via de `make-multilingual`-s
 - **Events**: `EventTranslator` schrijft naar de bestaande `event_translations`-rijen
   (naam, korte + lange beschrijving; HTML blijft intact).
 - **API-sleutel**: `Setting 'anthropic_api_key'` (Instellingen → Algemeen, gedeeld
-  met de SEO-adviseur); `.env ANTHROPIC_API_KEY` is de terugval. Model via
-  `ANTHROPIC_MODEL` (default `claude-opus-5`).
+  met de SEO-adviseur); `.env ANTHROPIC_API_KEY` is de terugval. Modellen in
+  `config/services.php` → `anthropic.models`: vertalen = `bulk` (default Haiku 4.5,
+  `ANTHROPIC_MODEL_BULK`), denkwerk = `reasoning` (`ANTHROPIC_MODEL_REASONING`).
+- **Meldingen**: de bulkvertaling meldt "klaar" via `sendToDatabase`; daarvoor staan
+  `->databaseNotifications()` in de panel-provider en de `notifications`-tabel.
 - **Harde regel**: nieuw sectieveld dat géén tekst is (kleur, layout, id, URL)?
   Voeg de sleutel toe aan `$skipKeys` in
   `app/Services/Translation/Concerns/TranslatesContentArrays.php`, anders wordt
