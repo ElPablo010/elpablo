@@ -140,9 +140,9 @@ class PageTranslator
             ...$attributes,
             'locale' => $toLocale,
             'translation_of' => $source->id,
-            // Gedeelde slug per taal (unique op [locale, slug]): een interne
-            // link wordt gelokaliseerd door enkel de prefix (Locale::href),
-            // dus de vertaling MOET dezelfde slug dragen als de bron.
+            // Een nieuwe vertaling start met dezelfde slug als de bron. Sinds core
+            // 0.7 mag je die daarna in de admin aanpassen (bv. /en/about): links,
+            // menu's, taalschakelaar en sitemap volgen de eigen slug.
             'slug' => $source->slug,
         ]);
     }
