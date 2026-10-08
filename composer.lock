@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a4b270e7aed5a2a02af54ebf359a90be",
+    "content-hash": "1c830b4c2319a74eaa155fb70de93325",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -9194,11 +9194,17 @@
         },
         {
             "name": "webgoeroe/core",
-            "version": "dev-main",
-            "dist": {
-                "type": "path",
-                "url": "../../../Modules/repo/core",
+            "version": "v0.3.0",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:ElPablo010/core.git",
                 "reference": "f8c7edfe53feb7ee58c2e7fd30634f919b743998"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ElPablo010/core/zipball/f8c7edfe53feb7ee58c2e7fd30634f919b743998",
+                "reference": "f8c7edfe53feb7ee58c2e7fd30634f919b743998",
+                "shasum": ""
             },
             "require": {
                 "filament/filament": "^5.0",
@@ -9225,10 +9231,11 @@
                 "proprietary"
             ],
             "description": "Site-basis van De WebGoeroe: page-builder met blokken, media, menu's, redirects, header/footer, SEO (sitemap, robots, llms.txt, JSON-LD) en formulieren voor Laravel + Filament-sites.",
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
+            "support": {
+                "source": "https://github.com/ElPablo010/core/tree/v0.3.0",
+                "issues": "https://github.com/ElPablo010/core/issues"
+            },
+            "time": "2026-10-07T13:01:52+00:00"
         },
         {
             "name": "webgoeroe/seo-growth",
@@ -12846,9 +12853,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "webgoeroe/core": 20
-    },
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
