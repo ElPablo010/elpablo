@@ -92,10 +92,7 @@ return [
         'show_name' => true,
     ],
 
-    'content' => [
-        // Uit, zoals vóór de omzetting: lege tekstvelden ("<p></p>") renderen
-        // zoals ze opgeslagen zijn.
-        'normalize_empty_html' => false,
-    ],
+    // Lege tekstvelden ("<p></p>") gelden als leeg: core-standaard op elke
+    // site (beslissing Pieter, 8 oktober 2026).
 
 ];
