@@ -52,8 +52,8 @@ nieuwe versie. Hier blijft wat eigen is aan deze site:
   probleemherkenning, voordelen, werkwijze), blokopties (reviews zonder kolommen
   en uitgelichte zin, cards zonder badge, tekst-en-media zonder beeldvorm, cta
   zonder noot), formuliertype `booking`, favicon + "naam tonen" op Header/Footer,
-  geen LinkedIn, `normalize_empty_html` uit (aan haalt 5 lege intro-blokjes
-  `<p></p>` weg op home/muziek/over — beslissing Pieter).
+  geen LinkedIn. Lege tekstvelden (`<p></p>`) gelden als leeg (core-standaard,
+  sinds 8 oktober 2026).
 - **`AppServiceProvider`**: blokken `events` en `mixes`, de vertaallaag op de
   core-schermen (`Core::pageTable()` → "Vertalen met AI" rij + bulk; listener op
   `PageSectionsSaved` → `TranslationMediaSync`) en `ContentSeo::register()`.
@@ -79,9 +79,9 @@ nieuwe versie. Hier blijft wat eigen is aan deze site:
   doet Combell zelf, vóór PHP.
   staging.el-pablo.com blijft ongemoeid (andere host).
 
-Composer: op branch `core-0.5` staat de core als path-repository (`../../../Modules/repo/core`,
-`@dev`, core v0.5.0 lokaal getagd). Vóór een deploy: core v0.5.0 pushen en de
-VCS-repository `ElPablo010/core` met `^0.5` zetten.
+Composer: `webgoeroe/core` `^0.7` via de VCS-repository `ElPablo010/core` (private).
+Core 0.7: een niet-gepubliceerde vertaling stuurt tijdelijk (302) door naar de
+NL-pagina, en een vertaling mag een eigen slug hebben (bv. `/en/about`).
 
 ## Meertaligheid — aandachtspunt
 
@@ -100,8 +100,9 @@ Inter). Pagina's: Home, Over, Muziek (inline audiospelers + download), Boeken
   (`Webgoeroe\Core\Support\Locale`, de pagina-routes `/{locale}/…` en de
   catch-all, hreflang) komt uit webgoeroe/core; events en mixtapes hebben eigen
   routes in `routes/web.php`.
-- Pagina's delen dezelfde slug per taal (`unique(['locale','slug'])`); interne
-  links worden gelokaliseerd via `Locale::href()`.
+- Een vertaling start met dezelfde slug als de NL-pagina, maar mag een eigen slug
+  krijgen (`unique(['locale','slug'])`); interne links, menu's, taalschakelaar,
+  hreflang en sitemap volgen die via `Locale::href()` (core 0.7).
 - **Pagina-content** (koppen, teksten, FAQ, reviews, legal) is vertaald via een
   vertaalmap in `HomepageSeeder` (`contentTranslations()`): NL blijft de bron, de
   EN/ES-secties krijgen de vertaalde waarden. Legal-bodies via `cookieBody()`/
@@ -124,8 +125,8 @@ De AI-vertaallaag uit ark-van-noe is geïnstalleerd via de `make-multilingual`-s
   scheduler start elke minuut `queue:work --stop-when-empty` — live is daarvoor de
   bestaande `schedule:run`-cron genoeg). Klaar-melding in het belletje.
 - **Pagina's**: `PageTranslator` vertaalt paginavelden + sectie-JSON en bewaart de
-  vertaling als gekoppelde rij met **dezelfde slug** (gedeelde slug per taal —
-  links lokaliseren bij het renderen via `Locale::href()`, dus opgeslagen
+  vertaling als gekoppelde rij die start met **dezelfde slug** (aanpasbaar in de
+  admin; links lokaliseren bij het renderen via `Locale::href()`, dus opgeslagen
   `href`/`page_id` blijven bewust NL-vormig; er is géén link-remapping zoals in ark).
 - **Events**: `EventTranslator` schrijft naar de bestaande `event_translations`-rijen
   (naam, korte + lange beschrijving; HTML blijft intact).
