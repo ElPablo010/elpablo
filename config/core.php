@@ -29,12 +29,6 @@ return [
         'exclude' => ['admin', 'login', 'livewire', 'storage', '_debugbar', 'design', 'events', 'mixtapes/', 't/', 'stripe'],
     ],
 
-    // Geen host-redirect vanuit de app: el-pablo.com → www regelt
-    // public/.htaccess (vastgepind op het apex-domein, staging gaat niet mee).
-    'middleware' => [
-        'canonical_host' => false,
-    ],
-
     // Donker nightlife-design: elke achtergrond is donker. De sleutels zijn
     // historisch (`white` = de standaard zwarte achtergrond): nooit hernoemen.
     'backgrounds' => [

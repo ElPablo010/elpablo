@@ -47,7 +47,7 @@ nieuwe versie. Hier blijft wat eigen is aan deze site:
   staat hier. Events, tickets, mixtapes enz. zijn van deze site.
 - **`config/core.php`**: talen nl/en/es, uitgesloten paden voor de catch-all
   (`events`, `mixtapes/`, `t/`, `stripe`), taalschakelaar (`/t/`, `/design/` →
-  home), geen host-redirect (www doet `.htaccess`), de donkere achtergronden
+  home), de donkere achtergronden
   (`white` = standaard zwart), blokken zonder El Pablo-view uit (booking,
   probleemherkenning, voordelen, werkwijze), blokopties (reviews zonder kolommen
   en uitgelichte zin, cards zonder badge, tekst-en-media zonder beeldvorm, cta
@@ -71,9 +71,17 @@ nieuwe versie. Hier blijft wat eigen is aan deze site:
   Bestellingen, Tickettypes, Kortingscodes, Scannen.
 - De standaardtests van de core draaien mee (`tests/Pest.php`, `phpunit.xml`).
 
-Composer: lokaal staat de core als path-repository (`../../../Modules/repo/core`,
-`@dev`). Vóór een deploy: core v0.3.0 pushen en de VCS-repository
-`ElPablo010/core` met `^0.3` zetten.
+- **Eén hoofd-URL** (core 0.5, `RedirectToCanonicalUrl`, globaal): hoofdhost =
+  host van `APP_URL` (`www.el-pablo.com`). `el-pablo.com`, `/index.php(/…)` en een slash achteraan
+  gaan in één 301 naar de canonieke URL (ook `/admin`, 404's; enkel GET/HEAD; niet
+  lokaal/in tests). Daarom géén www- of trailing-slash-regels in `public/.htaccess`
+  en geen statische `public/robots.txt` (robots komt uit de core). http → https
+  doet Combell zelf, vóór PHP.
+  staging.el-pablo.com blijft ongemoeid (andere host).
+
+Composer: op branch `core-0.5` staat de core als path-repository (`../../../Modules/repo/core`,
+`@dev`, core v0.5.0 lokaal getagd). Vóór een deploy: core v0.5.0 pushen en de
+VCS-repository `ElPablo010/core` met `^0.5` zetten.
 
 ## Meertaligheid — aandachtspunt
 

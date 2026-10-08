@@ -91,6 +91,7 @@ it('feeds the admin media thumbnail an absolute url', function () {
 
     $this->actingAs(admin());
 
+    // Sinds core 0.5 rendert een eigen kaart-view (media-card) de thumbnail.
     Livewire::test(ListWebsiteMedia::class)
-        ->assertTableColumnStateSet('thumbnail', url('/storage/website-media/foo.webp'), $media);
+        ->assertSeeHtml('src="'.url('/storage/website-media/foo.webp').'"');
 });
