@@ -44,10 +44,9 @@ return [
     ],
 
     'blocks' => [
-        // Geen El Pablo-view (nog): agenda, probleemherkenning, voordelen en
-        // werkwijze. De standaardviews van de core zijn licht en hun classes
-        // zitten niet in de Tailwind-build van deze site.
-        'disabled' => ['booking', 'problem_recognition', 'advantages', 'process_steps'],
+        // Geen El Pablo-view (nog): agenda. De standaardview van de core is
+        // licht en haar classes zitten niet in de Tailwind-build van deze site.
+        'disabled' => ['booking'],
         'options' => [
             'reviews' => [
                 'columns' => false,

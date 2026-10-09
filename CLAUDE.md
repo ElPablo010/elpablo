@@ -48,8 +48,9 @@ nieuwe versie. Hier blijft wat eigen is aan deze site:
 - **`config/core.php`**: talen nl/en/es, uitgesloten paden voor de catch-all
   (`events`, `mixtapes/`, `t/`, `stripe`), taalschakelaar (`/t/`, `/design/` →
   home), de donkere achtergronden
-  (`white` = standaard zwart), blokken zonder El Pablo-view uit (booking,
-  probleemherkenning, voordelen, werkwijze), blokopties (reviews zonder kolommen
+  (`white` = standaard zwart), `booking` uit (geen El Pablo-view; probleemherkenning,
+  voordelen en werkwijze hebben sinds 9 oktober 2026 een eigen view en staan aan,
+  met de gedeelde partials `site.section-closing` en `site.section-icon`), blokopties (reviews zonder kolommen
   en uitgelichte zin, cards zonder badge, tekst-en-media zonder beeldvorm, cta
   zonder noot), formuliertype `booking`, favicon + "naam tonen" op Header/Footer,
   geen LinkedIn. Lege tekstvelden (`<p></p>`) gelden als leeg (core-standaard,
