@@ -10,7 +10,9 @@ use App\Models\Event;
 use App\Models\EventTicket;
 use App\Models\EventTicketType;
 use App\Models\Page;
+use App\Models\Setting;
 use App\Models\TicketType;
+use Webgoeroe\Core\Support\SiteFooter;
 
 function publishedEvent(array $attributes = []): Event
 {
@@ -93,6 +95,9 @@ it('names a performer and an offer validFrom in the JSON-LD', function () {
 });
 
 it('lists every artist from the line-up as a performer', function () {
+    // De merknaam komt uit de footer; zonder die instelling valt ze terug op
+    // de app-naam en zou "El Pablo" niet als de DJ zelf herkend worden.
+    Setting::set(SiteFooter::KEY, ['brand' => ['name' => 'El Pablo']]);
     $event = publishedEvent();
     $event->update(['lineup' => 'El Pablo, DJ Invitado , ']);
 
