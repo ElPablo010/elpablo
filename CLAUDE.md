@@ -68,7 +68,7 @@ nieuwe versie. Hier blijft wat eigen is aan deze site:
   `AudioPickerField`.
 - **Sidebar**: Website = Pagina's, Events, Mixtapes, Media, Menu's, Redirects,
   Header, Footer, Inzendingen (`NavigationOrder`); groep **Tickets** =
-  Bestellingen, Tickettypes, Kortingscodes, Scannen.
+  Bestellingen, Tickettypes, Kortingscodes, Scannen, Resultaten.
 - De standaardtests van de core draaien mee (`tests/Pest.php`, `phpunit.xml`).
 
 - **Eén hoofd-URL** (core 0.5, `RedirectToCanonicalUrl`, globaal): hoofdhost =
@@ -471,6 +471,18 @@ bestellingenlijst, en "geclaimd / voorraad" per extra op het event.
 
 `MAX_PER_TYPE` in `TicketCheckout` staat op **30** (was 10) en de stepper heeft
 een invoerveld — anders kom je nooit aan een groep van 12 of 24 tickets.
+
+**Resultaat per event.** Tab *Resultaat* op het event: **kosten** en **andere
+opbrengsten** (kassa, bar, sponsoring) als omschrijving + bedrag **excl. btw**
+(`event_costs` / `event_revenues`). Bewust geen categorie en geen btw-veld: El
+Pablo BV recupereert de btw, dus die is geen kost. Een factuur zonder btw (of met
+niet-recupereerbare btw) = het volledige bedrag ingeven. De online tickets komen
+automatisch uit de betaalde bestellingen (`App\Support\EventResult`): btw per
+orderregel eraf, terugbetaald telt niet, een kortingscode wordt pro rata over de
+ticketregels verdeeld (nooit over de extra's). Bezoekers = tickets Paid/CheckedIn.
+De samenvatting op de tab rekent live mee met de repeaters. Overzicht per jaar
+met totalen: **Tickets → Resultaten** (`App\Filament\Pages\EventResults`).
+Bewaakt door `tests/Feature/Events/EventResultTest.php`.
 
 **Bij go-live niet vergeten:**
 - [ ] Stripe-keys invullen (Instellingen → Betalingen) en in het

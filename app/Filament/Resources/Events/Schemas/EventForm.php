@@ -3,9 +3,11 @@
 namespace App\Filament\Resources\Events\Schemas;
 
 use App\Enums\TicketDiscountType;
+use App\Models\Event;
 use App\Models\EventExtra;
 use App\Models\EventTicketType;
 use App\Models\TicketType;
+use App\Support\EventResult;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
@@ -20,6 +22,7 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 use Webgoeroe\Core\Filament\Schemas\Components\MediaPickerField;
 use Webgoeroe\Core\Support\Locale;
@@ -46,6 +49,9 @@ class EventForm
                         Tab::make('Extra\'s')
                             ->id('extras')
                             ->schema(self::extrasTab()),
+                        Tab::make('Resultaat')
+                            ->id('resultaat')
+                            ->schema(self::resultTab()),
                         Tab::make('Vertalingen')
                             ->id('translations')
                             ->schema(self::translationsTab()),
@@ -376,6 +382,110 @@ class EventForm
                             : '—'),
                 ]),
         ];
+    }
+
+    /**
+     * Resultaat van het event: kosten en opbrengsten buiten de online
+     * ticketverkoop, telkens omschrijving + bedrag EXCL. btw. De online tickets
+     * komen automatisch uit de betaalde bestellingen (EventResult). De
+     * samenvatting rekent live mee met wat je in de repeaters intikt.
+     *
+     * @return array<int, mixed>
+     */
+    private static function resultTab(): array
+    {
+        return [
+            Placeholder::make('result_summary')
+                ->hiddenLabel()
+                ->content(fn (?Event $record, callable $get): HtmlString => self::resultSummary($record, $get)),
+            Repeater::make('costs')
+                ->relationship()
+                ->label('Kosten (excl. btw)')
+                ->addActionLabel('Kost toevoegen')
+                ->orderColumn('position')
+                ->reorderable()
+                ->defaultItems(0)
+                ->live()
+                ->itemLabel(fn (array $state): ?string => $state['description'] ?? null)
+                ->schema(self::amountLineFields('bv. "DJ Carlos", "Licht & geluid", "Affiches", "Facebook-advertenties".')),
+            Repeater::make('revenues')
+                ->relationship()
+                ->label('Andere opbrengsten (excl. btw)')
+                ->addActionLabel('Opbrengst toevoegen')
+                ->orderColumn('position')
+                ->reorderable()
+                ->defaultItems(0)
+                ->live()
+                ->itemLabel(fn (array $state): ?string => $state['description'] ?? null)
+                ->schema(self::amountLineFields('bv. "Kassa", "Bar", "Sponsoring". De online tickets tellen automatisch mee.')),
+        ];
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    private static function amountLineFields(string $hint): array
+    {
+        return [
+            Grid::make(['default' => 1, 'md' => 3])
+                ->schema([
+                    TextInput::make('description')
+                        ->label('Omschrijving')
+                        ->required()
+                        ->maxLength(255)
+                        ->helperText($hint)
+                        ->columnSpan(['md' => 2]),
+                    TextInput::make('amount')
+                        ->label('Bedrag (excl. btw)')
+                        ->numeric()
+                        ->prefix('€')
+                        ->required()
+                        ->live(onBlur: true),
+                ]),
+        ];
+    }
+
+    private static function resultSummary(?Event $record, callable $get): HtmlString
+    {
+        $sum = fn (?array $lines): float => round((float) collect($lines ?? [])
+            ->sum(fn (array $line): float => is_numeric($line['amount'] ?? null) ? (float) $line['amount'] : 0.0), 2);
+
+        // Tickets en bezoekers uit de database; kosten en andere opbrengsten uit
+        // het formulier, zodat de samenvatting meteen klopt bij het intikken.
+        $saved = $record?->exists ? EventResult::for($record) : null;
+
+        $result = new EventResult(
+            ticketRevenue: $saved?->ticketRevenue ?? 0.0,
+            otherRevenue: $sum($get('revenues')),
+            costs: $sum($get('costs')),
+            visitors: $saved?->visitors ?? 0,
+        );
+
+        $margin = $result->margin();
+        $breakEven = $result->breakEvenTickets();
+
+        $tiles = [
+            ['Online tickets', EventResult::money($result->ticketRevenue), null],
+            ['Andere opbrengsten', EventResult::money($result->otherRevenue), null],
+            ['Kosten', EventResult::money($result->costs), null],
+            ['Resultaat', EventResult::money($result->result()), $result->result() < 0 ? '#dc2626' : '#16a34a'],
+            ['Marge', $margin === null ? '—' : number_format($margin, 1, ',', '.').' %', null],
+            ['Bezoekers', (string) $result->visitors, null],
+            ['Resultaat per bezoeker', EventResult::money($result->resultPerVisitor()), null],
+            ['Break-even', $breakEven === null ? '—' : $breakEven.' tickets', null],
+        ];
+
+        $html = '<div style="display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));">';
+        foreach ($tiles as [$label, $value, $color]) {
+            $html .= '<div style="border: 1px solid rgba(120,120,120,.25); border-radius: .75rem; padding: .75rem 1rem;">'
+                .'<div style="font-size: .8rem; opacity: .7;">'.e($label).'</div>'
+                .'<div style="font-size: 1.25rem; font-weight: 700;'.($color ? ' color: '.$color.';' : '').'">'.e($value).'</div>'
+                .'</div>';
+        }
+        $html .= '</div>';
+        $html .= '<p style="font-size: .8rem; opacity: .7; margin-top: .5rem;">Alle bedragen excl. btw. Online tickets = betaalde bestellingen (terugbetaald telt niet mee, kortingscodes zijn verrekend). Break-even = tickets nodig aan de gemiddelde ticketprijs.</p>';
+
+        return new HtmlString($html);
     }
 
     /**

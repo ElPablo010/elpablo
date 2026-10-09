@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\OrderStatus;
 use App\Enums\TicketDiscountType;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -93,6 +94,24 @@ class Event extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(TicketOrder::class);
+    }
+
+    /** Enkel betaalde bestellingen — terugbetaald telt niet mee als omzet. */
+    public function paidOrders(): HasMany
+    {
+        return $this->hasMany(TicketOrder::class)->where('status', OrderStatus::Paid);
+    }
+
+    /** Kosten van het event, excl. btw (tab Resultaat). */
+    public function costs(): HasMany
+    {
+        return $this->hasMany(EventCost::class)->orderBy('position');
+    }
+
+    /** Opbrengsten buiten de online ticketverkoop, excl. btw (tab Resultaat). */
+    public function revenues(): HasMany
+    {
+        return $this->hasMany(EventRevenue::class)->orderBy('position');
     }
 
     public function translations(): HasMany
