@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e4d38bdd37591fc7690bb87bd135e11f",
+    "content-hash": "2f96e47b9c01c118458fba078d2dde8b",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -9194,16 +9194,16 @@
         },
         {
             "name": "webgoeroe/core",
-            "version": "v0.8.0",
+            "version": "v0.8.3",
             "source": {
                 "type": "git",
                 "url": "git@github.com:ElPablo010/core.git",
-                "reference": "0964309020cd45c52891a33418110502c36436b3"
+                "reference": "d5cc8067686b2b7e6779b129b94874ae9763e5d6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ElPablo010/core/zipball/0964309020cd45c52891a33418110502c36436b3",
-                "reference": "0964309020cd45c52891a33418110502c36436b3",
+                "url": "https://api.github.com/repos/ElPablo010/core/zipball/d5cc8067686b2b7e6779b129b94874ae9763e5d6",
+                "reference": "d5cc8067686b2b7e6779b129b94874ae9763e5d6",
                 "shasum": ""
             },
             "require": {
@@ -9232,10 +9232,10 @@
             ],
             "description": "Site-basis van De WebGoeroe: page-builder met blokken, media, menu's, redirects, header/footer, SEO (sitemap, robots, llms.txt, JSON-LD) en formulieren voor Laravel + Filament-sites.",
             "support": {
-                "source": "https://github.com/ElPablo010/core/tree/v0.8.0",
+                "source": "https://github.com/ElPablo010/core/tree/v0.8.3",
                 "issues": "https://github.com/ElPablo010/core/issues"
             },
-            "time": "2026-10-09T08:12:24+00:00"
+            "time": "2026-10-14T09:54:50+00:00"
         },
         {
             "name": "webgoeroe/seo-growth",

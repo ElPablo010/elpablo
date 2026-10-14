@@ -33,9 +33,9 @@
                 </div>
                 <div>
                     <label for="cf-phone" class="mb-1.5 block text-sm font-medium text-gray-200">
-                        {{ __('Telefoon') }} <span class="text-gray-500">{{ __('(optioneel)') }}</span>
+                        {{ __('Telefoon') }} @unless ($phoneRequired)<span class="text-gray-500">{{ __('(optioneel)') }}</span>@endunless
                     </label>
-                    <input id="cf-phone" type="tel" wire:model="phone"
+                    <input id="cf-phone" type="tel" wire:model="phone" @if ($phoneRequired) required autocomplete="tel" @endif
                            class="w-full rounded-lg border border-white/10 bg-ink-950 px-4 py-2.5 text-white placeholder-gray-500 transition-colors focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                     @error('phone') <p class="mt-1.5 text-sm text-red-400">{{ $message }}</p> @enderror
                 </div>

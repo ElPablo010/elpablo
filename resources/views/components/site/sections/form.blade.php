@@ -40,7 +40,8 @@
             <div @unless ($isStacked) class="{{ $formOrder }}" @endunless>
                 <div class="rounded-2xl border border-white/10 bg-ink-900 p-6 sm:p-8">
                     @if ($formComponent)
-                        @livewire($formComponent)
+                        {{-- Parameters uit het register (o.a. "Telefoonnummer verplicht"). --}}
+                        @livewire($formComponent, \Webgoeroe\Core\Core::formTypes()->params($formType, $content, $section))
                     @else
                         <p class="text-sm text-red-400">Onbekend formuliertype: {{ $formType }}</p>
                     @endif
