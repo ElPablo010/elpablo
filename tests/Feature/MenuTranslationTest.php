@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\UserRole;
+use Webgoeroe\Core\Enums\UserRole;
 use App\Filament\Pages\ManageMenus;
 use App\Filament\Resources\Events\EventResource;
 use App\Models\Event;

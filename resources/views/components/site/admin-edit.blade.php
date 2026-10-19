@@ -1,12 +1,12 @@
 @props(['page' => null, 'editUrl' => null])
 
 @php
-    use App\Enums\UserRole;
+    use Filament\Facades\Filament;
     use Webgoeroe\Core\Filament\Resources\Pages\PageResource;
 
-    // Zelfde poort als Filament zelf hanteert (User::canAccessPanel): enkel de
-    // Admin-rol. Een ingelogde niet-admin krijgt de knop dus niet te zien.
-    $isAdmin = auth()->user()?->role === UserRole::Admin;
+    // Zelfde poort als Filament zelf hanteert (User::canAccessPanel): elke rol
+    // van de core (Websitebouwer, Beheerder, Medewerker) beheert pagina's.
+    $isAdmin = (bool) auth()->user()?->canAccessPanel(Filament::getPanel('admin'));
 
     // Een view die zelf weet waar zijn record in de admin woont (bv. een
     // event) geeft dat mee via editUrl. Anders: staat er een pagina op het

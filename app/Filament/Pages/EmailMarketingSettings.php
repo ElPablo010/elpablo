@@ -14,6 +14,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use UnitEnum;
+use Webgoeroe\Core\Filament\Concerns\SuperAdminOnly;
 
 /**
  * Kit-koppeling (e-maillijst): elke betaalde ticketbestelling zet de koper op
@@ -23,6 +24,8 @@ use UnitEnum;
  */
 class EmailMarketingSettings extends Page
 {
+    use SuperAdminOnly;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedEnvelopeOpen;
 
     protected static string|UnitEnum|null $navigationGroup = 'Instellingen';

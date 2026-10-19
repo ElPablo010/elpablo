@@ -119,7 +119,7 @@ it('shows kit forms and tags as dropdown options in the admin', function () {
         ]),
     ]);
 
-    $this->actingAs(admin());
+    $this->actingAs(superAdmin());
 
     Livewire::test(EmailMarketingSettings::class)
         ->assertSee('Nieuwsbrief')
@@ -134,7 +134,7 @@ it('keeps a saved id visible when it no longer exists in kit', function () {
         'forms' => [], 'tags' => [], 'pagination' => ['has_next_page' => false],
     ])]);
 
-    $this->actingAs(admin());
+    $this->actingAs(superAdmin());
 
     Livewire::test(EmailMarketingSettings::class)
         ->assertSee('Tag #456 (niet gevonden in Kit)');
@@ -154,7 +154,7 @@ it('still saves the selected ids to settings', function () {
         ]),
     ]);
 
-    $this->actingAs(admin());
+    $this->actingAs(superAdmin());
 
     Livewire::test(EmailMarketingSettings::class)
         ->set('data.kit_form_id', 11)

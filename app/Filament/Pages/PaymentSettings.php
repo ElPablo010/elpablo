@@ -12,6 +12,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use UnitEnum;
+use Webgoeroe\Core\Filament\Concerns\SuperAdminOnly;
 
 /**
  * Stripe-configuratie voor de ticketverkoop. De secrets leven in de database
@@ -20,6 +21,8 @@ use UnitEnum;
  */
 class PaymentSettings extends Page
 {
+    use SuperAdminOnly;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCreditCard;
 
     protected static string|UnitEnum|null $navigationGroup = 'Instellingen';

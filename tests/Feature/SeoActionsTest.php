@@ -17,8 +17,16 @@ it('renders the SEO admin pages', function (string $path) {
     '/admin/seo-dashboard',
     '/admin/seo-actions',
     '/admin/seo-keywords',
+]);
+
+it('renders the settings pages only for the Websitebouwer', function (string $path) {
+    $this->actingAs(admin())->get($path)->assertForbidden();
+    $this->actingAs(superAdmin())->get($path)->assertOk();
+})->with([
     '/admin/seo-settings',
     '/admin/general-settings',
+    '/admin/payment-settings',
+    '/admin/email-marketing-settings',
 ]);
 
 it('publishes a create_page action as a Dutch landing page with one H1', function () {

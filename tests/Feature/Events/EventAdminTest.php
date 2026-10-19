@@ -119,7 +119,7 @@ it('cancels and un-cancels an event via the toggle and keeps the message', funct
 });
 
 it('saves the payment settings page', function () {
-    $this->actingAs(admin());
+    $this->actingAs(superAdmin());
 
     Livewire::test(PaymentSettings::class)
         ->fillForm([

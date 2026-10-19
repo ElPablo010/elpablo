@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\UserRole;
+use Webgoeroe\Core\Enums\UserRole;
 use App\Models\Page;
 use App\Models\User;
 use Webgoeroe\Core\Filament\Resources\Pages\PageResource;
@@ -34,15 +34,15 @@ it('hides the admin shortcut from guests', function () {
         ->assertDontSee('Bewerk deze pagina');
 });
 
-it('hides the admin shortcut from logged-in non-admins', function () {
+it('shows the admin shortcut to a Medewerker too', function () {
     publishedPage();
 
-    // Staff mag niet op het Filament-paneel (zie User::canAccessPanel), dus ook
-    // de snelkoppeling ernaartoe hoort verborgen te blijven.
+    // Elke rol mag op het Filament-paneel (zie HasRoles::canAccessPanel) en
+    // pagina's bewerken, dus ook een Medewerker krijgt de snelkoppeling.
     $this->actingAs(User::factory()->create(['role' => UserRole::Staff]))
         ->get('/')
         ->assertOk()
-        ->assertDontSee('Bewerk deze pagina');
+        ->assertSee('Bewerk deze pagina');
 });
 
 it('shows the admin shortcut linking to the edit screen of the current page', function () {

@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\UserRole;
+use Webgoeroe\Core\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -49,9 +49,17 @@ expect()->extend('toBeOne', function () {
 */
 
 /**
- * Een ingelogde beheerder — Filament laat enkel de Admin-rol op het paneel.
+ * Een ingelogde Beheerder (de klant): alle inhoud, geen instellingen.
  */
 function admin(): User
 {
     return User::factory()->create(['role' => UserRole::Admin]);
+}
+
+/**
+ * De Websitebouwer: ziet ook de instellingen (SuperAdminOnly).
+ */
+function superAdmin(): User
+{
+    return User::factory()->create(['role' => UserRole::SuperAdmin]);
 }
