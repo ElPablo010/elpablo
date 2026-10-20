@@ -35,7 +35,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 ])]
 class TicketOrder extends Model
 {
-    /** Conversietype op Groei → Leads (zie config/seo-growth.php). */
+    /** Conversietype op Leads → Overzicht (zie config/seo-growth.php). */
     public const LEAD_TYPE = 'ticket_order';
 
     use HasFactory;

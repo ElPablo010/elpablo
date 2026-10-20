@@ -23,7 +23,7 @@ it('renders the settings pages only for the Websitebouwer', function (string $pa
     $this->actingAs(admin())->get($path)->assertForbidden();
     $this->actingAs(superAdmin())->get($path)->assertOk();
 })->with([
-    '/admin/seo-settings',
+    '/admin/instellingen/vindbaarheid',
     '/admin/general-settings',
     '/admin/payment-settings',
     '/admin/email-marketing-settings',

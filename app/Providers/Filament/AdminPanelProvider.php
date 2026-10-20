@@ -18,6 +18,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Webgoeroe\Core\CorePlugin;
+use Webgoeroe\Core\Filament\NavigationOrder;
 use Webgoeroe\Core\Filament\Pages\ManageMenus;
 use Webgoeroe\SeoGrowth\SeoGrowthPlugin;
 
@@ -36,12 +37,7 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::hex('#E01B4B'),
             ])
-            ->navigationGroups([
-                'Website',
-                'Tickets',
-                'Groei',
-                'Instellingen',
-            ])
+            ->navigationGroups(NavigationOrder::groups(['Tickets']))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
