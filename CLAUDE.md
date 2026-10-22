@@ -400,7 +400,11 @@ gratis-order-bypass is bewust niet gebouwd.
 
 **Tickets.** Bevestigingsmail in de taal van de koper (`SendTicketOrderEmailJob`,
 queue + dedupe per order, `force` voor opnieuw verzenden) met per ticket een
-PDF-bijlage (dompdf, QR als **SVG**-data-URI — geen imagick op Combell). QR wijst
+PDF-bijlage (dompdf, QR als **SVG**-data-URI — geen imagick op Combell).
+Bij elke betaalde bestelling krijgt de beheerder een korte melding
+(`TicketOrderPaidAdminMail`, queued) op het adres uit **Instellingen →
+Betalingen → Meldingen** (leeg = `MAIL_FROM_ADDRESS`); enkel bij de overgang
+naar Paid, dus nooit dubbel via webhook + bedankpagina. QR wijst
 naar `/t/{token}` (publieke statuspagina). Check-in via **Tickets → Scannen**
 (html5-qrcode) of handmatig/omkeerbaar in de bestelling; `TicketScanner` kent
 ok/already/wrong_event/refunded/unpaid/not_found. Refund = actie op de

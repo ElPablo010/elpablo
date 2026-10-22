@@ -80,10 +80,10 @@ class PaymentSettings extends Page
                 Section::make('Meldingen')
                     ->schema([
                         TextInput::make('admin_notification_email')
-                            ->label('E-mailadres voor foutmeldingen')
+                            ->label('E-mailadres voor meldingen')
                             ->email()
                             ->maxLength(255)
-                            ->helperText('Ontvangt een melding wanneer een betaling niet verwerkt raakt. Leeg = het algemene afzenderadres.'),
+                            ->helperText('Ontvangt een melding bij elke betaalde bestelling en wanneer een betaling niet verwerkt raakt. Leeg = het algemene afzenderadres.'),
                     ]),
             ])
             ->statePath('data');

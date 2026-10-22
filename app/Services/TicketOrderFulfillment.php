@@ -7,11 +7,14 @@ use App\Enums\OrderStatus;
 use App\Enums\TicketStatus;
 use App\Jobs\SendTicketOrderEmailJob;
 use App\Jobs\SubscribeTicketBuyerToKitJob;
+use App\Mail\TicketOrderPaidAdminMail;
+use App\Models\Setting;
 use Webgoeroe\SeoGrowth\Models\Lead;
 use App\Models\PendingStripeSession;
 use App\Models\TicketOrder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * Maakt van een geslaagde Stripe-betaling een afgeronde bestelling. Wordt door
@@ -58,7 +61,9 @@ class TicketOrderFulfillment
             return null;
         }
 
-        $order = DB::transaction(function () use ($orderId, $session, $payload) {
+        $justPaid = false;
+
+        $order = DB::transaction(function () use ($orderId, $session, $payload, &$justPaid) {
             /** @var TicketOrder|null $order */
             $order = TicketOrder::query()->lockForUpdate()->find($orderId);
 
@@ -105,6 +110,8 @@ class TicketOrderFulfillment
                 ->where('status', TicketStatus::Reserved)
                 ->update(['status' => TicketStatus::Paid]);
 
+            $justPaid = true;
+
             // Leads-meetlaag: een betaalde bestelling is een conversie. Staat
             // bewust hier, ná de statuscheck hierboven, zodat webhook en
             // bedankpagina nooit dubbel tellen. Herkomst uit de payload (de
@@ -131,6 +138,14 @@ class TicketOrderFulfillment
             // Koper op de Kit-lijst — upsert op e-mailadres, dus idempotent; de
             // job doet stil niets zolang er geen API-key is ingesteld.
             rescue(fn () => SubscribeTicketBuyerToKitJob::dispatch($order->id));
+        }
+
+        // Melding naar de beheerder enkel bij de overgang naar betaald, zodat
+        // een tweede kanaal (webhook of bedankpagina) nooit een dubbele stuurt.
+        if ($order && $justPaid) {
+            rescue(fn () => Mail::to(
+                Setting::get('admin_notification_email') ?: config('mail.from.address'),
+            )->queue(new TicketOrderPaidAdminMail($order)));
         }
 
         return $order;

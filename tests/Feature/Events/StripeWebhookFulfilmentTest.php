@@ -11,6 +11,7 @@ use App\Enums\OrderStatus;
 use App\Enums\TicketStatus;
 use App\Jobs\SendTicketOrderEmailJob;
 use App\Mail\TicketOrderFailedMail;
+use App\Mail\TicketOrderPaidAdminMail;
 use App\Models\Event;
 use App\Models\EventTicketType;
 use App\Models\PendingStripeSession;
@@ -18,6 +19,7 @@ use App\Models\Setting;
 use App\Models\TicketOrder;
 use App\Models\TicketType;
 use App\Services\TicketCheckoutService;
+use App\Services\TicketOrderFulfillment;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
 use Tests\Fakes\FakePaymentGateway;
@@ -128,6 +130,25 @@ it('fulfils via the thanks page and makes the later webhook a no-op', function (
     // De webhook komt later binnen: geen dubbele verwerking.
     postWebhook($payload)->assertOk();
     expect($order->fresh()->tickets()->count())->toBe(2);
+});
+
+it('notifies the admin exactly once per paid order', function () {
+    Queue::fake();
+    Mail::fake();
+    Setting::set('admin_notification_email', 'info@el-pablo.com');
+    $order = pendingOrder();
+    $pending = PendingStripeSession::sole();
+    $session = (object) ['id' => $order->stripe_session_id, 'payment_intent' => 'pi_fake_1'];
+
+    // Beide kanalen (webhook én bedankpagina) raken tegelijk de fulfilment.
+    app(TicketOrderFulfillment::class)->complete($session, $pending->uuid, $pending->payload);
+    app(TicketOrderFulfillment::class)->complete($session, $pending->uuid, $pending->payload);
+
+    Mail::assertQueued(TicketOrderPaidAdminMail::class, 1);
+    Mail::assertQueued(TicketOrderPaidAdminMail::class, fn (TicketOrderPaidAdminMail $mail) => $mail->hasTo('info@el-pablo.com'));
+
+    $html = (new TicketOrderPaidAdminMail($order->fresh()))->render();
+    expect($html)->toContain('Test Koper')->toContain('koper@example.com')->toContain('Latin Night');
 });
 
 it('shows the processing message when the thanks page cannot confirm the payment', function () {
