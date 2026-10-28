@@ -21,6 +21,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'event_id',
     'buyer_name',
     'buyer_email',
+    'company_name',
+    'company_vat',
+    'company_address',
     'locale',
     'status',
     'subtotal_inc_vat',
@@ -51,6 +54,12 @@ class TicketOrder extends Model
             'paid_at' => 'datetime',
             'refunded_at' => 'datetime',
         ];
+    }
+
+    /** Bestellingen waar de koper een factuur op bedrijfsnaam wil. */
+    public function scopeWithCompany(Builder $query): Builder
+    {
+        return $query->whereNotNull('company_vat')->where('company_vat', '!=', '');
     }
 
     public function event(): BelongsTo

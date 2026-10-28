@@ -248,6 +248,37 @@
                     </div>
                 </div>
 
+                {{-- Optioneel: factuur op bedrijfsnaam. --}}
+                <div class="space-y-4">
+                    <label class="flex cursor-pointer items-center gap-2 text-sm text-gray-200">
+                        <input type="checkbox" wire:model.live="wantsInvoice" class="h-4 w-4 rounded border-white/20 bg-ink-950">
+                        {{ __('Ik wil een factuur op bedrijfsnaam') }}
+                    </label>
+                    @if ($wantsInvoice)
+                        <div class="grid gap-5">
+                            <div>
+                                <label for="tc-company" class="mb-1.5 block text-sm font-medium text-gray-200">{{ __('Bedrijfsnaam') }}</label>
+                                <input id="tc-company" type="text" wire:model="companyName" autocomplete="organization"
+                                       class="w-full rounded-lg border border-white/10 bg-ink-950 px-4 py-2.5 text-white placeholder-gray-500 transition-colors focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                                @error('companyName') <p class="mt-1.5 text-sm text-red-400">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label for="tc-vat" class="mb-1.5 block text-sm font-medium text-gray-200">{{ __('Btw-nummer') }}</label>
+                                <input id="tc-vat" type="text" wire:model="companyVat" placeholder="BE0123.456.789"
+                                       class="w-full rounded-lg border border-white/10 bg-ink-950 px-4 py-2.5 text-white placeholder-gray-500 transition-colors focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                                @error('companyVat') <p class="mt-1.5 text-sm text-red-400">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label for="tc-address" class="mb-1.5 block text-sm font-medium text-gray-200">{{ __('Factuuradres') }}</label>
+                                <textarea id="tc-address" rows="2" wire:model="companyAddress" autocomplete="street-address"
+                                          class="w-full rounded-lg border border-white/10 bg-ink-950 px-4 py-2.5 text-white placeholder-gray-500 transition-colors focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"></textarea>
+                                @error('companyAddress') <p class="mt-1.5 text-sm text-red-400">{{ $message }}</p> @enderror
+                                <p class="mt-1.5 text-xs text-gray-500">{{ __('We sturen je de factuur apart na het event.') }}</p>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
                 <button type="submit" class="btn-primary w-full justify-center sm:w-auto" wire:loading.attr="disabled">
                     <span wire:loading.remove wire:target="checkout">{{ __('Afrekenen') }} — {{ $fmt($this->total) }}</span>
                     <span wire:loading wire:target="checkout">{{ __('Even geduld…') }}</span>

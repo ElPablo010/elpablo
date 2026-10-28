@@ -168,5 +168,13 @@
     "Datum": "Fecha",
     "Vragen over je bestelling? Antwoord gewoon op deze mail.": "¿Preguntas sobre tu pedido? Simplemente responde a este correo.",
     "Toon dit ticket (op papier of op je telefoon) aan de ingang. De QR-code wordt gescand en is één keer geldig.": "Muestra esta entrada (en papel o en tu móvil) en la entrada. El código QR se escaneará y es válido una sola vez.",
-    "Inloggen": "Iniciar sesión"
+    "Inloggen": "Iniciar sesión",
+    "Ik wil een factuur op bedrijfsnaam": "Quiero una factura a nombre de mi empresa",
+    "Bedrijfsnaam": "Nombre de la empresa",
+    "Btw-nummer": "Número de IVA",
+    "Factuuradres": "Dirección de facturación",
+    "We sturen je de factuur apart na het event.": "Te enviaremos la factura por separado después del evento.",
+    "Vul de bedrijfsnaam in.": "Introduce el nombre de la empresa.",
+    "Vul het btw-nummer in.": "Introduce el número de IVA.",
+    "Vul het factuuradres in.": "Introduce la dirección de facturación."
 }

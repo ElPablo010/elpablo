@@ -190,3 +190,49 @@ it('keeps the Spanish locale across re-renders', function () {
         ->call('increment', $type->id)
         ->assertSet('locale', 'es');
 });
+
+it('stores company details on the order when an invoice is requested', function () {
+    [$event, $type] = componentEvent();
+
+    Livewire::test(TicketCheckout::class, ['event' => $event])
+        ->call('increment', $type->id)
+        ->set('buyerName', 'An Janssens')
+        ->set('buyerEmail', 'an@example.com')
+        ->set('wantsInvoice', true)
+        ->set('companyName', 'Janssens BV')
+        ->set('companyVat', 'BE0123.456.789')
+        ->set('companyAddress', 'Straat 1, 2000 Antwerpen')
+        ->call('checkout')
+        ->assertHasNoErrors();
+
+    $order = TicketOrder::query()->latest('id')->first();
+    expect($order->company_name)->toBe('Janssens BV')
+        ->and($order->company_vat)->toBe('BE0123.456.789')
+        ->and(TicketOrder::withCompany()->count())->toBe(1);
+});
+
+it('requires company details when an invoice is requested', function () {
+    [$event, $type] = componentEvent();
+
+    Livewire::test(TicketCheckout::class, ['event' => $event])
+        ->call('increment', $type->id)
+        ->set('buyerName', 'An Janssens')
+        ->set('buyerEmail', 'an@example.com')
+        ->set('wantsInvoice', true)
+        ->call('checkout')
+        ->assertHasErrors(['companyName', 'companyVat', 'companyAddress']);
+});
+
+it('leaves company details empty for consumers', function () {
+    [$event, $type] = componentEvent();
+
+    Livewire::test(TicketCheckout::class, ['event' => $event])
+        ->call('increment', $type->id)
+        ->set('buyerName', 'An Janssens')
+        ->set('buyerEmail', 'an@example.com')
+        ->call('checkout')
+        ->assertHasNoErrors();
+
+    expect(TicketOrder::query()->latest('id')->first()->company_vat)->toBeNull()
+        ->and(TicketOrder::withCompany()->count())->toBe(0);
+});

@@ -53,6 +53,7 @@ class TicketCheckoutService
     /**
      * @param  array<int|string, int>  $quantities  ticket_type_id => aantal
      * @param  array<int|string, int>  $extras  event_extra_id => aantal
+     * @param  array{name?: ?string, vat?: ?string, address?: ?string}  $company  optioneel, voor een factuur op bedrijfsnaam
      * @return string De Stripe Checkout-URL om de koper naartoe te sturen.
      *
      * @throws CheckoutException met een gebruikersgerichte, vertaalde boodschap.
@@ -65,6 +66,7 @@ class TicketCheckoutService
         ?string $discountCode,
         string $locale,
         array $extras = [],
+        array $company = [],
     ): string {
         $event->load(['eventTicketTypes.ticketType', 'ticketTypes', 'ticketDiscounts', 'extras']);
 
@@ -187,7 +189,7 @@ class TicketCheckoutService
         // Stap 3 — reservering in één transactie, met rijvergrendeling.
         $uuid = (string) Str::uuid();
 
-        $order = DB::transaction(function () use ($event, $lines, $extraLines, $buyerName, $buyerEmail, $locale, $subtotal, $total, $discountModel, $discountAmount, $uuid) {
+        $order = DB::transaction(function () use ($event, $lines, $extraLines, $buyerName, $buyerEmail, $company, $locale, $subtotal, $total, $discountModel, $discountAmount, $uuid) {
             // Vergrendel de pivotrijen in vaste volgorde (geen deadlocks) —
             // dit serialiseert alle gelijktijdige checkouts per tickettype.
             $pivots = EventTicketType::query()
@@ -252,6 +254,9 @@ class TicketCheckoutService
                 'event_id' => $event->id,
                 'buyer_name' => $buyerName,
                 'buyer_email' => $buyerEmail,
+                'company_name' => filled($company['vat'] ?? null) ? ($company['name'] ?? null) : null,
+                'company_vat' => filled($company['vat'] ?? null) ? $company['vat'] : null,
+                'company_address' => filled($company['vat'] ?? null) ? ($company['address'] ?? null) : null,
                 'locale' => $locale,
                 'status' => OrderStatus::Pending,
                 'subtotal_inc_vat' => $subtotal,

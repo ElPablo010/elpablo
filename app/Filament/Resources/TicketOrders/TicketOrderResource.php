@@ -82,6 +82,9 @@ class TicketOrderResource extends Resource
                     TextEntry::make('created_at')->label('Besteld op')->dateTime('d/m/Y H:i'),
                     TextEntry::make('buyer_name')->label('Naam'),
                     TextEntry::make('buyer_email')->label('E-mail')->copyable(),
+                    TextEntry::make('company_name')->label('Bedrijf (factuur gevraagd)')->placeholder('—'),
+                    TextEntry::make('company_vat')->label('Btw-nummer')->placeholder('—')->copyable(),
+                    TextEntry::make('company_address')->label('Factuuradres')->placeholder('—')->copyable(),
                     TextEntry::make('locale')->label('Taal')->formatStateUsing(fn (string $state): string => strtoupper($state)),
                 ]),
 
@@ -144,6 +147,12 @@ class TicketOrderResource extends Resource
                 TextColumn::make('event.name')
                     ->label('Event')
                     ->sortable(),
+                TextColumn::make('company_name')
+                    ->label('Factuur')
+                    ->badge()
+                    ->color('warning')
+                    ->placeholder('—')
+                    ->state(fn (TicketOrder $record): ?string => $record->company_vat ? ($record->company_name ?: $record->company_vat) : null),
                 TextColumn::make('tickets_count')
                     ->label('Tickets')
                     ->badge()
@@ -172,6 +181,15 @@ class TicketOrderResource extends Resource
                 SelectFilter::make('event_id')
                     ->label('Event')
                     ->relationship('event', 'name', fn (Builder $query) => $query->orderBy('name')),
+                // Bedrijven die een factuur vragen vs. particulieren voor het maandoverzicht.
+                SelectFilter::make('invoice')
+                    ->label('Factuur')
+                    ->options(['company' => 'Factuur gevraagd (bedrijf)', 'consumer' => 'Particulier (maandoverzicht)'])
+                    ->query(fn (Builder $query, array $data): Builder => match ($data['value'] ?? null) {
+                        'company' => $query->withCompany(),
+                        'consumer' => $query->whereNot(fn (Builder $q) => $q->withCompany()),
+                        default => $query,
+                    }),
                 SelectFilter::make('status')
                     ->label('Status')
                     ->options(OrderStatus::class),

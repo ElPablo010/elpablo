@@ -56,6 +56,15 @@ class TicketCheckout extends Component
 
     public string $buyerEmail = '';
 
+    /** Optioneel: de koper wil een factuur op bedrijfsnaam. */
+    public bool $wantsInvoice = false;
+
+    public string $companyName = '';
+
+    public string $companyVat = '';
+
+    public string $companyAddress = '';
+
     /** Honeypot: bots vullen dit in, mensen zien het niet. */
     public string $website = '';
 
@@ -81,6 +90,9 @@ class TicketCheckout extends Component
             'buyerName.required' => __('Vul je naam in.'),
             'buyerEmail.required' => __('Vul je e-mailadres in.'),
             'buyerEmail.email' => __('Vul een geldig e-mailadres in.'),
+            'companyName.required' => __('Vul de bedrijfsnaam in.'),
+            'companyVat.required' => __('Vul het btw-nummer in.'),
+            'companyAddress.required' => __('Vul het factuuradres in.'),
         ];
     }
 
@@ -406,6 +418,9 @@ class TicketCheckout extends Component
         $this->validate([
             'buyerName' => 'required|string|max:120',
             'buyerEmail' => 'required|email|max:190',
+            'companyName' => 'exclude_unless:wantsInvoice,true|required|string|max:190',
+            'companyVat' => 'exclude_unless:wantsInvoice,true|required|string|max:30',
+            'companyAddress' => 'exclude_unless:wantsInvoice,true|required|string|max:500',
         ]);
 
         if ($this->ticketCount < 1) {
@@ -437,6 +452,11 @@ class TicketCheckout extends Component
                 discountCode: $this->appliedCode !== '' ? $this->appliedCode : null,
                 locale: $this->locale,
                 extras: $extras,
+                company: $this->wantsInvoice ? [
+                    'name' => trim($this->companyName),
+                    'vat' => trim($this->companyVat),
+                    'address' => trim($this->companyAddress),
+                ] : [],
             );
         } catch (CheckoutException $e) {
             throw ValidationException::withMessages(['quantities' => $e->getMessage()]);
