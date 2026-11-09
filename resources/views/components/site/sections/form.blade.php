@@ -5,12 +5,9 @@
     $layout = $content['form_layout'] ?? 'right';
     $formType = $content['form_type'] ?? 'contact';
 
-    // form_type → Livewire-component. Voeg hier nieuwe types toe (zie FormFields).
-    $formComponent = match ($formType) {
-        'booking' => 'forms.booking-form',
-        'contact' => 'forms.contact-form',
-        default => null,
-    };
+    // form_type → Livewire-component, uit het register (Core::formTypes()):
+    // ook de eigen formulieren uit de admin (CustomForm) komen daar vandaan.
+    $formComponent = \Webgoeroe\Core\Core::formTypes()->component($formType);
 
     $isStacked = $layout === 'below';
     $textOrder = $layout === 'left' ? 'lg:order-2' : 'lg:order-1';
