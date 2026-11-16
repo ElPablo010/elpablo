@@ -6,7 +6,7 @@ use App\Models\User;
 use Webgoeroe\Core\Filament\Resources\Pages\PageResource;
 
 /**
- * De frontend toont voor ingelogde beheerders een snelkoppeling naar de admin,
+ * De frontend toont voor ingelogde beheerders de bewerkknop van de core (eigen stijl),
  * net onder de menubalk. Voor bezoekers mag daar niets van te zien zijn.
  */
 function publishedPage(): Page
@@ -31,7 +31,7 @@ it('hides the admin shortcut from guests', function () {
 
     $this->get('/')
         ->assertOk()
-        ->assertDontSee('Bewerk deze pagina');
+        ->assertDontSee('Pagina bewerken');
 });
 
 it('shows the admin shortcut to a Medewerker too', function () {
@@ -42,7 +42,7 @@ it('shows the admin shortcut to a Medewerker too', function () {
     $this->actingAs(User::factory()->create(['role' => UserRole::Staff]))
         ->get('/')
         ->assertOk()
-        ->assertSee('Bewerk deze pagina');
+        ->assertSee('Pagina bewerken');
 });
 
 it('shows the admin shortcut linking to the edit screen of the current page', function () {
@@ -51,14 +51,22 @@ it('shows the admin shortcut linking to the edit screen of the current page', fu
     $this->actingAs(admin())
         ->get('/')
         ->assertOk()
-        ->assertSee('Bewerk deze pagina')
+        ->assertSee('Pagina bewerken')
         ->assertSee(PageResource::getUrl('edit', ['record' => $page]), escape: false);
 });
 
-it('falls back to the page overview when there is no page (404)', function () {
+it('falls back to the admin when there is no page (404)', function () {
     $this->actingAs(admin())
         ->get('/bestaat-niet')
         ->assertNotFound()
         ->assertSee('Naar de admin')
-        ->assertSee(PageResource::getUrl('index'), escape: false);
+        ->assertSee(url('/admin'), escape: false);
+});
+
+it('links an event to its own edit screen', function () {
+    $this->actingAs(admin())
+        ->get('/events')
+        ->assertOk()
+        ->assertSee('Bewerk in de admin')
+        ->assertSee(\App\Filament\Resources\Events\EventResource::getUrl('index'), escape: false);
 });
