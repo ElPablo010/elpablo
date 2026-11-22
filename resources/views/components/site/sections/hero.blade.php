@@ -28,7 +28,7 @@
                 src="{{ $image['src'] }}"
                 alt="{{ $image['alt'] ?? '' }}"
                 class="absolute inset-0 h-full w-full object-cover"
-                style="object-position: {{ $image['position'] ?? 'center 50%' }};"
+                style="object-position: {{ \Webgoeroe\Core\Models\WebsiteMedia::objectPositionForUrl($image['src']) ?? ($image['position'] ?? 'center 50%') }};"
                 fetchpriority="high"
             >
         </picture>

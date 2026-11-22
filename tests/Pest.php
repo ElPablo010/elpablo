@@ -23,6 +23,24 @@ pest()->extend(TestCase::class)
     ->in('Feature', '../vendor/webgoeroe/core/tests/Feature', '../vendor/webgoeroe/seo-growth/tests/Feature');
 
 /*
+| Core-tests voor functies die deze site bewust anders doet: per test overgeslagen,
+| nooit per bestand. Alles wat hier niet staat draait gewoon mee.
+*/
+pest()->beforeEach(function () {
+    $skips = [
+        'it_zet_het_contactformulier_om_naar_een_gewoon_formulier_met_blokken' => 'De test verwacht dat contact het enige vaste formulier is; deze site heeft ook het vaste type "booking". Het commando zelf: core:convert-contact-form --dry-run.',
+        'pagina_in_het_Engels_onder_' => 'De site heeft een eigen 404-pagina in de huisstijl (resources/views/errors/404.blade.php) met eigen vertaling via lang/en.json.',
+        'it_vult_een_lege_beeldvorm_in_bestaande_tekst_en_media_blokken_zodat_opslaan_lukt' => 'Deze site zet de beeldvorm van tekst-en-media uit (config/core.php), dus het veld media_shape bestaat niet.',
+    ];
+
+    foreach ($skips as $needle => $reason) {
+        if (str_contains($this->name(), $needle)) {
+            $this->markTestSkipped($reason);
+        }
+    }
+})->in('../vendor/webgoeroe/core/tests/Feature');
+
+/*
 |--------------------------------------------------------------------------
 | Expectations
 |--------------------------------------------------------------------------

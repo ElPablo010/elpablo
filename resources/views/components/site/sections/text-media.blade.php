@@ -62,22 +62,31 @@
                 <div class="grid grid-cols-2 gap-4">
                     @foreach ($content['images'] ?? [] as $img)
                         @if (! empty($img['src']))
+                            @php $imgHref = \Webgoeroe\Core\Support\Url::optionalHref($img); @endphp
+                            @if ($imgHref)<a href="{{ \Webgoeroe\Core\Support\Locale::href($imgHref) }}" @if (\Webgoeroe\Core\Support\Url::opensInNewTab($img)) target="_blank" rel="noopener" @endif>@endif
                             <picture>
                                 <source srcset="{{ $img['src'] }}" type="image/webp">
                                 <img src="{{ $img['src'] }}" alt="{{ $img['alt'] ?? '' }}" loading="lazy"
-                                     class="aspect-[3/4] w-full rounded-xl border border-white/10 object-cover {{ $loop->index % 2 ? 'mt-8' : '' }}">
+                                     class="aspect-[3/4] w-full rounded-xl border border-white/10 object-cover {{ $loop->index % 2 ? 'mt-8' : '' }}"{!! \Webgoeroe\Core\Models\WebsiteMedia::focusStyle($img['src']) !!}>
                             </picture>
+                            @if ($imgHref)</a>@endif
                         @endif
                     @endforeach
                 </div>
             @elseif (! empty($content['media']['src']))
                 <div class="relative">
                     <div class="pointer-events-none absolute -inset-3 -z-10 rounded-3xl bg-primary-600/20 blur-2xl"></div>
+                    @php
+                        $mediaLink = $content['media_link'] ?? null;
+                        $mediaHref = \Webgoeroe\Core\Support\Url::optionalHref($mediaLink);
+                    @endphp
+                    @if ($mediaHref)<a href="{{ \Webgoeroe\Core\Support\Locale::href($mediaHref) }}" @if (\Webgoeroe\Core\Support\Url::opensInNewTab($mediaLink ?? [])) target="_blank" rel="noopener" @endif>@endif
                     <picture>
                         <source srcset="{{ $content['media']['src'] }}" type="image/webp">
                         <img src="{{ $content['media']['src'] }}" alt="{{ $content['media']['alt'] ?? '' }}" loading="lazy"
-                             class="w-full rounded-2xl border border-white/10 object-cover">
+                             class="w-full rounded-2xl border border-white/10 object-cover"{!! \Webgoeroe\Core\Models\WebsiteMedia::focusStyle($content['media']['src']) !!}>
                     </picture>
+                    @if ($mediaHref)</a>@endif
                 </div>
             @endif
         </div>

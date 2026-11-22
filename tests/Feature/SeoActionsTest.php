@@ -23,10 +23,17 @@ it('renders the settings pages only for the Websitebouwer', function (string $pa
     $this->actingAs(admin())->get($path)->assertForbidden();
     $this->actingAs(superAdmin())->get($path)->assertOk();
 })->with([
-    '/admin/instellingen/vindbaarheid',
-    '/admin/general-settings',
     '/admin/payment-settings',
     '/admin/email-marketing-settings',
+]);
+
+// Sinds de core de klant zelf laat beheren (Beheerder + Websitebouwer): algemene instellingen en vindbaarheid.
+it('renders the client settings pages for the Beheerder and the Websitebouwer', function (string $path) {
+    $this->actingAs(admin())->get($path)->assertOk();
+    $this->actingAs(superAdmin())->get($path)->assertOk();
+})->with([
+    '/admin/instellingen/vindbaarheid',
+    '/admin/general-settings',
 ]);
 
 it('publishes a create_page action as a Dutch landing page with one H1', function () {

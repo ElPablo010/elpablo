@@ -10,6 +10,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Webgoeroe\Core\Enums\UserRole;
 use Webgoeroe\Core\Models\Concerns\HasRoles;
+use Laravel\Sanctum\HasApiTokens;
 
 /**
  * Rollen van de core (HasRoles): Websitebouwer, Beheerder, Medewerker.
@@ -19,7 +20,7 @@ use Webgoeroe\Core\Models\Concerns\HasRoles;
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
 {
-    use HasFactory, HasRoles, Notifiable;
+    use HasFactory, HasRoles, Notifiable, HasApiTokens;
 
     protected function casts(): array
     {

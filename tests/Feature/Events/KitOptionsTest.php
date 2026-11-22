@@ -121,9 +121,12 @@ it('shows kit forms and tags as dropdown options in the admin', function () {
 
     $this->actingAs(superAdmin());
 
-    Livewire::test(EmailMarketingSettings::class)
-        ->assertSee('Nieuwsbrief')
-        ->assertSee('ticketkopers');
+    // Filament 5 laadt de keuzes van een Select via JS; daarom lezen we de opties
+    // rechtstreeks uit de velden in plaats van uit de HTML.
+    $form = Livewire::test(EmailMarketingSettings::class)->instance()->form;
+
+    expect($form->getComponent('kit_form_id')->getOptions())->toContain('Nieuwsbrief')
+        ->and($form->getComponent('kit_tag_id')->getOptions())->toContain('ticketkopers');
 });
 
 it('keeps a saved id visible when it no longer exists in kit', function () {

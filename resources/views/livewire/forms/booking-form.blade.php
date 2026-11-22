@@ -84,12 +84,12 @@
                 @error('message') <p class="mt-1.5 text-sm text-red-400">{{ $message }}</p> @enderror
             </div>
 
-            <button type="submit" wire:loading.attr="disabled" wire:target="submit" class="btn-primary w-full sm:w-auto">
-                <span wire:loading.remove wire:target="submit" class="inline-flex items-center gap-2">
+            <button type="submit" wire:loading.attr="disabled" wire:target="submit" wire:loading.class="cursor-wait" class="btn-primary relative w-full sm:w-auto">
+                <x-core::busy-spinner target="submit" />
+                <span class="inline-flex items-center gap-2">
                     {{ __('Vraag offerte aan') }}
                     <x-lucide-send class="h-4 w-4" />
                 </span>
-                <span wire:loading wire:target="submit">{{ __('Versturen…') }}</span>
             </button>
         </form>
     @endif

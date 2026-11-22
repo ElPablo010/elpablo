@@ -20,12 +20,15 @@
         <div class="mt-14 grid grid-cols-2 gap-3 {{ $colClass }}">
             @foreach ($items as $item)
                 @if (! empty($item['image']))
+                    @php $itemHref = \Webgoeroe\Core\Support\Url::optionalHref($item); @endphp
                     <div class="group relative aspect-square overflow-hidden rounded-xl">
+                        @if ($itemHref)<a href="{{ \Webgoeroe\Core\Support\Locale::href($itemHref) }}" @if (\Webgoeroe\Core\Support\Url::opensInNewTab($item)) target="_blank" rel="noopener" @endif class="block h-full w-full">@endif
                         <picture>
                             <source srcset="{{ $item['image'] }}" type="image/webp">
                             <img src="{{ $item['image'] }}" alt="{{ $item['alt'] ?? '' }}" loading="lazy"
-                                 class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110">
+                                 class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"{!! \Webgoeroe\Core\Models\WebsiteMedia::focusStyle($item['image']) !!}>
                         </picture>
+                        @if ($itemHref)</a>@endif
                         <div class="absolute inset-0 bg-primary-600/0 transition-colors duration-300 group-hover:bg-primary-600/20"></div>
                     </div>
                 @endif
